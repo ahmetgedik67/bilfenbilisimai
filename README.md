@@ -136,6 +136,28 @@ vardır (örn. `bt4821`); üretilen şifreler önizlemede gösterilir — ekleme
 - **➕ Toplu Ekle** tek tıkla bütün satırları kaydeder; kullanıcı adı alınmış bir satır
 atlanır ve kaç satırın eklenemediği bildirilir.
 
+### ✍️ Öğretmen kendi etkinliğini oluşturabilir
+
+Öğretmen panelinde **✍️ Etkinlik Oluştur** sekmesi:
+
+1. **Etkinlik adı** + **Konu & Tema** yaz (örn. "Algoritma — Uzay Teması").
+2. **Sınıf seviyesi** seç — birden çok seçilebilir (1 → "1. Sınıf", 2–7 → "2 IPT … 7 IPT").
+3. İçeriği üç yoldan biriyle ver:
+   - **📄 HTML dosyası yükle** (tek dosyalık etkinlik .html)
+   - **🔗 Drive bağlantısı** (paylaşım "Bağlantısı olan herkes" olmalı)
+   - **✂️ Kodu yapıştır** (HTML kodunun tamamı)
+4. **👁 Önizle** ile önce dene, **💾 Etkinliği Kaydet** ile kaydet.
+
+Kaydedilen etkinlik o kampüsün öğrencilerinin **Etkinliklerim** listesine düşer
+(HTML içerik pencerede oynar, Drive bağlantısı yeni sekmede açılır);
+**🎮 Etkinlik Yönetimi** sekmesinden açık / kapalı / tarihli yapılır, puan/rozet
+akışı aynen çalışır. Liste altındaki **🗑 Sil**, açık/kapalı ayarı ve tamamlanma
+kayıtlarıyla birlikte siler.
+
+> Demo modunda etkinlikler bu cihazda saklanır; Supabase kuruluysa yeni
+> `ozel_etkinlik` tablosuna yazılır (`supabase-schema.sql` güncellendi — şemayı
+> daha önce kurduysan dosyadaki `ozel_etkinlik` bölümünü de çalıştır).
+
 ## ✨ Portal Özellikleri
 
 - 🏫 Üst menüde **SINIF** çipleri (1 – 7), **IPT KATEGORİSİ** açılır menüsü (2 IPT – 7 IPT) ve **ÖĞRETMEN** kategorisi ayrı ayrı durur

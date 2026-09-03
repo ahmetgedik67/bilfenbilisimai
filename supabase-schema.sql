@@ -30,6 +30,21 @@ create table if not exists profil (
   olusturma_tarihi timestamptz not null default now()
 );
 
+-- ---------- Öğretmenin oluşturduğu özel etkinlikler (kampüs bazlı) ----------
+-- tip: 'dosya' (HTML dosyası yüklendi) | 'kod' (kopyala-yapıştır) | 'drive' (bağlantı)
+-- seviyeler: JSON dizi, ör. ["2","5"] → 2 IPT ve 5 IPT; ["1"] → 1. Sınıf
+create table if not exists ozel_etkinlik (
+  id uuid primary key default gen_random_uuid(),
+  campus_id uuid references campus(id) on delete cascade,
+  ad text not null,
+  konu text not null default '',
+  seviyeler text not null default '[]',
+  tip text not null check (tip in ('dosya','drive','kod')),
+  icerik text not null default '',
+  olusturma_tarihi timestamptz not null default now()
+);
+create index if not exists ozel_etkinlik_campus_idx on ozel_etkinlik (campus_id);
+
 -- ---------- Etkinlik atamaları (kampüs bazlı, öğretmen kontrolünde) ----------
 create table if not exists etkinlik_atama (
   campus_id uuid references campus(id) on delete cascade,
@@ -77,12 +92,14 @@ alter table profil enable row level security;
 alter table etkinlik_atama enable row level security;
 alter table tamamlanan enable row level security;
 alter table ayar enable row level security;
+alter table ozel_etkinlik enable row level security;
 
 create policy "campus_public_all" on campus for all to anon using (true) with check (true);
 create policy "profil_public_all" on profil for all to anon using (true) with check (true);
 create policy "etkinlik_atama_public_all" on etkinlik_atama for all to anon using (true) with check (true);
 create policy "tamamlanan_public_all" on tamamlanan for all to anon using (true) with check (true);
 create policy "ayar_public_all" on ayar for all to anon using (true) with check (true);
+create policy "ozel_etkinlik_public_all" on ozel_etkinlik for all to anon using (true) with check (true);
 
 -- Not: Şemayı daha önce çalıştırdıysan yukarıdaki 'ayar' tablosu ve politikası için
 -- aşağıdaki üç komutu da ayrıca çalıştırman yeterlidir (idempotent):
