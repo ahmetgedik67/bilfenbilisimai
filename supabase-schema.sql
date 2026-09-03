@@ -14,6 +14,9 @@ create table if not exists campus (
 
 -- ---------- Profiller (öğretmen + öğrenciler) ----------
 -- Giriş: basit kullanıcı adı + şifre (şifreler PBKDF2-SHA256 ile tuzlanır)
+-- Not: Genel sistem yöneticisi (admin) veritabanında saklanmaz; uygulama
+-- katmanında doğrulanır (panel.html içindeki ADMIN_HASH) ve tüm kayıtlara
+-- uygulama üzerinden erişir. Rol değerleri bu tabloda yalnız ogretmen/ogrenci olabilir.
 create table if not exists profil (
   id uuid primary key default gen_random_uuid(),
   campus_id uuid references campus(id) on delete cascade,
