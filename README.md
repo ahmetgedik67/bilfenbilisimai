@@ -1,9 +1,9 @@
-# 🎮 Bilfen Bilişim AI – HTML Oyunları
+# 🧩 Bilfen Bilişim AI – HTML Etkinlikleri
 
-Bilişim Teknolojileri ve Yazılım dersi için hazırlanan HTML oyunlarının
+Bilişim Teknolojileri ve Yazılım dersi için hazırlanan HTML etkinliklerinin
 **sınıflara (1-7)**, **IPT kategorilerine** (2 IPT – 7 IPT) ve tahtada yalnız öğretmenin
 uyguladığı etkinlikler için **Öğretmen kategorisine** göre toplandığı portal ana sayfası.
-Robi maskotuyla birlikte tüm oyunlar tek çatı altında: karta tıkla, hemen oyna.
+Robi maskotuyla birlikte tüm etkinlikler tek çatı altında: karta tıkla, hemen oyna.
 
 🔗 **Canlı:** https://ahmetgedik67.github.io/bilfenbilisimai/
 
@@ -17,50 +17,50 @@ Robi maskotuyla birlikte tüm oyunlar tek çatı altında: karta tıkla, hemen o
 bilfenbilisimai/
 ├── index.html              ← Portal ana sayfası (bu dosya)
 ├── robi.png                ← Robi maskotu
-├── games/                  ← Oyunlar (her oyun bir klasör)
+├── games/                  ← Etkinlikler (her etkinlik bir klasör)
 │   └── carkifelek/
-│       └── index.html      ← Örnek oyun: Sınıf Çarkıfeleği
-├── thumbnails/             ← Oyun kartlarının önizleme görselleri
+│       └── index.html      ← Örnek etkinlik: Sınıf Çarkıfeleği
+├── thumbnails/             ← Etkinlik kartlarının önizleme görselleri
 │   └── carkifelek.jpg
 └── README.md
 ```
 
-## ➕ Yeni Oyun Nasıl Eklenir?
+## ➕ Yeni Etkinlik Nasıl Eklenir?
 
-1. **Oyun dosyasını ekle:** `games/<oyun-adı>/index.html` klasörüne koy.
-   (Tek dosyalık oyun tercih edilir — her şey tek HTML içinde olsun.)
+1. **Etkinlik dosyasını ekle:** `games/<etkinlik-adı>/index.html` klasörüne koy.
+   (Tek dosyalık etkinlik tercih edilir — her şey tek HTML içinde olsun.)
 
-2. **Önizleme görselini ekle:** `thumbnails/<oyun-adı>.jpg` olarak koy.
-   İstersen oyunu tarayıcıda açıp ekran görüntüsü alabilirsin (16:10 önerilir).
+2. **Önizleme görselini ekle:** `thumbnails/<etkinlik-adı>.jpg` olarak koy.
+   İstersen etkinliği tarayıcıda açıp ekran görüntüsü alabilirsin (16:10 önerilir).
 
 3. **`index.html` içindeki `OYUNLAR` listesine bir satır ekle:**
 
 ```js
 {
-  id: 'oyun-adi',
-  ad: 'Oyunun Görünen Adı',
+  id: 'etkinlik-adi',
+  ad: 'Etkinliğin Görünen Adı',
   kategoriler: [5],                   // [5] → yalnız 5 IPT kategorisi
                                       // [2,3,4,5,6,7] → bütün IPT kategorileri
-  siniflar: [1, 2, 3, 4, 5, 6, 7],    // (isteğe bağlı) oyunun kullanıldığı sınıflar
+  siniflar: [1, 2, 3, 4, 5, 6, 7],    // (isteğe bağlı) etkinliğin kullanıldığı sınıflar
   ogretmen: true,                     // (öğretmen araçları) ÖĞRETMEN kategorisinde göster
-  url: 'games/oyun-adi/index.html',
-  onizleme: 'thumbnails/oyun-adi.jpg',
-  aciklama: 'Oyunu tek cümleyle anlatan açıklama…',
+  url: 'games/etkinlik-adi/index.html',
+  onizleme: 'thumbnails/etkinlik-adi.jpg',
+  aciklama: 'Etkinliği tek cümleyle anlatan açıklama…',
   etiketler: ['Konu', 'Tür']
 }
 ```
 
-4. Dosyayı kaydet — oyun portalda seçtiğin sınıfın / IPT kategorisinin bölümünde görünür. ✅
+4. Dosyayı kaydet — etkinlik portalda seçtiğin sınıfın / IPT kategorisinin bölümünde görünür. ✅
 
-> İpucu: Oyunlar saf HTML + CSS + JavaScript ile yapılır; internet
+> İpucu: Etkinlikler saf HTML + CSS + JavaScript ile yapılır; internet
 > gerekmez ve her tarayıcıda (bilgisayar, tablet, projeksiyon) çalışır.
 
 ## ✨ Portal Özellikleri
 
 - 🏫 Üst menüde **SINIF** çipleri (1 – 7), **IPT KATEGORİSİ** açılır menüsü (2 IPT – 7 IPT) ve **ÖĞRETMEN** kategorisi ayrı ayrı durur
 - 👩‍🏫 Öğretmen kategorisinde tahtada yalnız öğretmenin uyguladığı etkinlikler toplanır (ör. Sınıf Çarkıfeleği)
-- 🗂️ IPT kategorilerine göre bölümler (2 IPT – 7 IPT); 1. sınıf seçilince o sınıfa uygun oyunlar görünür
-- 🖼️ Her oyun için gerçek önizleme görüntüsü ve açıklama kartı
+- 🗂️ IPT kategorilerine göre bölümler (2 IPT – 7 IPT); 1. sınıf seçilince o sınıfa uygun etkinlikler görünür
+- 🖼️ Her etkinlik için gerçek önizleme görüntüsü ve açıklama kartı
 - ▶️ Karta tıklayınca tam ekran oynatma penceresi (+ yeni sekmede aç)
 - 🤖 Robi hem logoda hem de portalda ziyaretçileri karşılar
 - 🎯 Sınıf Çarkıfeleği gibi tahta etkinlikleri, sınıf/IPC bölümlerini şişirmeden yalnız Öğretmen kategorisinde durur

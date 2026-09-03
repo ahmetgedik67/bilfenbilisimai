@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bilfen Bilişim AI</title>
 <!--
-  Bilfen Bilişim AI – HTML Oyunları
-  Bilişim Teknolojileri ve Yazılım dersi için hazırlanan oyunların
+  Bilfen Bilişim AI – HTML Etkinlikleri
+  Bilişim Teknolojileri ve Yazılım dersi için hazırlanan etkinliklerin
   sınıflara (1-7) ve IPT kategorilerine (2 IPT – 7 IPT) göre toplandığı portal ana sayfası.
-  Yeni oyun eklemek: games/<oyun>/index.html dosyasını ekle,
+  Yeni etkinlik eklemek: games/<etkinlik>/index.html dosyasını ekle,
   bir önizleme görüntüsünü thumbnails/ klasörüne koy ve aşağıdaki
   OYUNLAR listesine tek bir satır ekle.
 -->
@@ -267,7 +267,7 @@
     </div>
     <div class="hero-text">
       <div class="brand"><img class="brand-robi" id="robiLogo" alt="Robi"> Bilfen Bilişim AI</div>
-      <p>Robi ile Kodla &amp; Keşfet! Bilişim Teknolojileri ve Yazılım dersi için hazırladığımız oyunlar — 2 IPT’den 7 IPT’ye, tek çatı altında.</p>
+      <p>Robi ile Kodla &amp; Keşfet! Bilişim Teknolojileri ve Yazılım dersi için hazırladığımız etkinlikler — 2 IPT’den 7 IPT’ye, tek çatı altında.</p>
     </div>
   </div>
 </header>
@@ -303,7 +303,7 @@
 <footer>
   <div class="kurs">Bilişim Teknolojileri ve Yazılım Dersi</div>
   <div class="zumre">🎓 Bilfen Bilişim Zümresi</div>
-  <div class="mini">Oyunlar saf HTML + CSS + JavaScript ile hazırlanır — internet gerekmez, tarayıcıda çalışır.</div>
+  <div class="mini">Etkinlikler saf HTML + CSS + JavaScript ile hazırlanır — internet gerekmez, tarayıcıda çalışır.</div>
 </footer>
 
 <!-- Oynatma penceresi -->
@@ -316,7 +316,7 @@
         <button class="kapat" id="pencereKapat" title="Kapat (Esc)">✕</button>
       </div>
     </div>
-    <iframe id="oyunCerceve" title="Oyun" allow="autoplay; fullscreen"></iframe>
+    <iframe id="oyunCerceve" title="Etkinlik" allow="autoplay; fullscreen"></iframe>
   </div>
 </div>
 
@@ -325,8 +325,8 @@
   'use strict';
   const $ = id => document.getElementById(id);
 
-  /* ============ OYUN VERİLERİ ============
-     Yeni oyun eklemek için:
+  /* ============ ETKİNLİK VERİLERİ ============
+     Yeni etkinlik eklemek için:
      1. games/<isim>/index.html dosyanı ekle
      2. thumbnails/<isim>.jpg önizleme görüntüsünü ekle
      3. Aşağıya tek bir satır ekle:
@@ -375,7 +375,7 @@
     seviyeDugme.setAttribute('aria-expanded', acik ? 'true' : 'false');
   }
   /* Sınıf çipleri ve IPT açılır menüsü aynı seviyeyi seçer: sınıf N = N IPT
-     (1. sınıfın IPT kategorisi yoktur; orada yalnız sınıf bazlı oyunlar görünür).
+     (1. sınıfın IPT kategorisi yoktur; orada yalnız sınıf bazlı etkinlikler görünür).
      Başlık, seçimin kaynağına göre yazılır: çipten “N. Sınıf”, IPT menüsünden “N IPT”. */
   function secimYap(deger, kaynak) {
     aktifFiltre = deger;
@@ -445,7 +445,7 @@
     ust.className = 'kart-ust';
     const no = document.createElement('span');
     no.className = 'no';
-    no.textContent = 'OYUN ' + (sira + 1);
+    no.textContent = 'ETKİNLİK ' + (sira + 1);
     const rozet = document.createElement('span');
     rozet.className = 'rozet';
     const tumSeviyeler = (oyun.kategoriler || []).length >= KATEGORILER.length;
@@ -488,7 +488,7 @@
     bos.className = 'bos-kart';
     bos.innerHTML =
       '<div class="buyuk">🧩</div>' +
-      '<p><b>' + kategoriAdi + '</b> seviyesi için oyunlar hazırlanıyor…<br>Yeni oyun eklemek için README.md dosyasına göz atın.</p>';
+      '<p><b>' + kategoriAdi + '</b> seviyesi için etkinlikler hazırlanıyor…<br>Yeni etkinlik eklemek için README.md dosyasına göz atın.</p>';
     return bos;
   }
 
@@ -541,7 +541,7 @@
         ? 'linear-gradient(135deg, #22d3ee, #4f46e5)'
         : 'linear-gradient(135deg, ' + KATEGORI_RENK[renkIdx] + ', #ef4444)';
       const h2 = document.createElement('h2');
-      h2.textContent = ogretmenBolumu ? 'Öğretmen Araçları' : 'Bilişim Oyunları';
+      h2.textContent = ogretmenBolumu ? 'Öğretmen Araçları' : 'Bilişim Etkinlikleri';
       const cizgi = document.createElement('span');
       cizgi.className = 'cizgi';
       baslik.append(seviye, h2, cizgi);
@@ -563,7 +563,7 @@
       const bos = document.createElement('div');
       bos.className = 'bos-kart';
       bos.style.minHeight = '220px';
-      bos.innerHTML = '<div class="buyuk">🎮</div><p>Bu seviye için henüz oyun yok.</p>';
+      bos.innerHTML = '<div class="buyuk">🧩</div><p>Bu seviye için henüz etkinlik yok.</p>';
       icerik.appendChild(bos);
     }
   }
