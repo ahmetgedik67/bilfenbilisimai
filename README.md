@@ -1,7 +1,7 @@
 # 🎮 Bilfen Bilişim AI – HTML Oyunları
 
 Bilişim Teknolojileri ve Yazılım dersi için hazırlanan HTML oyunlarının
-**IPT seviyelerine göre** (2 IPT – 7 IPT) toplandığı portal ana sayfası.
+**sınıflara (1-7)** ve **IPT kategorilerine** (2 IPT – 7 IPT) göre toplandığı portal ana sayfası.
 Robi maskotuyla birlikte tüm oyunlar tek çatı altında: karta tıkla, hemen oyna.
 
 🔗 **Canlı:** https://ahmetgedik67.github.io/bilfenbilisimai/
@@ -38,8 +38,9 @@ bilfenbilisimai/
 {
   id: 'oyun-adi',
   ad: 'Oyunun Görünen Adı',
-  kategoriler: [5],                   // [5] → yalnız 5 IPT
-                                      // [2,3,4,5,6,7] → bütün seviyeler
+  kategoriler: [5],                   // [5] → yalnız 5 IPT kategorisi
+                                      // [2,3,4,5,6,7] → bütün IPT kategorileri
+  siniflar: [1, 2, 3, 4, 5, 6, 7],    // (isteğe bağlı) oyunun kullanıldığı sınıflar
   url: 'games/oyun-adi/index.html',
   onizleme: 'thumbnails/oyun-adi.jpg',
   aciklama: 'Oyunu tek cümleyle anlatan açıklama…',
@@ -47,16 +48,17 @@ bilfenbilisimai/
 }
 ```
 
-4. Dosyayı kaydet — oyun portalda seçtiğin IPT seviyesinin bölümünde görünür. ✅
+4. Dosyayı kaydet — oyun portalda seçtiğin sınıfın / IPT kategorisinin bölümünde görünür. ✅
 
 > İpucu: Oyunlar saf HTML + CSS + JavaScript ile yapılır; internet
 > gerekmez ve her tarayıcıda (bilgisayar, tablet, projeksiyon) çalışır.
 
 ## ✨ Portal Özellikleri
 
-- 🗂️ IPT seviyelerine göre bölümler (2 IPT – 7 IPT) ve üstte hızlı filtre çipleri
+- 🏫 Üst menüde **SINIF** çipleri (1 – 7) ile **IPT KATEGORİSİ** açılır menüsü (2 IPT – 7 IPT) ayrı ayrı durur
+- 🗂️ IPT kategorilerine göre bölümler (2 IPT – 7 IPT); 1. sınıf seçilince sınıf bazlı oyunlar (ör. tanışma çarkı) görünür
 - 🖼️ Her oyun için gerçek önizleme görüntüsü ve açıklama kartı
 - ▶️ Karta tıklayınca tam ekran oynatma penceresi (+ yeni sekmede aç)
 - 🤖 Robi hem logoda hem de portalda ziyaretçileri karşılar
-- 🎯 Tanışma Çarkı gibi her seviyede kullanılacak oyunlar tüm bölümlerde görünebilir
+- 🎯 Tanışma Çarkı gibi her sınıfta (1-7) ve her IPT kategorisinde kullanılacak oyunlar tüm bölümlerde görünebilir
 - 📱 Telefon, tablet ve projeksiyonda çalışan duyarlı tasarım
