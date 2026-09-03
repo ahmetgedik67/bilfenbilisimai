@@ -107,8 +107,14 @@ hesabı** içerir:
 - `admin` kullanıcı adı kayıt formlarında engellenir (yöneticiye ayrılmıştır).
 - Şifre, diğer hesaplar gibi düz metin değil PBKDF2 ile hash'lenmiş olarak doğrulanır.
 
-> Şifreyi değiştirmek istersen `panel.html` içindeki `ADMIN_SALT` ve `ADMIN_HASH`
-> sabitlerini yeni PBKDF2 değerleriyle güncelle.
+> **Şifreyi değiştirmek için kodla uğraşmaya gerek yok:** yönetici panelindeki
+> **🔑 Yönetici Şifresini Değiştir** kartından mevcut + yeni şifreyi girip güncelle.
+> Şifre PBKDF2 ile hash'lenir; demo modunda bu cihazda, Supabase kuruluysa
+> `ayar` tablosunda (bulutta) saklanır — böylece tüm cihazlarda geçerli olur.
+> (Supabase şemasını daha önce kurduysan yalnızca `ayar` tablosu + politikasını
+> eklemek için `supabase-schema.sql` sonundaki üç komutu çalıştır.)
+>
+> Varsayılan şifre **`Ag2135`**'tir ve hiç değiştirilmediyse geçerlidir.
 
 ### 📄 CSV ile toplu öğrenci ekleme
 

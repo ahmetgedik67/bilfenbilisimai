@@ -265,6 +265,19 @@
       </div>
 
       <div class="kart">
+        <h2>🔑 Yönetici Şifresini Değiştir</h2>
+        <div class="satir">
+          <div><label>Mevcut şifre</label><input id="ysMevcut" type="password" autocomplete="current-password"></div>
+          <div><label>Yeni şifre</label><input id="ysYeni" type="password" autocomplete="new-password"></div>
+          <div><label>Yeni şifre (tekrar)</label><input id="ysYeni2" type="password" autocomplete="new-password"></div>
+        </div>
+        <div style="margin-top:12px"><button class="btn" id="ysBtn">Şifreyi Güncelle</button></div>
+        <div class="hata" id="ysHata"></div>
+        <div class="bilgi" id="ysBilgi"></div>
+        <div class="kucuk-not" style="margin-top:6px">Yeni şifre en az 4 karakter olmalı. Şifre düz metin değil, güvenli biçimde (PBKDF2) saklanır; bu cihazda ve Supabase kuruluysa bulutta da güncellenir.</div>
+      </div>
+
+      <div class="kart">
         <h2>🏫 Kampüsler</h2>
         <div class="satir">
           <div><label>Yeni kampüs adı</label><input id="adKampusAd" placeholder="örn. Kurtköy Bilfen"></div>
@@ -390,17 +403,55 @@
   /* ---------- Sistem yöneticisi ---------- */
   var ADMIN_KULLANICI = 'admin';
   var ADMIN_SALT = '62696c66656e2d61646d696e'; // "bilfen-admin"
-  var ADMIN_HASH = '3ea100d6231351ab24609ee5264f452542d93d179de92777ca6690aab60a8b18'; // PBKDF2-SHA256("Ag2135")
+  var ADMIN_HASH = '3ea100d6231351ab24609ee5264f452542d93d179de92777ca6690aab60a8b18'; // varsayılan: PBKDF2-SHA256("Ag2135")
+  var ADMIN_YEREL_ANAHTAR = 'bt_admin_sifre'; // bu cihazda değiştirilen şifre (demo + supabase)
+
+  // Etkin yönetici şifresi: 1) Supabase kuruluysa buluttaki 'ayar' tablosu → 2) bu cihazdaki
+  // kayıt → 3) kod içindeki varsayılan (Ag2135). Böylece şifre panelden değiştirilebilir.
+  function adminKayitOku() {
+    var yerel = null;
+    try { yerel = JSON.parse(localStorage.getItem(ADMIN_YEREL_ANAHTAR) || 'null'); } catch (e) { yerel = null; }
+    var varsayilan = { tuz: ADMIN_SALT, hash: ADMIN_HASH };
+    function yerelMi() { return yerel && yerel.tuz && yerel.hash ? yerel : null; }
+    if (DEMO) return Promise.resolve(yerelMi() || varsayilan);
+    return sb('ayar?anahtar=eq.admin_sifre&select=deger').then(function (rs) {
+      if (rs && rs.length && rs[0].deger) {
+        try {
+          var v = JSON.parse(rs[0].deger);
+          if (v && v.tuz && v.hash) return { tuz: v.tuz, hash: v.hash };
+        } catch (e) {}
+      }
+      return yerelMi() || varsayilan;
+    }).catch(function () { return yerelMi() || varsayilan; });
+  }
+
+  // Yönetici şifresini kaydet: bu cihaza yazılır; Supabase kuruluysa buluta da işlenir.
+  function adminSifreKaydet(yeniSifre) {
+    var tuz = tuzUret();
+    return sifreHash(yeniSifre, tuz).then(function (hash) {
+      var kayit = { tuz: tuz, hash: hash };
+      localStorage.setItem(ADMIN_YEREL_ANAHTAR, JSON.stringify(kayit));
+      if (!DEMO) {
+        return sb('ayar', {
+          method: 'POST',
+          prefer: 'resolution=merge-duplicates,return=representation',
+          body: { anahtar: 'admin_sifre', deger: JSON.stringify(kayit) }
+        }).catch(function () { /* buluta yazılamazsa bu cihazdaki kayıt geçerli kalır */ });
+      }
+    });
+  }
 
   // Kullanıcı adı 'admin' ise şifreyi doğrula ve yönetici oturumu döndür; değilse null.
   function adminKontrol(kullaniciAdi, sifre) {
     if (String(kullaniciAdi || '').toLowerCase() !== ADMIN_KULLANICI) return Promise.resolve(null);
-    return sifreHash(sifre, ADMIN_SALT).then(function (hash) {
-      if (hash !== ADMIN_HASH) throw new Error('Şifre hatalı.');
-      return {
-        id: 'admin', campusId: null, kampusAdi: 'Sistem', kullaniciAdi: 'admin',
-        ad: 'Sistem Yöneticisi', rol: 'admin', avatar: '🛡️', puan: 0
-      };
+    return adminKayitOku().then(function (kayit) {
+      return sifreHash(sifre, kayit.tuz).then(function (hash) {
+        if (hash !== kayit.hash) throw new Error('Şifre hatalı.');
+        return {
+          id: 'admin', campusId: null, kampusAdi: 'Sistem', kullaniciAdi: 'admin',
+          ad: 'Sistem Yöneticisi', rol: 'admin', avatar: '🛡️', puan: 0
+        };
+      });
     });
   }
   // 'admin' kullanıcı adı yöneticiye ayrılmıştır; kayıtlarda kullanılamaz.
@@ -1421,6 +1472,31 @@
   $('raporKampus').onchange = function () { raporuCiz(); };
   $('raporDonem').onchange = function () { raporuCiz(); };
   $('raporYenileBtn').onclick = function () { raporuCiz(); };
+
+  /* ---------- Yönetici şifre değiştirme ---------- */
+  $('ysBtn').onclick = function () {
+    var m = $('ysMevcut').value;
+    var y1 = $('ysYeni').value;
+    var y2 = $('ysYeni2').value;
+    if (!m || !y1 || !y2) { hataGoster($('ysHata'), 'Bütün alanları doldur.'); return; }
+    if (y1.length < 4) { hataGoster($('ysHata'), 'Yeni şifre en az 4 karakter olmalı.'); return; }
+    if (y1 !== y2) { hataGoster($('ysHata'), 'Yeni şifreler eşleşmiyor.'); return; }
+    hataGoster($('ysHata'), '');
+    $('ysBtn').disabled = true;
+    adminKayitOku().then(function (kayit) {
+      return sifreHash(m, kayit.tuz).then(function (h) {
+        if (h !== kayit.hash) throw new Error('Mevcut şifre hatalı.');
+      });
+    }).then(function () {
+      return adminSifreKaydet(y1);
+    }).then(function () {
+      bilgiGoster($('ysBilgi'), '✅ Yönetici şifresi güncellendi. Bir sonraki girişte yeni şifreni kullan.');
+      $('ysMevcut').value = ''; $('ysYeni').value = ''; $('ysYeni2').value = '';
+      setTimeout(function () { bilgiGoster($('ysBilgi'), ''); }, 4000);
+    }).catch(function (e) {
+      hataGoster($('ysHata'), e.message);
+    }).finally(function () { $('ysBtn').disabled = false; });
+  };
 
   /* ---------- Panel ana ---------- */
   function paneliGoster() {

@@ -52,6 +52,15 @@ create table if not exists tamamlanan (
   unique (ogrenci_id, oyun_id)
 );
 
+-- ---------- Ayarlar (genel sistem yöneticisi şifresi burada saklanır) ----------
+-- Anahtar: 'admin_sifre' → değer: { "tuz": "...", "hash": "..." } (PBKDF2)
+-- Panel içindeki "Yönetici Şifresini Değiştir" kartı burayı günceller.
+create table if not exists ayar (
+  anahtar text primary key,
+  deger text not null,
+  guncelleme_tarihi timestamptz not null default now()
+);
+
 create index if not exists profil_campus_idx on profil (campus_id);
 create index if not exists tamamlanan_ogrenci_idx on tamamlanan (ogrenci_id);
 create index if not exists tamamlanan_campus_idx on tamamlanan (campus_id);
@@ -67,8 +76,16 @@ alter table campus enable row level security;
 alter table profil enable row level security;
 alter table etkinlik_atama enable row level security;
 alter table tamamlanan enable row level security;
+alter table ayar enable row level security;
 
 create policy "campus_public_all" on campus for all to anon using (true) with check (true);
 create policy "profil_public_all" on profil for all to anon using (true) with check (true);
 create policy "etkinlik_atama_public_all" on etkinlik_atama for all to anon using (true) with check (true);
 create policy "tamamlanan_public_all" on tamamlanan for all to anon using (true) with check (true);
+create policy "ayar_public_all" on ayar for all to anon using (true) with check (true);
+
+-- Not: Şemayı daha önce çalıştırdıysan yukarıdaki 'ayar' tablosu ve politikası için
+-- aşağıdaki üç komutu da ayrıca çalıştırman yeterlidir (idempotent):
+--   create table if not exists ayar (anahtar text primary key, deger text not null, guncelleme_tarihi timestamptz not null default now());
+--   alter table ayar enable row level security;
+--   create policy "ayar_public_all" on ayar for all to anon using (true) with check (true);
