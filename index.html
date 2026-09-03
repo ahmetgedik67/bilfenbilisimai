@@ -74,21 +74,42 @@
   }
   .hero p { color: #e0e7ff; margin-top: 10px; font-size: clamp(14px, 2vw, 17px); max-width: 640px; margin-inline: auto; line-height: 1.55; }
 
-  /* ---------- Filtre çipleri ---------- */
-  .chips {
+  /* ---------- Seviye filtresi (açılır menü) ---------- */
+  .filtre-bar {
     position: sticky; top: 0; z-index: 40;
-    display: flex; justify-content: center; flex-wrap: wrap; gap: 8px;
-    padding: 12px 16px;
+    display: flex; justify-content: center; padding: 12px 16px;
     background: rgba(49,46,129,.55); backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255,255,255,.14);
   }
-  .chip {
-    border: 1.5px solid rgba(255,255,255,.35); background: rgba(255,255,255,.1);
-    color: #fff; font-weight: 700; font-size: 13.5px; cursor: pointer;
-    padding: 7px 18px; border-radius: 999px; transition: all .15s;
+  .dd { position: relative; }
+  .dd-dugme {
+    display: inline-flex; align-items: center; gap: 10px;
+    border: 1.5px solid rgba(255,255,255,.35); background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: #fff; font-weight: 800; font-size: 14px; cursor: pointer;
+    padding: 10px 20px; border-radius: 999px;
+    box-shadow: 0 6px 16px rgba(239,68,68,.4); font-family: inherit;
+    transition: transform .15s;
   }
-  .chip:hover { background: rgba(255,255,255,.22); transform: translateY(-1px); }
-  .chip.active { background: linear-gradient(135deg, #f59e0b, #ef4444); border-color: transparent; box-shadow: 0 6px 16px rgba(239,68,68,.4); }
+  .dd-dugme:hover { transform: translateY(-1px); }
+  .dd-ok { opacity: .85; font-size: 12px; margin-left: 2px; }
+  .dd-liste {
+    display: none; position: absolute; left: 50%; top: calc(100% + 10px);
+    width: min(240px, calc(100vw - 44px)); transform: translateX(-50%);
+    background: #fff; border-radius: 16px; overflow: hidden;
+    box-shadow: 0 24px 55px rgba(0,0,0,.42);
+  }
+  .dd-liste.acik { display: block; animation: menugel .16s ease both; }
+  @keyframes menugel { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  .dd-secenek {
+    display: flex; align-items: center; justify-content: space-between; width: 100%;
+    border: none; background: #fff; color: var(--ink); cursor: pointer;
+    font-size: 14px; font-weight: 700; padding: 12px 18px; font-family: inherit;
+    border-bottom: 1px solid var(--line); text-align: left;
+  }
+  .dd-secenek:last-child { border-bottom: none; }
+  .dd-secenek:hover { background: #eef2ff; }
+  .dd-secenek.secili { color: #4338ca; background: #eef2ff; }
+  .dd-secenek .tik { color: #16a34a; font-weight: 900; }
 
   /* ---------- İçerik ---------- */
   main { flex: 1; width: 100%; max-width: 1180px; margin: 0 auto; padding: 30px 18px 40px; }
@@ -196,8 +217,6 @@
   footer .mini { font-size: 12px; color: #a5b4fc; margin-top: 6px; }
 
   @media (max-width: 600px) {
-    .chips { gap: 6px; }
-    .chip { padding: 6px 13px; font-size: 12.5px; }
     .hero { flex-direction: column; text-align: center; }
     .pencere-baslik .ad { font-size: 14px; }
   }
@@ -219,7 +238,14 @@
   </div>
 </header>
 
-<nav class="chips" id="chips" aria-label="Seviye filtresi"></nav>
+<nav class="filtre-bar" aria-label="Seviye filtresi">
+  <div class="dd">
+    <button type="button" class="dd-dugme" id="seviyeDugme" aria-haspopup="listbox" aria-expanded="false">
+      <span id="seviyeEtiket">🗂️ Tümü</span><span class="dd-ok">▾</span>
+    </button>
+    <div class="dd-liste" id="seviyeListe" role="listbox" aria-label="IPT seviyeleri"></div>
+  </div>
+</nav>
 
 <main id="icerik"></main>
 
@@ -280,21 +306,48 @@
     }
   ];
 
-  /* ---------- Filtre çipleri ---------- */
+  /* ---------- Seviye filtresi (açılır menü) ---------- */
   let aktifFiltre = 'tumu';
-  const chipsEl = $('chips');
-  function cipYap(deger, etiket, aktif) {
-    const b = document.createElement('button');
-    b.className = 'chip' + (aktif ? ' active' : '');
-    b.textContent = etiket;
-    b.onclick = () => { aktifFiltre = deger; render(); };
-    return b;
+  const seviyeDugme = $('seviyeDugme');
+  const seviyeEtiket = $('seviyeEtiket');
+  const seviyeListe = $('seviyeListe');
+
+  function etiketBul(deger) {
+    if (deger === 'tumu') return '🗂️ Tümü';
+    const k = KATEGORILER.find(x => String(x.no) === deger);
+    return k ? k.ad : '🗂️ Tümü';
   }
-  function cipsCiz() {
-    chipsEl.innerHTML = '';
-    chipsEl.appendChild(cipYap('tumu', '🗂️ Tümü', aktifFiltre === 'tumu'));
-    KATEGORILER.forEach(k => chipsEl.appendChild(cipYap(String(k.no), k.ad, aktifFiltre === String(k.no))));
+  function menuKapat() {
+    seviyeListe.classList.remove('acik');
+    seviyeDugme.setAttribute('aria-expanded', 'false');
   }
+  function menuAcKapat() {
+    const acik = seviyeListe.classList.toggle('acik');
+    seviyeDugme.setAttribute('aria-expanded', acik ? 'true' : 'false');
+  }
+  function secimYap(deger) {
+    aktifFiltre = deger;
+    seviyeEtiket.textContent = etiketBul(deger);
+    menuKapat();
+    render();
+  }
+  function seviyeListeCiz() {
+    const secenekler = [{ d: 'tumu', e: '🗂️ Tümü' }].concat(KATEGORILER.map(k => ({ d: String(k.no), e: k.ad })));
+    seviyeListe.innerHTML = '';
+    secenekler.forEach(s => {
+      const o = document.createElement('button');
+      o.type = 'button';
+      o.className = 'dd-secenek' + (aktifFiltre === s.d ? ' secili' : '');
+      o.setAttribute('role', 'option');
+      o.setAttribute('aria-selected', String(aktifFiltre === s.d));
+      o.innerHTML = s.e + (aktifFiltre === s.d ? ' <span class="tik">✓</span>' : '');
+      o.onclick = () => secimYap(s.d);
+      seviyeListe.appendChild(o);
+    });
+  }
+  seviyeDugme.addEventListener('click', menuAcKapat);
+  document.addEventListener('click', e => { if (!e.target.closest('.dd')) menuKapat(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') menuKapat(); });
 
   /* ---------- Kart ---------- */
   function kartYap(oyun, sira) {
@@ -369,7 +422,7 @@
 
   /* ---------- Bölümler ---------- */
   function render() {
-    cipsCiz();
+    seviyeListeCiz();
     const icerik = $('icerik');
     icerik.innerHTML = '';
 
