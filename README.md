@@ -96,8 +96,10 @@ hesabı** içerir:
 
 - **Kullanıcı adı:** `admin` · **Şifre:** kurulumda belirlenen yönetici şifresi
 - Yönetici girişinden sonra: tüm kampüsleri **görüntüle / ekle / yeniden adlandır / sil**,
-  kampüs içindeki öğrencileri **görüntüle / ekle / düzenle / sil / şifresini sıfırla**,
+  kampüslerin öğretmenlerini ve öğrencilerini **görüntüle / ekle / düzenle / sil / şifresini sıfırla**,
   öğrenci başına **puan ve tamamlanan etkinlik** sayılarını takip edebilir.
+- Kampüs tablosunda her kampüsün öğretmen/öğrenci sayısı; ayrı **Tüm Öğretmenler** ve
+  **Tüm Öğrenciler** listelerinde kampüs filtresi ile daraltma vardır.
 - Kampüs silinince içindeki öğrenciler, etkinlik atamaları ve puan kayıtları da silinir.
 - `admin` kullanıcı adı kayıt formlarında engellenir (yöneticiye ayrılmıştır).
 - Şifre, diğer hesaplar gibi düz metin değil PBKDF2 ile hash'lenmiş olarak doğrulanır.
@@ -135,6 +137,6 @@ atlanır ve kaç satırın eklenemediği bildirilir.
 - 🤖 Robi hem logoda hem de portalda ziyaretçileri karşılar
 - 🎯 Sınıf Çarkıfeleği gibi tahta etkinlikleri, sınıf/IPC bölümlerini şişirmeden yalnız Öğretmen kategorisinde durur
 - 👤 Sağ üstte **Panel** düğmesi: öğretmen kaydı + kampüs (örn. Kurtköy Bilfen), öğrenci ekleme (tek tek veya **CSV toplu**), şifre sıfırlama, etkinlik aç/kapa/tarih
-- 🛡️ **admin** hesabıyla tüm kampüs ve öğrencilerin ekleme/silme/düzenleme ve takibi
+- 🛡️ **admin** hesabıyla tüm kampüs, öğretmen ve öğrencilerin ekleme/silme/düzenleme, şifre sıfırlama ve takibi
 - ⭐ Öğrenci panelinde puan toplama, rozet kazanma ve avatar seçme
 - 📱 Telefon, tablet ve projeksiyonda çalışan duyarlı tasarım

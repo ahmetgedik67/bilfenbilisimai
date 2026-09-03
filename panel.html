@@ -257,6 +257,7 @@
         <p class="kucuk-not">Tüm kampüsleri ve öğrencileri buradan ekleyebilir, düzenleyebilir ve silebilirsin.</p>
         <div class="sayilar" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
           <div class="sayac"><b id="adKampusSayi">0</b><span>🏫 Kampüs</span></div>
+          <div class="sayac"><b id="adOgretmenSayi">0</b><span>👩‍🏫 Öğretmen</span></div>
           <div class="sayac"><b id="adOgrenciSayi">0</b><span>👨‍🎓 Öğrenci</span></div>
           <div class="sayac"><b id="adPuanToplam">0</b><span>⭐ Toplam Puan</span></div>
         </div>
@@ -271,6 +272,29 @@
         <div class="hata" id="adKampusHata"></div>
         <div class="bilgi" id="adKampusBilgi"></div>
         <div id="adKampusListe" style="margin-top:8px"></div>
+      </div>
+
+      <div class="kart">
+        <h2>👩‍🏫 Tüm Öğretmenler</h2>
+        <div class="satir">
+          <div>
+            <label>Kampüs filtresi</label>
+            <select id="adOgretmenKampus"><option value="">Tümü</option></select>
+          </div>
+        </div>
+        <div class="csv-alan" style="margin-top:14px">
+          <div style="font-weight:800;font-size:14px">➕ Öğretmen Ekle</div>
+          <div class="satir">
+            <div><label>Kampüs</label><select id="adEkleOgretmenKampus"></select></div>
+            <div><label>Adı soyadı</label><input id="adEkleOgretmenAd"></div>
+            <div><label>Kullanıcı adı</label><input id="adEkleOgretmenKullanici"></div>
+            <div><label>Şifre</label><input id="adEkleOgretmenSifre"></div>
+          </div>
+          <div style="margin-top:12px"><button class="btn yesil" id="adOgretmenEkleBtn">Öğretmeni Ekle</button></div>
+          <div class="hata" id="adOgretmenHata"></div>
+          <div class="bilgi" id="adOgretmenBilgi"></div>
+        </div>
+        <div id="adOgretmenListe" style="margin-top:8px"></div>
       </div>
 
       <div class="kart">
@@ -444,13 +468,15 @@
     /* ---------- Yönetici (tüm kampüsler / öğrenciler) ---------- */
     kampusListesi: async function () {
       var cs = await sb('campus?select=*&order=olusturma_tarihi');
-      var ps = await sb('profil?select=campus_id,puan');
+      var ogr = await sb('profil?rol=eq.ogrenci&select=campus_id,puan');
+      var ogrS = await sb('profil?rol=eq.ogretmen&select=campus_id');
       var ts = await sb('tamamlanan?select=campus_id');
-      var sayi = {}, puan = {}, tamam = {};
-      (ps || []).forEach(function (p) { sayi[p.campus_id] = (sayi[p.campus_id] || 0) + 1; puan[p.campus_id] = (puan[p.campus_id] || 0) + (p.puan || 0); });
+      var sayi = {}, puan = {}, ogrSayi = {}, tamam = {};
+      (ogr || []).forEach(function (p) { sayi[p.campus_id] = (sayi[p.campus_id] || 0) + 1; puan[p.campus_id] = (puan[p.campus_id] || 0) + (p.puan || 0); });
+      (ogrS || []).forEach(function (p) { ogrSayi[p.campus_id] = (ogrSayi[p.campus_id] || 0) + 1; });
       (ts || []).forEach(function (t) { tamam[t.campus_id] = (tamam[t.campus_id] || 0) + 1; });
       return (cs || []).map(function (c) {
-        return { id: c.id, ad: c.ad, ogrenciSayisi: sayi[c.id] || 0, toplamPuan: puan[c.id] || 0, tamamlananSayisi: tamam[c.id] || 0 };
+        return { id: c.id, ad: c.ad, ogrenciSayisi: sayi[c.id] || 0, ogretmenSayisi: ogrSayi[c.id] || 0, toplamPuan: puan[c.id] || 0, tamamlananSayisi: tamam[c.id] || 0 };
       });
     },
     kampusEkle: async function (ad) {
@@ -487,6 +513,32 @@
       await sb('profil?id=eq.' + encodeURIComponent(id), { method: 'PATCH', body: { ad: ad, kullanici_adi: kullaniciAdi } });
     },
     adminOgrenciSil: async function (id) {
+      await sb('profil?id=eq.' + encodeURIComponent(id), { method: 'DELETE' });
+    },
+    /* ---------- Yönetici: öğretmenler ---------- */
+    tumOgretmenler: async function () {
+      var ps = await sb('profil?rol=eq.ogretmen&select=*&order=ad');
+      var cs = await sb('campus?select=id,ad');
+      var ogrS = await sb('profil?rol=eq.ogrenci&select=campus_id');
+      var cAd = {}, oSayi = {};
+      (cs || []).forEach(function (c) { cAd[c.id] = c.ad; });
+      (ogrS || []).forEach(function (p) { oSayi[p.campus_id] = (oSayi[p.campus_id] || 0) + 1; });
+      return (ps || []).map(function (p) {
+        return { id: p.id, campusId: p.campus_id, campusAdi: cAd[p.campus_id] || '', ad: p.ad, kullaniciAdi: p.kullanici_adi, avatar: p.avatar || '👩‍🏫', ogrenciSayisi: oSayi[p.campus_id] || 0 };
+      });
+    },
+    adminOgretmenEkle: async function (campusId, ad, kullaniciAdi, sifre) {
+      adminAdiEngelle(kullaniciAdi);
+      var tuz = tuzUret();
+      var hash = await sifreHash(sifre, tuz);
+      var ps = await sb('profil', { method: 'POST', body: { campus_id: campusId, kullanici_adi: kullaniciAdi, ad: ad, rol: 'ogretmen', sifre_tuz: tuz, sifre_hash: hash, avatar: '👩‍🏫' } });
+      return ps[0];
+    },
+    adminOgretmenGuncelle: async function (id, ad, kullaniciAdi) {
+      adminAdiEngelle(kullaniciAdi);
+      await sb('profil?id=eq.' + encodeURIComponent(id), { method: 'PATCH', body: { ad: ad, kullanici_adi: kullaniciAdi } });
+    },
+    adminOgretmenSil: async function (id) {
       await sb('profil?id=eq.' + encodeURIComponent(id), { method: 'DELETE' });
     },
     sifreSifirla: async function (s, ogrenciId, yeniSifre) {
@@ -624,8 +676,9 @@
       var ts = dGet(DK.tamamlanan);
       return cs.map(function (c) {
         var ogr = ps.filter(function (p) { return p.campusId === c.id && p.rol === 'ogrenci'; });
+        var ogrT = ps.filter(function (p) { return p.campusId === c.id && p.rol === 'ogretmen'; });
         var tam = ts.filter(function (t) { return t.campusId === c.id; });
-        return { id: c.id, ad: c.ad, ogrenciSayisi: ogr.length, toplamPuan: ogr.reduce(function (a, p) { return a + (p.puan || 0); }, 0), tamamlananSayisi: tam.length };
+        return { id: c.id, ad: c.ad, ogrenciSayisi: ogr.length, ogretmenSayisi: ogrT.length, toplamPuan: ogr.reduce(function (a, p) { return a + (p.puan || 0); }, 0), tamamlananSayisi: tam.length };
       });
     },
     kampusEkle: async function (ad) {
@@ -682,6 +735,39 @@
     adminOgrenciSil: async function (id) {
       dSet(DK.profil, dGet(DK.profil).filter(function (p) { return p.id !== id; }));
       dSet(DK.tamamlanan, dGet(DK.tamamlanan).filter(function (t) { return t.ogrenci_id !== id; }));
+    },
+    /* ---------- Yönetici: öğretmenler ---------- */
+    tumOgretmenler: async function () {
+      var ps = dGet(DK.profil).filter(function (p) { return p.rol === 'ogretmen'; });
+      var cs = dGet(DK.campus);
+      var cAd = {}, oSayi = {};
+      cs.forEach(function (c) { cAd[c.id] = c.ad; });
+      dGet(DK.profil).forEach(function (p) { if (p.rol === 'ogrenci') oSayi[p.campusId] = (oSayi[p.campusId] || 0) + 1; });
+      return ps.map(function (p) {
+        return { id: p.id, campusId: p.campusId, campusAdi: cAd[p.campusId] || '', ad: p.ad, kullaniciAdi: p.kullaniciAdi, avatar: p.avatar || '👩‍🏫', ogrenciSayisi: oSayi[p.campusId] || 0 };
+      });
+    },
+    adminOgretmenEkle: async function (campusId, ad, kullaniciAdi, sifre) {
+      adminAdiEngelle(kullaniciAdi);
+      var ps = dGet(DK.profil);
+      if (ps.some(function (p) { return p.kullaniciAdi.toLowerCase() === kullaniciAdi.toLowerCase(); })) throw new Error('Bu kullanıcı adı alınmış.');
+      var tuz = tuzUret();
+      var hash = await sifreHash(sifre, tuz);
+      var p = { id: dId(), campusId: campusId, kullaniciAdi: kullaniciAdi, tuz: tuz, hash: hash, ad: ad, rol: 'ogretmen', avatar: '👩‍🏫', puan: 0 };
+      ps.push(p); dSet(DK.profil, ps);
+      return p;
+    },
+    adminOgretmenGuncelle: async function (id, ad, kullaniciAdi) {
+      adminAdiEngelle(kullaniciAdi);
+      var ps = dGet(DK.profil);
+      var p = ps.filter(function (x) { return x.id === id; })[0];
+      if (!p) throw new Error('Öğretmen bulunamadı.');
+      if (ps.some(function (x) { return x.id !== id && x.kullaniciAdi.toLowerCase() === kullaniciAdi.toLowerCase(); })) throw new Error('Bu kullanıcı adı alınmış.');
+      p.ad = ad; p.kullaniciAdi = kullaniciAdi;
+      dSet(DK.profil, ps);
+    },
+    adminOgretmenSil: async function (id) {
+      dSet(DK.profil, dGet(DK.profil).filter(function (p) { return p.id !== id; }));
     }
   };
 
@@ -901,8 +987,7 @@
   /* ---------- Yönetici ---------- */
   function adminYukle() {
     $('ustOrta').innerHTML = '<div class="kampus">🛡️ Sistem Yönetimi</div><div class="kullanici">🛡️ ' + esc(oturum.ad) + ' · @' + esc(oturum.kullaniciAdi) + '</div>';
-    kampuslariCiz();
-    adminOgrencileriCiz();
+    kampuslariCiz(); // kampüs + öğretmen + öğrenci listelerini birlikte tazeler
   }
 
   function kampusSecenekleri(kampüsler, seciliId) {
@@ -915,23 +1000,36 @@
 
   function kampuslariCiz() {
     API.kampusListesi().then(function (kampüsler) {
-      var toplamOgrenci = 0, toplamPuan = 0;
-      kampüsler.forEach(function (c) { toplamOgrenci += c.ogrenciSayisi; toplamPuan += c.toplamPuan; });
+      var toplamOgrenci = 0, toplamOgretmen = 0, toplamPuan = 0;
+      kampüsler.forEach(function (c) { toplamOgrenci += c.ogrenciSayisi; toplamOgretmen += c.ogretmenSayisi || 0; toplamPuan += c.toplamPuan; });
       $('adKampusSayi').textContent = kampüsler.length;
+      $('adOgretmenSayi').textContent = toplamOgretmen;
       $('adOgrenciSayi').textContent = toplamOgrenci;
       $('adPuanToplam').textContent = toplamPuan;
 
+      // Kampüs seçicileri (öğrenci ekle + öğretmen ekle) — seçim korunur
       $('adEkleKampus').innerHTML = kampusSecenekleri(kampüsler, $('adEkleKampus').value);
+      $('adEkleOgretmenKampus').innerHTML = kampusSecenekleri(kampüsler, $('adEkleOgretmenKampus').value);
+      // Kampüs filtreleri (öğrenci listesi + öğretmen listesi) — seçim korunur
       var filtre = $('adOgrenciKampus');
       var secili = filtre.value;
       filtre.innerHTML = '<option value="">Tümü</option>' + kampusSecenekleri(kampüsler, '');
       if (secili) filtre.value = secili;
+      filtre = $('adOgretmenKampus');
+      secili = filtre.value;
+      filtre.innerHTML = '<option value="">Tümü</option>' + kampusSecenekleri(kampüsler, '');
+      if (secili) filtre.value = secili;
 
       var kutu = $('adKampusListe');
-      if (!kampüsler.length) { kutu.innerHTML = '<div class="bos">Henüz kampüs yok. Üstteki formla ekle.</div>'; return; }
-      var h = '<table><tr><th>Kampüs</th><th>Öğrenci</th><th>Toplam Puan</th><th>Tamamlanan Etkinlik</th><th>İşlem</th></tr>';
+      if (!kampüsler.length) {
+        kutu.innerHTML = '<div class="bos">Henüz kampüs yok. Üstteki formla ekle.</div>';
+        ogretmenleriCiz();
+        adminOgrencileriCiz();
+        return;
+      }
+      var h = '<table><tr><th>Kampüs</th><th>Öğretmen</th><th>Öğrenci</th><th>Toplam Puan</th><th>Tamamlanan Etkinlik</th><th>İşlem</th></tr>';
       kampüsler.forEach(function (c) {
-        h += '<tr class="satir"><td><b>🏫 ' + esc(c.ad) + '</b></td><td>👨‍🎓 ' + c.ogrenciSayisi + '</td><td>⭐ ' + c.toplamPuan + '</td><td>✅ ' + c.tamamlananSayisi + '</td>' +
+        h += '<tr class="satir"><td><b>🏫 ' + esc(c.ad) + '</b></td><td>👩‍🏫 ' + (c.ogretmenSayisi || 0) + '</td><td>👨‍🎓 ' + c.ogrenciSayisi + '</td><td>⭐ ' + c.toplamPuan + '</td><td>✅ ' + c.tamamlananSayisi + '</td>' +
           '<td><button class="btn ikincil kucuk" data-kampus-duzenle="' + esc(c.id) + '">✏️ Düzenle</button> ' +
           '<button class="btn kirmizi kucuk" data-kampus-sil="' + esc(c.id) + '">🗑 Sil</button></td></tr>';
       });
@@ -946,7 +1044,6 @@
           API.kampusGuncelle(id, yeni.trim()).then(function () {
             bilgiGoster($('adKampusBilgi'), '✅ Kampüs adı güncellendi.');
             kampuslariCiz();
-            adminOgrencileriCiz();
             setTimeout(function () { bilgiGoster($('adKampusBilgi'), ''); }, 2500);
           }).catch(function (e) { hataGoster($('adKampusHata'), e.message); });
         };
@@ -955,15 +1052,16 @@
         b.onclick = function () {
           var id = b.getAttribute('data-kampus-sil');
           var c = kampüsler.filter(function (x) { return x.id === id; })[0];
-          if (!confirm('“' + (c ? c.ad : '') + '” kampüsünü ve içindeki tüm öğrencileri silmek istediğine emin misin? Bu geri alınamaz.')) return;
+          if (!confirm('“' + (c ? c.ad : '') + '” kampüsünü ve içindeki tüm öğretmen/öğrenci ve puan kayıtlarını silmek istediğine emin misin? Bu geri alınamaz.')) return;
           API.kampusSil(id).then(function () {
             bilgiGoster($('adKampusBilgi'), '🗑 Kampüs silindi.');
             kampuslariCiz();
-            adminOgrencileriCiz();
             setTimeout(function () { bilgiGoster($('adKampusBilgi'), ''); }, 2500);
           }).catch(function (e) { hataGoster($('adKampusHata'), e.message); });
         };
       });
+      ogretmenleriCiz();
+      adminOgrencileriCiz();
     }).catch(function (e) { hataGoster($('adKampusHata'), e.message); });
   }
 
@@ -993,7 +1091,6 @@
           if (!yeniK || !yeniK.trim()) return;
           API.adminOgrenciGuncelle(id, yeniAd.trim(), yeniK.trim()).then(function () {
             bilgiGoster($('adOgrenciBilgi'), '✅ Öğrenci güncellendi.');
-            adminOgrencileriCiz();
             kampuslariCiz();
             setTimeout(function () { bilgiGoster($('adOgrenciBilgi'), ''); }, 2500);
           }).catch(function (e) { hataGoster($('adOgrenciHata'), e.message); });
@@ -1016,7 +1113,6 @@
           if (!confirm('“' + (o ? o.ad : '') + '” adlı öğrenciyi silmek istediğine emin misin?')) return;
           API.adminOgrenciSil(id).then(function () {
             bilgiGoster($('adOgrenciBilgi'), '🗑 Öğrenci silindi.');
-            adminOgrencileriCiz();
             kampuslariCiz();
             setTimeout(function () { bilgiGoster($('adOgrenciBilgi'), ''); }, 2500);
           }).catch(function (e) { hataGoster($('adOgrenciHata'), e.message); });
@@ -1025,7 +1121,83 @@
     }).catch(function (e) { hataGoster($('adOgrenciHata'), e.message); });
   }
 
+  function ogretmenleriCiz() {
+    API.tumOgretmenler().then(function (ogretmenler) {
+      var filtre = $('adOgretmenKampus').value;
+      var liste = filtre ? ogretmenler.filter(function (o) { return o.campusId === filtre; }) : ogretmenler;
+      var kutu = $('adOgretmenListe');
+      if (!liste.length) { kutu.innerHTML = '<div class="bos">Bu filtreden öğretmen yok.</div>'; return; }
+      var h = '<table><tr><th></th><th>Ad</th><th>Kullanıcı adı</th><th>Kampüs</th><th>Kampüsteki Öğrenci</th><th>İşlem</th></tr>';
+      liste.forEach(function (o) {
+        h += '<tr class="satir"><td style="font-size:20px">' + esc(o.avatar) + '</td><td><b>' + esc(o.ad) + '</b></td><td>@' + esc(o.kullaniciAdi) + '</td><td>🏫 ' + esc(o.campusAdi) + '</td><td>👨‍🎓 ' + o.ogrenciSayisi + '</td>' +
+          '<td><button class="btn ikincil kucuk" data-ad-ogr-duzenle="' + esc(o.id) + '">✏️</button> ' +
+          '<button class="btn ikincil kucuk" data-ad-ogr-sifirla="' + esc(o.id) + '">🔑</button> ' +
+          '<button class="btn kirmizi kucuk" data-ad-ogr-sil="' + esc(o.id) + '">🗑</button></td></tr>';
+      });
+      h += '</table>';
+      kutu.innerHTML = h;
+      Array.prototype.forEach.call(kutu.querySelectorAll('[data-ad-ogr-duzenle]'), function (b) {
+        b.onclick = function () {
+          var id = b.getAttribute('data-ad-ogr-duzenle');
+          var o = ogretmenler.filter(function (x) { return x.id === id; })[0];
+          if (!o) return;
+          var yeniAd = prompt('Adı soyadı:', o.ad);
+          if (!yeniAd || !yeniAd.trim()) return;
+          var yeniK = prompt('Kullanıcı adı:', o.kullaniciAdi);
+          if (!yeniK || !yeniK.trim()) return;
+          API.adminOgretmenGuncelle(id, yeniAd.trim(), yeniK.trim()).then(function () {
+            bilgiGoster($('adOgretmenBilgi'), '✅ Öğretmen güncellendi.');
+            kampuslariCiz();
+            setTimeout(function () { bilgiGoster($('adOgretmenBilgi'), ''); }, 2500);
+          }).catch(function (e) { hataGoster($('adOgretmenHata'), e.message); });
+        };
+      });
+      Array.prototype.forEach.call(kutu.querySelectorAll('[data-ad-ogr-sifirla]'), function (b) {
+        b.onclick = function () {
+          var id = b.getAttribute('data-ad-ogr-sifirla');
+          var yeni = prompt('Yeni şifre girin:');
+          if (!yeni || yeni.length < 3) { alert('Şifre en az 3 karakter olmalı.'); return; }
+          API.sifreSifirla(oturum, id, yeni).then(function () {
+            alert('✅ Şifre güncellendi.');
+          }).catch(function (e) { alert('Hata: ' + e.message); });
+        };
+      });
+      Array.prototype.forEach.call(kutu.querySelectorAll('[data-ad-ogr-sil]'), function (b) {
+        b.onclick = function () {
+          var id = b.getAttribute('data-ad-ogr-sil');
+          var o = ogretmenler.filter(function (x) { return x.id === id; })[0];
+          if (!confirm('“' + (o ? o.ad : '') + '” adlı öğretmeni silmek istediğine emin misin? (Kampüs ve öğrenciler silinmez.)')) return;
+          API.adminOgretmenSil(id).then(function () {
+            bilgiGoster($('adOgretmenBilgi'), '🗑 Öğretmen silindi.');
+            kampuslariCiz();
+            setTimeout(function () { bilgiGoster($('adOgretmenBilgi'), ''); }, 2500);
+          }).catch(function (e) { hataGoster($('adOgretmenHata'), e.message); });
+        };
+      });
+    }).catch(function (e) { hataGoster($('adOgretmenHata'), e.message); });
+  }
+
   $('adOgrenciKampus').onchange = function () { adminOgrencileriCiz(); };
+  $('adOgretmenKampus').onchange = function () { ogretmenleriCiz(); };
+  $('adOgretmenEkleBtn').onclick = function () {
+    var campusId = $('adEkleOgretmenKampus').value;
+    var ad = $('adEkleOgretmenAd').value.trim();
+    var k = $('adEkleOgretmenKullanici').value.trim();
+    var s = $('adEkleOgretmenSifre').value;
+    if (!campusId) { hataGoster($('adOgretmenHata'), 'Önce bir kampüs oluştur ve seç.'); return; }
+    if (!ad || !k || !s) { hataGoster($('adOgretmenHata'), 'Ad, kullanıcı adı ve şifre girin.'); return; }
+    if (s.length < 4) { hataGoster($('adOgretmenHata'), 'Şifre en az 4 karakter olmalı.'); return; }
+    hataGoster($('adOgretmenHata'), '');
+    $('adOgretmenEkleBtn').disabled = true;
+    API.adminOgretmenEkle(campusId, ad, k, s).then(function () {
+      $('adEkleOgretmenAd').value = ''; $('adEkleOgretmenKullanici').value = ''; $('adEkleOgretmenSifre').value = '';
+      bilgiGoster($('adOgretmenBilgi'), '✅ Öğretmen eklendi: @' + k);
+      kampuslariCiz();
+      setTimeout(function () { bilgiGoster($('adOgretmenBilgi'), ''); }, 3000);
+    }).catch(function (e) {
+      hataGoster($('adOgretmenHata'), e.message);
+    }).finally(function () { $('adOgretmenEkleBtn').disabled = false; });
+  };
   $('adKampusEkleBtn').onclick = function () {
     var ad = $('adKampusAd').value.trim();
     if (!ad) { hataGoster($('adKampusHata'), 'Kampüs adı girin.'); return; }
@@ -1053,7 +1225,6 @@
     API.adminOgrenciEkle(campusId, ad, k, s).then(function () {
       $('adEkleAd').value = ''; $('adEkleKullanici').value = ''; $('adEkleSifre').value = '';
       bilgiGoster($('adOgrenciBilgi'), '✅ Öğrenci eklendi: @' + k);
-      adminOgrencileriCiz();
       kampuslariCiz();
       setTimeout(function () { bilgiGoster($('adOgrenciBilgi'), ''); }, 3000);
     }).catch(function (e) {
