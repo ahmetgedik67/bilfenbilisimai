@@ -100,6 +100,9 @@ hesabı** içerir:
   öğrenci başına **puan ve tamamlanan etkinlik** sayılarını takip edebilir.
 - Kampüs tablosunda her kampüsün öğretmen/öğrenci sayısı; ayrı **Tüm Öğretmenler** ve
   **Tüm Öğrenciler** listelerinde kampüs filtresi ile daraltma vardır.
+- **📊 Kampüs Raporu**: kampüs ve dönem filtresiyle hangi etkinliği kaç öğrencinin
+  tamamladığını (bar + 👥 öğrenci listesi), tamamlanmaların tarihe göre yığılım
+  grafiğini (günlük; uzun dönemde haftalık kovalar + lejant) gösterir.
 - Kampüs silinince içindeki öğrenciler, etkinlik atamaları ve puan kayıtları da silinir.
 - `admin` kullanıcı adı kayıt formlarında engellenir (yöneticiye ayrılmıştır).
 - Şifre, diğer hesaplar gibi düz metin değil PBKDF2 ile hash'lenmiş olarak doğrulanır.
@@ -138,5 +141,6 @@ atlanır ve kaç satırın eklenemediği bildirilir.
 - 🎯 Sınıf Çarkıfeleği gibi tahta etkinlikleri, sınıf/IPC bölümlerini şişirmeden yalnız Öğretmen kategorisinde durur
 - 👤 Sağ üstte **Panel** düğmesi: öğretmen kaydı + kampüs (örn. Kurtköy Bilfen), öğrenci ekleme (tek tek veya **CSV toplu**), şifre sıfırlama, etkinlik aç/kapa/tarih
 - 🛡️ **admin** hesabıyla tüm kampüs, öğretmen ve öğrencilerin ekleme/silme/düzenleme, şifre sıfırlama ve takibi
+- 📊 Yönetici için kampüs bazlı etkinlik raporu: etkinlik başına tamamlayan öğrenci sayısı ve zamana göre tamamlanma grafiği
 - ⭐ Öğrenci panelinde puan toplama, rozet kazanma ve avatar seçme
 - 📱 Telefon, tablet ve projeksiyonda çalışan duyarlı tasarım

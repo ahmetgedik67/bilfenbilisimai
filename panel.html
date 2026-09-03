@@ -75,6 +75,7 @@
   .avatar-sec:hover { border-color: #6366f1; }
   .avatar-sec.secili { border-color: #4f46e5; background: #eef2ff; }
   .avatar-sec.kilitli { opacity: .35; cursor: not-allowed; }
+  .grafik-kutu { border: 1px solid #e0e7ff; border-radius: 12px; background: #fafaff; padding: 12px 8px 10px; margin-top: 10px; }
   .alt-link { text-align: center; margin-top: 14px; font-size: 14px; }
   .alt-link a { color: #4f46e5; font-weight: 700; text-decoration: none; }
   .kucuk-not { font-size: 12px; color: #94a3b8; margin-top: 6px; }
@@ -319,6 +320,31 @@
         </div>
         <div id="adOgrenciListe" style="margin-top:8px"></div>
       </div>
+
+      <div class="kart">
+        <h2>📊 Kampüs Raporu</h2>
+        <p class="kucuk-not">Hangi etkinliği kaç öğrencinin tamamladığını ve zaman içindeki tamamlanma sayısını görüntüle.</p>
+        <div class="satir" style="margin-top:10px">
+          <div>
+            <label>Kampüs</label>
+            <select id="raporKampus"><option value="">Tümü</option></select>
+          </div>
+          <div>
+            <label>Dönem</label>
+            <select id="raporDonem">
+              <option value="0">Tüm zamanlar</option>
+              <option value="7">Son 7 gün</option>
+              <option value="30">Son 30 gün</option>
+              <option value="90">Son 90 gün</option>
+            </select>
+          </div>
+          <div style="flex:0 0 auto;align-self:flex-end"><button class="btn ikincil kucuk" id="raporYenileBtn">🔄 Yenile</button></div>
+        </div>
+        <div id="raporOzet" style="font-size:14px;font-weight:700;margin-top:10px"></div>
+        <div id="raporEtkinlikler" style="margin-top:8px"></div>
+        <div id="raporOgrenciler"></div>
+        <div id="raporGrafik" style="margin-top:8px"></div>
+      </div>
     </div>
   </div>
 
@@ -540,6 +566,21 @@
     },
     adminOgretmenSil: async function (id) {
       await sb('profil?id=eq.' + encodeURIComponent(id), { method: 'DELETE' });
+    },
+    /* ---------- Yönetici: rapor ---------- */
+    raporVerileri: async function (campusId) {
+      var q = campusId
+        ? 'tamamlanan?campus_id=eq.' + encodeURIComponent(campusId) + '&select=ogrenci_id,campus_id,oyun_id,tarih&order=tarih'
+        : 'tamamlanan?select=ogrenci_id,campus_id,oyun_id,tarih&order=tarih';
+      var ts = await sb(q);
+      var ps = await sb('profil?rol=eq.ogrenci&select=id,ad,campus_id');
+      var cs = await sb('campus?select=id,ad');
+      var pAd = {}, cAd = {};
+      (ps || []).forEach(function (p) { pAd[p.id] = p.ad; });
+      (cs || []).forEach(function (c) { cAd[c.id] = c.ad; });
+      return (ts || []).map(function (t) {
+        return { ogrenciId: t.ogrenci_id, ogrenciAd: pAd[t.ogrenci_id] || '', campusId: t.campus_id, campusAdi: cAd[t.campus_id] || '', oyunId: t.oyun_id, tarih: t.tarih };
+      });
     },
     sifreSifirla: async function (s, ogrenciId, yeniSifre) {
       var tuz = tuzUret();
@@ -768,6 +809,18 @@
     },
     adminOgretmenSil: async function (id) {
       dSet(DK.profil, dGet(DK.profil).filter(function (p) { return p.id !== id; }));
+    },
+    /* ---------- Yönetici: rapor ---------- */
+    raporVerileri: async function (campusId) {
+      var ts = dGet(DK.tamamlanan);
+      var ps = dGet(DK.profil);
+      var cs = dGet(DK.campus);
+      var pAd = {}, cAd = {};
+      ps.forEach(function (p) { pAd[p.id] = p.ad; });
+      cs.forEach(function (c) { cAd[c.id] = c.ad; });
+      return ts.filter(function (t) { return !campusId || t.campusId === campusId; }).map(function (t) {
+        return { ogrenciId: t.ogrenci_id, ogrenciAd: pAd[t.ogrenci_id] || '', campusId: t.campusId, campusAdi: cAd[t.campusId] || '', oyunId: t.oyun_id, tarih: t.tarih };
+      });
     }
   };
 
@@ -1010,12 +1063,16 @@
       // Kampüs seçicileri (öğrenci ekle + öğretmen ekle) — seçim korunur
       $('adEkleKampus').innerHTML = kampusSecenekleri(kampüsler, $('adEkleKampus').value);
       $('adEkleOgretmenKampus').innerHTML = kampusSecenekleri(kampüsler, $('adEkleOgretmenKampus').value);
-      // Kampüs filtreleri (öğrenci listesi + öğretmen listesi) — seçim korunur
+      // Kampüs filtreleri (öğrenci listesi + öğretmen listesi + rapor) — seçim korunur
       var filtre = $('adOgrenciKampus');
       var secili = filtre.value;
       filtre.innerHTML = '<option value="">Tümü</option>' + kampusSecenekleri(kampüsler, '');
       if (secili) filtre.value = secili;
       filtre = $('adOgretmenKampus');
+      secili = filtre.value;
+      filtre.innerHTML = '<option value="">Tümü</option>' + kampusSecenekleri(kampüsler, '');
+      if (secili) filtre.value = secili;
+      filtre = $('raporKampus');
       secili = filtre.value;
       filtre.innerHTML = '<option value="">Tümü</option>' + kampusSecenekleri(kampüsler, '');
       if (secili) filtre.value = secili;
@@ -1025,6 +1082,7 @@
         kutu.innerHTML = '<div class="bos">Henüz kampüs yok. Üstteki formla ekle.</div>';
         ogretmenleriCiz();
         adminOgrencileriCiz();
+        raporuCiz();
         return;
       }
       var h = '<table><tr><th>Kampüs</th><th>Öğretmen</th><th>Öğrenci</th><th>Toplam Puan</th><th>Tamamlanan Etkinlik</th><th>İşlem</th></tr>';
@@ -1062,6 +1120,7 @@
       });
       ogretmenleriCiz();
       adminOgrencileriCiz();
+      raporuCiz();
     }).catch(function (e) { hataGoster($('adKampusHata'), e.message); });
   }
 
@@ -1231,6 +1290,137 @@
       hataGoster($('adOgrenciHata'), e.message);
     }).finally(function () { $('adOgrenciEkleBtn').disabled = false; });
   };
+
+  /* ---------- Yönetici: kampüs raporu ---------- */
+  var ETKINLIK_RENKLER = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#84cc16', '#14b8a6'];
+  var raporGorunum = { detayOyun: '' };
+
+  function etkinlikAdBul(id) {
+    for (var i = 0; i < ETKINLIKLER.length; i++) if (ETKINLIKLER[i].id === id) return ETKINLIKLER[i].ad;
+    return id;
+  }
+  function etkinlikRengi(id) {
+    for (var i = 0; i < ETKINLIKLER.length; i++) if (ETKINLIKLER[i].id === id) return ETKINLIK_RENKLER[i % ETKINLIK_RENKLER.length];
+    return '#94a3b8';
+  }
+
+  function raporuCiz() {
+    raporGorunum.detayOyun = '';
+    $('raporOgrenciler').innerHTML = '';
+    var campusId = $('raporKampus').value;
+    var donemGun = parseInt($('raporDonem').value || '0', 10);
+    API.raporVerileri(campusId).then(function (satirlar) {
+      var sinir = donemGun ? new Date(Date.now() - donemGun * 86400000) : null;
+      satirlar = satirlar.filter(function (t) { return !sinir || new Date(t.tarih) >= sinir; });
+      var ogr = {}, kampus = {};
+      satirlar.forEach(function (t) { ogr[t.ogrenciId] = 1; kampus[t.campusAdi] = 1; });
+      var donemYazi = !donemGun ? 'tüm zamanlar' : ('son ' + donemGun + ' gün');
+      $('raporOzet').innerHTML = '📌 Bu filtrede <b>' + satirlar.length + '</b> tamamlanma · <b>' + Object.keys(ogr).length + '</b> öğrenci' +
+        ($('raporKampus').value ? '' : (' · <b>' + Object.keys(kampus).length + '</b> kampüs')) + ' (' + donemYazi + ')';
+      raporEtkinlikTabloCiz(satirlar);
+      raporGrafikCiz(satirlar);
+    }).catch(function (e) {
+      $('raporOzet').innerHTML = '<span class="hata" style="display:block">' + esc(e.message) + '</span>';
+    });
+  }
+
+  function raporEtkinlikTabloCiz(satirlar) {
+    var kutu = $('raporEtkinlikler');
+    var sayi = {}, ogrenciler = {};
+    satirlar.forEach(function (t) {
+      sayi[t.oyunId] = (sayi[t.oyunId] || 0) + 1;
+      (ogrenciler[t.oyunId] = ogrenciler[t.oyunId] || []).push(t.ogrenciAd || '?');
+    });
+    var ids = [];
+    ETKINLIKLER.forEach(function (e) { ids.push(e.id); });
+    Object.keys(sayi).forEach(function (id) { if (ids.indexOf(id) < 0) ids.push(id); });
+    if (!satirlar.length) {
+      kutu.innerHTML = '<div class="bos">Bu filtrede tamamlanan etkinlik yok. Öğrenciler "Tamamladım" dedikçe rapor burada dolar.</div>';
+      return;
+    }
+    var enBuyuk = 1;
+    ids.forEach(function (id) { enBuyuk = Math.max(enBuyuk, sayi[id] || 0); });
+    var h = '<table><tr><th>Etkinlik</th><th>Tamamlayan öğrenci</th><th style="width:32%"></th><th></th></tr>';
+    ids.forEach(function (id) {
+      var n = sayi[id] || 0;
+      var genislik = Math.round((n / enBuyuk) * 100);
+      h += '<tr class="satir">' +
+        '<td><span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:' + etkinlikRengi(id) + ';margin-right:7px"></span><b>' + esc(etkinlikAdBul(id)) + '</b></td>' +
+        '<td><b>' + n + '</b></td>' +
+        '<td><div style="background:#eef2ff;border-radius:6px;overflow:hidden"><div style="width:' + genislik + '%;height:12px;background:' + etkinlikRengi(id) + '"></div></div></td>' +
+        '<td>' + (n ? '<button class="btn ikincil kucuk" data-rapor-detay="' + esc(id) + '">👥 Öğrenciler</button>' : '') + '</td></tr>';
+    });
+    h += '</table>';
+    kutu.innerHTML = h;
+    Array.prototype.forEach.call(kutu.querySelectorAll('[data-rapor-detay]'), function (b) {
+      b.onclick = function () {
+        var id = b.getAttribute('data-rapor-detay');
+        var k = $('raporOgrenciler');
+        if (raporGorunum.detayOyun === id) { k.innerHTML = ''; raporGorunum.detayOyun = ''; return; }
+        raporGorunum.detayOyun = id;
+        var liste = ogrenciler[id] || [];
+        k.innerHTML = '<div style="background:#f5f3ff;border-radius:12px;padding:10px 14px;margin-top:8px;font-size:13px"><b>' +
+          esc(etkinlikAdBul(id)) + ' tamamlayan öğrenciler:</b> ' + esc(liste.join(', ')) + '</div>';
+      };
+    });
+  }
+
+  function raporGrafikCiz(satirlar) {
+    var kutu = $('raporGrafik');
+    if (!satirlar.length) { kutu.innerHTML = ''; return; }
+    var ts = satirlar.map(function (t) { return new Date(t.tarih).getTime(); });
+    var ilk = new Date(Math.min.apply(null, ts));
+    var son = new Date(Math.max.apply(null, ts));
+    var gunAralik = Math.max(1, Math.round((son - ilk) / 86400000) + 1);
+    var haftalik = gunAralik > 62;
+    function kovaAnahtari(d) {
+      var x = new Date(d); x.setHours(0, 0, 0, 0);
+      if (haftalik) { var h = x.getDay() || 7; x.setDate(x.getDate() - h + 1); } // pazartesi
+      return x.getTime();
+    }
+    var kovalar = {};
+    satirlar.forEach(function (t) {
+      var k = kovaAnahtari(new Date(t.tarih));
+      kovalar[k] = kovalar[k] || {};
+      kovalar[k][t.oyunId] = (kovalar[k][t.oyunId] || 0) + 1;
+    });
+    var anahtarlar = Object.keys(kovalar).map(Number).sort(function (a, b) { return a - b; });
+    var enBuyuk = 1;
+    anahtarlar.forEach(function (k) {
+      var top = 0;
+      Object.keys(kovalar[k]).forEach(function (o) { top += kovalar[k][o]; });
+      kovalar[k]._top = top;
+      enBuyuk = Math.max(enBuyuk, top);
+    });
+    var etiketAdim = Math.max(1, Math.ceil(anahtarlar.length / 14));
+    var h = '<div class="grafik-kutu"><div style="display:flex;overflow-x:auto;align-items:flex-end;padding:0 2px">';
+    anahtarlar.forEach(function (k, i) {
+      var d = new Date(k);
+      var etiket = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+      var kup = '';
+      Object.keys(kovalar[k]).forEach(function (o) {
+        if (o === '_top') return;
+        var yuk = Math.max(2, Math.round((kovalar[k][o] / enBuyuk) * 118));
+        kup += '<div style="height:' + yuk + 'px;background:' + etkinlikRengi(o) + ';border-radius:2px 2px 0 0;margin:0 1px" title="' + esc(etkinlikAdBul(o)) + ': ' + kovalar[k][o] + ' (' + etiket + ')"></div>';
+      });
+      h += '<div style="display:flex;flex-direction:column;align-items:center;flex:1 1 0;min-width:26px;max-width:44px;padding:0 1px">' +
+        '<div style="display:flex;flex-direction:column;justify-content:flex-end;height:120px;width:100%" title="' + kovalar[k]._top + ' tamamlanma (' + etiket + ')">' + kup + '</div>' +
+        '<div style="font-size:9.5px;color:#94a3b8;white-space:nowrap">' + (i % etiketAdim === 0 || i === anahtarlar.length - 1 ? etiket : '') + '</div>' +
+        '</div>';
+    });
+    h += '</div><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:12px">';
+    var gosterilen = {};
+    satirlar.forEach(function (t) { gosterilen[t.oyunId] = 1; });
+    Object.keys(gosterilen).forEach(function (o) {
+      h += '<span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:' + etkinlikRengi(o) + ';margin-right:5px"></span>' + esc(etkinlikAdBul(o)) + '</span>';
+    });
+    h += '</div></div>';
+    kutu.innerHTML = h;
+  }
+
+  $('raporKampus').onchange = function () { raporuCiz(); };
+  $('raporDonem').onchange = function () { raporuCiz(); };
+  $('raporYenileBtn').onclick = function () { raporuCiz(); };
 
   /* ---------- Panel ana ---------- */
   function paneliGoster() {
