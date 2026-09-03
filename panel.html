@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bilfen Bilişim AI – Panel</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+    background: linear-gradient(160deg, #eef2ff 0%, #fdf4ff 55%, #fff7ed 100%);
+    min-height: 100vh; color: #1e1b4b;
+  }
+  .ust-bar { background: #1e1b4b; color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .ust-bar .marka { font-weight: 800; font-size: 15px; }
+  .ust-bar .marka span { color: #fbbf24; }
+  .ust-bar .orta { flex: 1; }
+  .ust-bar .kampus { font-size: 13px; opacity: .9; }
+  .ust-bar .kullanici { font-size: 13px; background: rgba(255,255,255,.12); padding: 5px 12px; border-radius: 999px; }
+  .ust-bar a, .ust-bar button { color: #fff; background: rgba(255,255,255,.15); border: none; padding: 7px 14px; border-radius: 999px; font-size: 13px; cursor: pointer; text-decoration: none; }
+  .ust-bar button:hover, .ust-bar a:hover { background: rgba(255,255,255,.28); }
+  .ust-bar .cikis { background: #ef4444; }
+  .ust-bar .cikis:hover { background: #dc2626; }
+  .demo-banner { background: #fef3c7; color: #92400e; font-size: 13px; padding: 8px 16px; text-align: center; border-bottom: 1px solid #fde68a; }
+  .sabit { max-width: 1000px; margin: 0 auto; padding: 20px 16px 60px; }
+  .kart { background: #fff; border-radius: 16px; box-shadow: 0 8px 30px rgba(30,27,75,.10); padding: 20px; margin-bottom: 18px; }
+  .kart h2 { font-size: 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .kart h3 { font-size: 15px; margin-bottom: 8px; }
+  .giris-kutu { max-width: 420px; margin: 40px auto 0; }
+  label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 5px; color: #3730a3; }
+  input, select { width: 100%; padding: 11px 12px; border: 1.5px solid #c7d2fe; border-radius: 10px; font-size: 14px; background: #fafaff; }
+  input:focus, select:focus { outline: none; border-color: #6366f1; background: #fff; }
+  .btn { display: inline-block; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; border: none; padding: 11px 20px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn:hover { filter: brightness(1.08); }
+  .btn.ikincil { background: #e0e7ff; color: #3730a3; }
+  .btn.yeşil, .btn.yesil { background: linear-gradient(135deg, #16a34a, #22c55e); }
+  .btn.kirmizi { background: #ef4444; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.kucuk { padding: 7px 12px; font-size: 13px; }
+  .hata { color: #dc2626; background: #fee2e2; border: 1px solid #fecaca; padding: 9px 12px; border-radius: 10px; font-size: 13px; margin-top: 12px; display: none; }
+  .bilgi { color: #166534; background: #dcfce7; border: 1px solid #bbf7d0; padding: 9px 12px; border-radius: 10px; font-size: 13px; margin-top: 12px; display: none; }
+  .satir { display: flex; gap: 10px; flex-wrap: wrap; }
+  .satir > div { flex: 1; min-width: 140px; }
+  .sekmeler { display: flex; gap: 8px; margin-bottom: 16px; }
+  .sekme { padding: 9px 18px; border-radius: 999px; background: #e0e7ff; color: #3730a3; font-weight: 700; font-size: 14px; cursor: pointer; border: none; }
+  .sekme.secili { background: #4f46e5; color: #fff; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; }
+  th { color: #6366f1; font-size: 12px; text-transform: uppercase; letter-spacing: .4px; }
+  tr.satir:hover { background: #f5f3ff; }
+  .rozet { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  .rozet.acik { background: #dcfce7; color: #166534; }
+  .rozet.kapali { background: #fee2e2; color: #b91c1c; }
+  .rozet.tarih { background: #fef9c3; color: #854d0e; }
+  .rozet.ogretmen { background: #ede9fe; color: #6d28d9; }
+  .rozet.ogrenci { background: #dbeafe; color: #1d4ed8; }
+  .bos { color: #94a3b8; font-size: 14px; padding: 14px 4px; }
+  .etkinlik { border: 1.5px solid #e0e7ff; border-radius: 14px; padding: 14px; margin-bottom: 12px; background: #fafaff; }
+  .etkinlik .ad { font-weight: 800; font-size: 15px; }
+  .etkinlik .aciklama { color: #6b7280; font-size: 13px; margin: 4px 0 10px; }
+  .etkinlik .alan { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .etkinlik select, .etkinlik input[type="datetime-local"] { width: auto; }
+  .etkinlik .tarihler { display: none; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .etkinlik .tarihler.goster { display: flex; }
+  .profil { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .profil .avatar { font-size: 56px; line-height: 1; }
+  .profil .sayilar { display: flex; gap: 10px; flex-wrap: wrap; }
+  .profil .sayaç, .profil .sayac { background: #f5f3ff; border-radius: 12px; padding: 8px 16px; text-align: center; }
+  .profil .sayaç b, .profil .sayac b { display: block; font-size: 20px; color: #4f46e5; }
+  .profil .sayaç span, .profil .sayac span { font-size: 12px; color: #6b7280; }
+  .rozetti { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; background: #f5f3ff; border-radius: 12px; padding: 10px; margin: 4px; width: 104px; font-size: 12px; text-align: center; }
+  .rozetti .ikon { font-size: 28px; }
+  .rozetti.kilitli { opacity: .35; filter: grayscale(1); }
+  .avatar-sec { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; background: #f5f3ff; border: 2px solid transparent; border-radius: 12px; padding: 8px; margin: 4px; font-size: 26px; cursor: pointer; }
+  .avatar-sec:hover { border-color: #6366f1; }
+  .avatar-sec.secili { border-color: #4f46e5; background: #eef2ff; }
+  .avatar-sec.kilitli { opacity: .35; cursor: not-allowed; }
+  .alt-link { text-align: center; margin-top: 14px; font-size: 14px; }
+  .alt-link a { color: #4f46e5; font-weight: 700; text-decoration: none; }
+  .kucuk-not { font-size: 12px; color: #94a3b8; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<div class="ust-bar">
+  <div class="marka">🤖 Bilfen Bilişim <span>AI</span></div>
+  <div class="orta" id="ustOrta"></div>
+  <a href="index.html" title="Portala dön">← Portala dön</a>
+  <button id="cikisBtn" style="display:none" class="cikis">🚪 Çıkış</button>
+</div>
+<div class="demo-banner" id="demoBanner" style="display:none">
+  🧪 <b>Demo modu:</b> veriler yalnız bu cihazda tutuluyor. Gerçek çok cihazlı senkron (öğretmen + öğrenciler) için README'deki Supabase kurulumunu yap.
+</div>
+
+<div class="sabit">
+
+  <!-- ============ GİRİŞ ============ -->
+  <div id="ekranGiris" class="giris-kutu" style="display:none">
+    <div class="kart">
+      <h2>🔐 Giriş Yap</h2>
+      <label>Kullanıcı adı</label>
+      <input id="gKullanici" autocomplete="username">
+      <label>Şifre</label>
+      <input id="gSifre" type="password" autocomplete="current-password">
+      <div style="margin-top:16px"><button class="btn" id="girisBtn" style="width:100%">Giriş Yap</button></div>
+      <div class="hata" id="gHata"></div>
+      <div class="alt-link">Hesabın yok mu? <a href="#" id="kayitGec">Öğretmen kaydı oluştur</a></div>
+    </div>
+  </div>
+
+  <!-- ============ KAYIT ============ -->
+  <div id="ekranKayit" class="giris-kutu" style="display:none">
+    <div class="kart">
+      <h2>👩‍🏫 Öğretmen Kaydı</h2>
+      <p class="kucuk-not">Kayıt olunca bir kampüs oluşturulur; öğrencilerini bu kampüse eklersin.</p>
+      <label>Kampüs adı (örn. 5-A Sınıfı)</label>
+      <input id="kKampus">
+      <label>Adın soyadın</label>
+      <input id="kAd">
+      <label>Kullanıcı adı</label>
+      <input id="kKullanici" autocomplete="username">
+      <label>Şifre</label>
+      <input id="kSifre" type="password" autocomplete="new-password">
+      <label>Şifre (tekrar)</label>
+      <input id="kSifre2" type="password" autocomplete="new-password">
+      <div style="margin-top:16px"><button class="btn" id="kayitBtn" style="width:100%">Kampüsü Oluştur ve Kaydol</button></div>
+      <div class="hata" id="kHata"></div>
+      <div class="alt-link">Zaten hesabın var mı? <a href="#" id="girisGec">Giriş yap</a></div>
+    </div>
+  </div>
+
+  <!-- ============ PANEL ============ -->
+  <div id="ekranPanel" style="display:none">
+
+    <!-- Öğretmen -->
+    <div id="ogretmenIcerik" style="display:none">
+      <div class="sekmeler">
+        <button class="sekme secili" id="sekmeOgrenci">👨‍🎓 Öğrencilerim</button>
+        <button class="sekme" id="sekmeEtkinlik">🎮 Etkinlik Yönetimi</button>
+      </div>
+
+      <!-- Öğrenciler -->
+      <div id="ogrenciSekme">
+        <div class="kart">
+          <h2>➕ Öğrenci Ekle</h2>
+          <div class="satir">
+            <div><label>Adı soyadı</label><input id="oAd"></div>
+            <div><label>Kullanıcı adı</label><input id="oKullanici"></div>
+            <div><label>Şifre</label><input id="oSifre"></div>
+          </div>
+          <div style="margin-top:12px"><button class="btn yesil" id="ogrenciEkleBtn">Öğrenciyi Ekle</button></div>
+          <div class="hata" id="oHata"></div>
+          <div class="bilgi" id="oBilgi"></div>
+        </div>
+        <div class="kart">
+          <h2>👨‍🎓 Kampüsümdeki Öğrenciler</h2>
+          <div id="ogrenciListe"></div>
+        </div>
+      </div>
+
+      <!-- Etkinlikler -->
+      <div id="etkinlikSekme" style="display:none">
+        <div class="kart">
+          <h2>🎮 Etkinlikleri Yönet</h2>
+          <p class="kucuk-not">Atamalar kampüs genelinde geçerlidir: tek kayıtla bütün öğrencilerine uygulanır. "Açık" seçilirse herkes oynayabilir; "Tarihli" seçersen belirttiğin tarihlerde açılır.</p>
+          <div style="margin:12px 0">
+            <button class="btn ikincil kucuk" id="hepsiniAcBtn">✔ Tümünü Aç</button>
+            <button class="btn kirmizi kucuk" id="hepsiniKapatBtn">✖ Tümünü Kapat</button>
+          </div>
+          <div id="etkinlikListe"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Öğrenci -->
+    <div id="ogrenciIcerik" style="display:none">
+      <div class="kart">
+        <h2>👤 Profilim</h2>
+        <div class="profil">
+          <div class="avatar" id="ogAvatar">🐣</div>
+          <div>
+            <div style="font-size:18px;font-weight:800" id="ogAd"></div>
+            <div style="color:#6b7280;font-size:13px">@<span id="ogKullanici"></span> · <span id="ogKampus"></span></div>
+          </div>
+          <div class="sayilar">
+            <div class="sayac"><b id="ogPuan">0</b><span>⭐ Puan</span></div>
+            <div class="sayac"><b id="ogTamam">0</b><span>✅ Etkinlik</span></div>
+          </div>
+        </div>
+        <div style="margin-top:12px"><button class="btn ikincil kucuk" id="avatarBtn">🎨 Avatar Seç</button></div>
+        <div id="avatarSecici" style="display:none;margin-top:10px"></div>
+      </div>
+
+      <div class="kart">
+        <h2>🏅 Rozetlerim</h2>
+        <div id="rozetListe"></div>
+      </div>
+
+      <div class="kart">
+        <h2>🎮 Etkinliklerim</h2>
+        <div id="ogrenciEtkinlikler"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ============================================================
+     SUPABASE AYARLARI — README'deki kurulumu yaptıktan sonra
+     Supabase Dashboard → Settings → API sayfasındaki
+     Project URL ve anon public key değerlerini aşağıya yapıştır.
+     Boş bırakılırsa uygulama demo modunda (bu cihazda) çalışır.
+     ============================================================ */
+  var SUPABASE_URL = '';
+  var SUPABASE_ANON = '';
+
+  var DEMO = !(SUPABASE_URL && SUPABASE_ANON);
+
+  /* ---------- Sabitler ---------- */
+  var PUAN_BASINA = 10;
+  var ETKINLIKLER = [
+    { id: 'carkifelek', ad: 'Sınıf Çarkıfeleği', url: 'games/carkifelek/index.html', aciklama: 'Tanışma etkinliği ve oturma planı için animasyonlu isim çekme çarkı.' }
+  ];
+  var AVATARLAR = [
+    { e: '🐣', ad: 'Yeni Başlayan', puan: 0 },
+    { e: '🐥', ad: 'Robi Civciv', puan: 30 },
+    { e: '🦊', ad: 'Robi Tilki', puan: 60 },
+    { e: '🐼', ad: 'Robi Panda', puan: 100 },
+    { e: '🦁', ad: 'Robi Aslan', puan: 150 },
+    { e: '🦸', ad: 'Robi Süper', puan: 250 }
+  ];
+  var ROZETLER = [
+    { e: '🎯', ad: 'İlk Adım', aciklama: '1 etkinlik tamamla', k: function (c, p) { return c >= 1; } },
+    { e: '🌟', ad: 'Aktif', aciklama: '3 etkinlik tamamla', k: function (c, p) { return c >= 3; } },
+    { e: '🏅', ad: 'Etkinlik Ustası', aciklama: '5 etkinlik tamamla', k: function (c, p) { return c >= 5; } },
+    { e: '🚀', ad: 'Yıldız', aciklama: '10 etkinlik tamamla', k: function (c, p) { return c >= 10; } },
+    { e: '💎', ad: 'Puan Avcısı', aciklama: '100 puan topla', k: function (c, p) { return p >= 100; } },
+    { e: '👑', ad: 'Kampüs Şampiyonu', aciklama: '250 puan topla', k: function (c, p) { return p >= 250; } }
+  ];
+
+  /* ---------- Yardımcılar ---------- */
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function hex(b) { return Array.prototype.map.call(b, function (x) { return ('0' + x.toString(16)).slice(-2); }).join(''); }
+  function hexToBytes(h) { var r = new Uint8Array(h.length / 2); for (var i = 0; i < r.length; i++) r[i] = parseInt(h.substr(i * 2, 2), 16); return r; }
+  function tuzUret() { var a = new Uint8Array(16); crypto.getRandomValues(a); return hex(a); }
+  function sifreHash(sifre, tuz) {
+    if (window.crypto && crypto.subtle) {
+      return crypto.subtle.importKey('raw', new TextEncoder().encode(sifre), 'PBKDF2', false, ['deriveBits']).then(function (key) {
+        return crypto.subtle.deriveBits({ name: 'PBKDF2', salt: hexToBytes(tuz), iterations: 60000, hash: 'SHA-256' }, key, 256);
+      }).then(function (bits) { return hex(new Uint8Array(bits)); });
+    }
+    var h = 5381;
+    for (var i = 0; i < sifre.length; i++) h = ((h << 5) + h + sifre.charCodeAt(i)) | 0;
+    return Promise.resolve(String(h) + ':' + tuz);
+  }
+  function dtYerel(d) { if (!d) return ''; var x = new Date(d); function p(n) { return ('0' + n).slice(-2); } return x.getFullYear() + '-' + p(x.getMonth() + 1) + '-' + p(x.getDate()) + 'T' + p(x.getHours()) + ':' + p(x.getMinutes()); }
+  function dtIso(v) { if (!v) return null; var x = new Date(v); return isNaN(x.getTime()) ? null : x.toISOString(); }
+  function tarihKisa(d) { if (!d) return ''; try { return new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }); } catch (e) { return d; } }
+
+  /* ---------- Oturum ---------- */
+  function oturumKaydet(o) { localStorage.setItem('bt_oturum', JSON.stringify(o)); }
+  function oturumOku() { try { return JSON.parse(localStorage.getItem('bt_oturum') || 'null'); } catch (e) { return null; } }
+  function oturumTemizle() { localStorage.removeItem('bt_oturum'); }
+
+  /* ---------- Supabase istemcisi ---------- */
+  function sb(path, opts) {
+    opts = opts || {};
+    return fetch(SUPABASE_URL + '/rest/v1/' + path, {
+      method: opts.method || 'GET',
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: 'Bearer ' + SUPABASE_ANON,
+        'Content-Type': 'application/json',
+        Prefer: opts.prefer || 'return=representation'
+      },
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    }).then(function (r) {
+      if (!r.ok) {
+        return r.json().then(function (e) {
+          var m = (e && (e.message || e.error_description)) || ('Hata: ' + r.status);
+          throw new Error(m);
+        });
+      }
+      return r.status === 204 ? null : r.json();
+    });
+  }
+
+  /* ============================================================
+     SUPABASE ARKA UÇ
+     ============================================================ */
+  var SupabaseAPI = {
+    kayitOgretmen: async function (kamp, ad, kullaniciAdi, sifre) {
+      var cs = await sb('campus', { method: 'POST', body: { ad: kamp } });
+      var c = cs[0];
+      var tuz = tuzUret();
+      var hash = await sifreHash(sifre, tuz);
+      await sb('profil', { method: 'POST', body: { campus_id: c.id, kullanici_adi: kullaniciAdi, ad: ad, rol: 'ogretmen', sifre_tuz: tuz, sifre_hash: hash, avatar: '👩‍🏫' } });
+      return { id: c.id, campusId: c.id, kampusAdi: kamp, kullaniciAdi: kullaniciAdi, ad: ad, rol: 'ogretmen', avatar: '👩‍🏫', puan: 0 };
+    },
+    giris: async function (kullaniciAdi, sifre) {
+      var ps = await sb('profil?kullanici_adi=eq.' + encodeURIComponent(kullaniciAdi) + '&select=*');
+      if (!ps || !ps.length) throw new Error('Kullanıcı bulunamadı.');
+      var p = ps[0];
+      var hash = await sifreHash(sifre, p.sifre_tuz);
+      if (hash !== p.sifre_hash) throw new Error('Şifre hatalı.');
+      var cs = await sb('campus?id=eq.' + encodeURIComponent(p.campus_id) + '&select=*');
+      return { id: p.id, campusId: p.campus_id, kampusAdi: (cs[0] || {}).ad || '', kullaniciAdi: p.kullanici_adi, ad: p.ad, rol: p.rol, avatar: p.avatar, puan: p.puan || 0 };
+    },
+    ogrenciEkle: async function (s, ad, kullaniciAdi, sifre) {
+      var tuz = tuzUret();
+      var hash = await sifreHash(sifre, tuz);
+      var ps = await sb('profil', { method: 'POST', body: { campus_id: s.campusId, kullanici_adi: kullaniciAdi, ad: ad, rol: 'ogrenci', sifre_tuz: tuz, sifre_hash: hash, avatar: '🐣' } });
+      return ps[0];
+    },
+    sifreSifirla: async function (s, ogrenciId, yeniSifre) {
+      var tuz = tuzUret();
+      var hash = await sifreHash(yeniSifre, tuz);
+      await sb('profil?id=eq.' + encodeURIComponent(ogrenciId), { method: 'PATCH', body: { sifre_tuz: tuz, sifre_hash: hash } });
+    },
+    ogrenciListesi: async function (s) {
+      var ps = await sb('profil?campus_id=eq.' + encodeURIComponent(s.campusId) + '&rol=eq.ogrenci&select=*&order=ad');
+      var ts = await sb('tamamlanan?campus_id=eq.' + encodeURIComponent(s.campusId) + '&select=ogrenci_id,oyun_id');
+      var sayilar = {};
+      (ts || []).forEach(function (t) { sayilar[t.ogrenci_id] = (sayilar[t.ogrenci_id] || 0) + 1; });
+      return (ps || []).map(function (p) {
+        return { id: p.id, ad: p.ad, kullaniciAdi: p.kullanici_adi, puan: p.puan || 0, avatar: p.avatar || '🐣', tamamlanan: sayilar[p.id] || 0 };
+      });
+    },
+    atamaListesi: async function (s) {
+      return (await sb('etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&select=*')) || [];
+    },
+    atamaKaydet: async function (s, oyunId, aktif, acilis, kapanis) {
+      await sb('etkinlik_atama', {
+        method: 'POST',
+        prefer: 'resolution=merge-duplicates,return=representation',
+        body: { campus_id: s.campusId, oyun_id: oyunId, aktif: !!aktif, acilis: acilis, kapanis: kapanis }
+      });
+    },
+    tamamlananlar: async function (s) {
+      return (await sb('tamamlanan?ogrenci_id=eq.' + encodeURIComponent(s.id) + '&select=oyun_id,puan,tarih')) || [];
+    },
+    tamamla: async function (s, oyunId) {
+      await sb('tamamlanan', { method: 'POST', body: { ogrenci_id: s.id, campus_id: s.campusId, oyun_id: oyunId, puan: PUAN_BASINA } });
+      var ps = await sb('profil?id=eq.' + encodeURIComponent(s.id) + '&select=puan');
+      var yeni = (ps[0].puan || 0) + PUAN_BASINA;
+      await sb('profil?id=eq.' + encodeURIComponent(s.id), { method: 'PATCH', body: { puan: yeni } });
+      return yeni;
+    },
+    avatarGuncelle: async function (s, avatar) {
+      await sb('profil?id=eq.' + encodeURIComponent(s.id), { method: 'PATCH', body: { avatar: avatar } });
+    }
+  };
+
+  /* ============================================================
+     DEMO ARKA UÇ (localStorage — bu cihazda)
+     ============================================================ */
+  function dGet(k) { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch (e) { return []; } }
+  function dSet(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+  function dId() { return 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+  var DK = { campus: 'bt_demo_campus', profil: 'bt_demo_profil', atama: 'bt_demo_atama', tamamlanan: 'bt_demo_tamamlanan' };
+
+  var DemoAPI = {
+    kayitOgretmen: async function (kamp, ad, kullaniciAdi, sifre) {
+      var ks = dGet(DK.campus);
+      if (ks.some(function (c) { return c.ad.toLowerCase() === kamp.toLowerCase(); })) throw new Error('Bu kampüs adı zaten var.');
+      var tuz = tuzUret();
+      var hash = await sifreHash(sifre, tuz);
+      var c = { id: dId(), ad: kamp };
+      ks.push(c); dSet(DK.campus, ks);
+      var ps = dGet(DK.profil);
+      if (ps.some(function (p) { return p.kullaniciAdi.toLowerCase() === kullaniciAdi.toLowerCase(); })) throw new Error('Bu kullanıcı adı alınmış.');
+      var p = { id: dId(), campusId: c.id, kullaniciAdi: kullaniciAdi, tuz: tuz, hash: hash, ad: ad, rol: 'ogretmen', avatar: '👩‍🏫', puan: 0 };
+      ps.push(p); dSet(DK.profil, ps);
+      return { id: p.id, campusId: c.id, kampusAdi: kamp, kullaniciAdi: kullaniciAdi, ad: ad, rol: 'ogretmen', avatar: '👩‍🏫', puan: 0 };
+    },
+    giris: async function (kullaniciAdi, sifre) {
+      var ps = dGet(DK.profil);
+      var p = ps.filter(function (x) { return x.kullaniciAdi.toLowerCase() === kullaniciAdi.toLowerCase(); })[0];
+      if (!p) throw new Error('Kullanıcı bulunamadı.');
+      var hash = await sifreHash(sifre, p.tuz);
+      if (hash !== p.hash) throw new Error('Şifre hatalı.');
+      var c = dGet(DK.campus).filter(function (x) { return x.id === p.campusId; })[0];
+      return { id: p.id, campusId: p.campusId, kampusAdi: c ? c.ad : '', kullaniciAdi: p.kullaniciAdi, ad: p.ad, rol: p.rol, avatar: p.avatar, puan: p.puan || 0 };
+    },
+    ogrenciEkle: async function (s, ad, kullaniciAdi, sifre) {
+      var ps = dGet(DK.profil);
+      if (ps.some(function (p) { return p.kullaniciAdi.toLowerCase() === kullaniciAdi.toLowerCase(); })) throw new Error('Bu kullanıcı adı alınmış.');
+      var tuz = tuzUret();
+      var hash = await sifreHash(sifre, tuz);
+      var p = { id: dId(), campusId: s.campusId, kullaniciAdi: kullaniciAdi, tuz: tuz, hash: hash, ad: ad, rol: 'ogrenci', avatar: '🐣', puan: 0 };
+      ps.push(p); dSet(DK.profil, ps);
+      return p;
+    },
+    sifreSifirla: async function (s, ogrenciId, yeniSifre) {
+      var ps = dGet(DK.profil);
+      var p = ps.filter(function (x) { return x.id === ogrenciId; })[0];
+      if (!p) throw new Error('Öğrenci bulunamadı.');
+      var tuz = tuzUret();
+      p.tuz = tuz; p.hash = await sifreHash(yeniSifre, tuz);
+      dSet(DK.profil, ps);
+    },
+    ogrenciListesi: async function (s) {
+      var ps = dGet(DK.profil).filter(function (p) { return p.campusId === s.campusId && p.rol === 'ogrenci'; });
+      var ts = dGet(DK.tamamlanan).filter(function (t) { return t.campusId === s.campusId; });
+      var sayilar = {};
+      ts.forEach(function (t) { sayilar[t.ogrenci_id] = (sayilar[t.ogrenci_id] || 0) + 1; });
+      return ps.map(function (p) {
+        return { id: p.id, ad: p.ad, kullaniciAdi: p.kullaniciAdi, puan: p.puan || 0, avatar: p.avatar || '🐣', tamamlanan: sayilar[p.id] || 0 };
+      });
+    },
+    atamaListesi: async function (s) {
+      return dGet(DK.atama).filter(function (a) { return a.campusId === s.campusId; });
+    },
+    atamaKaydet: async function (s, oyunId, aktif, acilis, kapanis) {
+      var as = dGet(DK.atama);
+      as = as.filter(function (a) { return !(a.campusId === s.campusId && a.oyun_id === oyunId); });
+      as.push({ campusId: s.campusId, oyun_id: oyunId, aktif: !!aktif, acilis: acilis, kapanis: kapanis });
+      dSet(DK.atama, as);
+    },
+    tamamlananlar: async function (s) {
+      return dGet(DK.tamamlanan).filter(function (t) { return t.ogrenci_id === s.id; });
+    },
+    tamamla: async function (s, oyunId) {
+      var ts = dGet(DK.tamamlanan);
+      if (ts.some(function (t) { return t.ogrenci_id === s.id && t.oyun_id === oyunId; })) throw new Error('Bu etkinliği zaten tamamladın.');
+      ts.push({ id: dId(), ogrenci_id: s.id, campusId: s.campusId, oyun_id: oyunId, puan: PUAN_BASINA, tarih: new Date().toISOString() });
+      dSet(DK.tamamlanan, ts);
+      var ps = dGet(DK.profil);
+      var p = ps.filter(function (x) { return x.id === s.id; })[0];
+      p.puan = (p.puan || 0) + PUAN_BASINA;
+      dSet(DK.profil, ps);
+      return p.puan;
+    },
+    avatarGuncelle: async function (s, avatar) {
+      var ps = dGet(DK.profil);
+      var p = ps.filter(function (x) { return x.id === s.id; })[0];
+      if (p) { p.avatar = avatar; dSet(DK.profil, ps); }
+    }
+  };
+
+  var API = DEMO ? DemoAPI : SupabaseAPI;
+
+  /* ---------- Durum hesaplama ---------- */
+  function durumHesapla(atama) {
+    if (!atama) return { acik: true, etiket: 'Açık', sinif: 'acik' };
+    if (!atama.aktif) return { acik: false, etiket: 'Kapalı', sinif: 'kapali' };
+    var now = new Date();
+    if (atama.acilis && now < new Date(atama.acilis)) return { acik: false, etiket: '📅 ' + tarihKisa(atama.acilis) + ' tarihinde açılacak', sinif: 'tarih' };
+    if (atama.kapanis && now > new Date(atama.kapanis)) return { acik: false, etiket: '⏰ Süresi doldu', sinif: 'kapali' };
+    return { acik: true, etiket: 'Açık', sinif: 'acik' };
+  }
+  function secimdenAtama(durumSec, acilisV, kapanisV) {
+    if (durumSec === 'kapali') return { aktif: false, acilis: null, kapanis: null };
+    if (durumSec === 'tarihli') return { aktif: true, acilis: dtIso(acilisV), kapanis: dtIso(kapanisV) };
+    return { aktif: true, acilis: null, kapanis: null };
+  }
+
+  /* ---------- Ekran yönetimi ---------- */
+  function gosterEkran(ad) {
+    $('ekranGiris').style.display = ad === 'giris' ? '' : 'none';
+    $('ekranKayit').style.display = ad === 'kayit' ? '' : 'none';
+    $('ekranPanel').style.display = ad === 'panel' ? '' : 'none';
+  }
+
+  function hataGoster(el, msg) { el.textContent = msg; el.style.display = msg ? '' : 'none'; }
+  function bilgiGoster(el, msg) { el.textContent = msg; el.style.display = msg ? '' : 'none'; }
+
+  var oturum = null;
+
+  /* ---------- Öğretmen ---------- */
+  function ogretmenYukle() {
+    $('ustOrta').innerHTML = '<div class="kampus">🏫 ' + esc(oturum.kampusAdi) + '</div><div class="kullanici">👩‍🏫 ' + esc(oturum.ad) + ' · @' + esc(oturum.kullaniciAdi) + '</div>';
+    ogrenciListesiniCiz();
+    etkinlikYonetiminiCiz();
+  }
+
+  function ogrenciListesiniCiz() {
+    API.ogrenciListesi(oturum).then(function (ogrenciler) {
+      var kutu = $('ogrenciListe');
+      if (!ogrenciler.length) { kutu.innerHTML = '<div class="bos">Henüz öğrenci eklenmedi. Üstteki formla ekle.</div>'; return; }
+      var h = '<table><tr><th></th><th>Ad</th><th>Kullanıcı adı</th><th>Puan</th><th>Etkinlik</th><th>İşlem</th></tr>';
+      ogrenciler.forEach(function (o) {
+        h += '<tr class="satir"><td style="font-size:20px">' + esc(o.avatar) + '</td><td><b>' + esc(o.ad) + '</b></td><td>@' + esc(o.kullaniciAdi) + '</td><td>⭐ ' + o.puan + '</td><td>✅ ' + o.tamamlanan + '</td><td><button class="btn kirmizi kucuk" data-sifirla="' + o.id + '">Şifre Sıfırla</button></td></tr>';
+      });
+      h += '</table>';
+      kutu.innerHTML = h;
+      Array.prototype.forEach.call(kutu.querySelectorAll('[data-sifirla]'), function (b) {
+        b.onclick = function () {
+          var yeni = prompt('Yeni şifre girin:');
+          if (!yeni || yeni.length < 3) { alert('Şifre en az 3 karakter olmalı.'); return; }
+          API.sifreSifirla(oturum, b.getAttribute('data-sifirla'), yeni).then(function () {
+            alert('✅ Şifre güncellendi.');
+          }).catch(function (e) { alert('Hata: ' + e.message); });
+        };
+      });
+    }).catch(function (e) { $('ogrenciListe').innerHTML = '<div class="hata" style="display:block">' + esc(e.message) + '</div>'; });
+  }
+
+  function etkinlikYonetiminiCiz() {
+    API.atamaListesi(oturum).then(function (atamalar) {
+      API.ogrenciListesi(oturum).then(function (ogrenciler) {
+        var byId = {};
+        atamalar.forEach(function (a) { byId[a.oyun_id] = a; });
+        var kutu = $('etkinlikListe');
+        var h = '';
+        ETKINLIKLER.forEach(function (e) {
+          var a = byId[e.id] || null;
+          var secim = !a ? 'acik' : (!a.aktif ? 'kapali' : ((a.acilis || a.kapanis) ? 'tarihli' : 'acik'));
+          var tamamlayan = ogrenciler.filter(function (o) { return o.tamamlanan > 0; }).length;
+          var d = durumHesapla(a);
+          h += '<div class="etkinlik">' +
+            '<div class="ad">' + esc(e.ad) + ' <span class="rozet ' + d.sinif + '">' + esc(d.etiket) + '</span></div>' +
+            '<div class="aciklama">' + esc(e.aciklama) + '</div>' +
+            '<div class="alan">' +
+            '<select data-secim="' + e.id + '">' +
+            '<option value="acik"' + (secim === 'acik' ? ' selected' : '') + '>Açık (herkes oynayabilir)</option>' +
+            '<option value="kapali"' + (secim === 'kapali' ? ' selected' : '') + '>Kapalı</option>' +
+            '<option value="tarihli"' + (secim === 'tarihli' ? ' selected' : '') + '>Tarihli (tarihlerde açık)</option>' +
+            '</select>' +
+            '<button class="btn kucuk" data-kaydet="' + e.id + '">Kaydet</button>' +
+            '</div>' +
+            '<div class="tarihler' + (secim === 'tarihli' ? ' goster' : '') + '" data-tarihler="' + e.id + '">' +
+            '<div><label style="margin-top:0">Açılış tarihi</label><input type="datetime-local" data-acilis="' + e.id + '" value="' + (a && a.acilis ? dtYerel(a.acilis) : '') + '"></div>' +
+            '<div><label style="margin-top:0">Kapanış tarihi (boş = kapanmaz)</label><input type="datetime-local" data-kapanis="' + e.id + '" value="' + (a && a.kapanis ? dtYerel(a.kapanis) : '') + '"></div>' +
+            '</div>' +
+            '<div class="kucuk-not">Kampüste ' + tamamlayan + '/' + ogrenciler.length + ' öğrenci bu etkinliği tamamladı.</div>' +
+            '</div>';
+        });
+        kutu.innerHTML = h;
+        Array.prototype.forEach.call(kutu.querySelectorAll('[data-secim]'), function (s) {
+          s.onchange = function () {
+            var tar = kutu.querySelector('[data-tarihler="' + s.getAttribute('data-secim') + '"]');
+            if (tar) tar.classList.toggle('goster', s.value === 'tarihli');
+          };
+        });
+        Array.prototype.forEach.call(kutu.querySelectorAll('[data-kaydet]'), function (b) {
+          b.onclick = function () {
+            var id = b.getAttribute('data-kaydet');
+            var secim = kutu.querySelector('[data-secim="' + id + '"]').value;
+            var a1 = kutu.querySelector('[data-acilis="' + id + '"]').value;
+            var a2 = kutu.querySelector('[data-kapanis="' + id + '"]').value;
+            var a = secimdenAtama(secim, a1, a2);
+            if (secim === 'tarihli' && (!a.acilis)) { alert('Açılış tarihi girmelisin.'); return; }
+            if (a.acilis && a.kapanis && new Date(a.kapanis) <= new Date(a.acilis)) { alert('Kapanış, açılıştan sonra olmalı.'); return; }
+            API.atamaKaydet(oturum, id, a.aktif, a.acilis, a.kapanis).then(function () {
+              bilgiGoster($('oBilgi'), '✅ Etkinlik ayarı kaydedildi.');
+              etkinlikYonetiminiCiz();
+              setTimeout(function () { bilgiGoster($('oBilgi'), ''); }, 2500);
+            }).catch(function (e) { alert('Hata: ' + e.message); });
+          };
+        });
+      });
+    }).catch(function (e) { $('etkinlikListe').innerHTML = '<div class="hata" style="display:block">' + esc(e.message) + '</div>'; });
+  }
+
+  /* ---------- Öğrenci ---------- */
+  function ogrenciYukle() {
+    $('ustOrta').innerHTML = '<div class="kampus">🏫 ' + esc(oturum.kampusAdi) + '</div><div class="kullanici">👨‍🎓 ' + esc(oturum.ad) + ' · @' + esc(oturum.kullaniciAdi) + '</div>';
+    ogrenciProfilCiz();
+    rozetleriCiz();
+    ogrenciEtkinlikleriCiz();
+  }
+
+  function ogrenciVerileri() {
+    return Promise.all([API.tamamlananlar(oturum), API.atamaListesi(oturum)]).then(function (r) {
+      return { tamamlananlar: r[0], atamalar: r[1] };
+    });
+  }
+
+  function ogrenciProfilCiz() {
+    $('ogAvatar').textContent = oturum.avatar || '🐣';
+    $('ogAd').textContent = oturum.ad;
+    $('ogKullanici').textContent = oturum.kullaniciAdi;
+    $('ogKampus').textContent = oturum.kampusAdi;
+    ogrenciVerileri().then(function (v) {
+      $('ogPuan').textContent = oturum.puan;
+      $('ogTamam').textContent = v.tamamlananlar.length;
+    });
+  }
+
+  function rozetleriCiz() {
+    ogrenciVerileri().then(function (v) {
+      var c = v.tamamlananlar.length;
+      var p = oturum.puan;
+      var h = '';
+      ROZETLER.forEach(function (r) {
+        var acik = r.k(c, p);
+        h += '<div class="rozetti' + (acik ? '' : ' kilitli') + '" title="' + esc(r.aciklama) + '"><span class="ikon">' + r.e + '</span><b>' + esc(r.ad) + '</b><span>' + esc(r.aciklama) + '</span></div>';
+      });
+      $('rozetListe').innerHTML = h;
+    });
+  }
+
+  function ogrenciEtkinlikleriCiz() {
+    ogrenciVerileri().then(function (v) {
+      var byId = {};
+      v.atamalar.forEach(function (a) { byId[a.oyun_id] = a; });
+      var tamam = {};
+      v.tamamlananlar.forEach(function (t) { tamam[t.oyun_id] = t; });
+      var kutu = $('ogrenciEtkinlikler');
+      if (!ETKINLIKLER.length) { kutu.innerHTML = '<div class="bos">Henüz etkinlik yok.</div>'; return; }
+      var h = '';
+      ETKINLIKLER.forEach(function (e) {
+        var d = durumHesapla(byId[e.id] || null);
+        var bitti = !!tamam[e.id];
+        h += '<div class="etkinlik">' +
+          '<div class="ad">' + esc(e.ad) + ' <span class="rozet ' + d.sinif + '">' + esc(d.etiket) + '</span>' + (bitti ? ' <span class="rozet acik">✓ Tamamlandı</span>' : '') + '</div>' +
+          '<div class="aciklama">' + esc(e.aciklama) + '</div>' +
+          '<div class="alan">' +
+          '<a class="btn kucuk" target="_blank" rel="noopener" href="' + esc(e.url) + '">▶ Oyna</a> ' +
+          '<button class="btn yesil kucuk" data-tamamla="' + e.id + '"' + (bitti || !d.acik ? ' disabled' : '') + '>✓ Tamamladım (+' + PUAN_BASINA + ' puan)</button>' +
+          '</div></div>';
+      });
+      kutu.innerHTML = h;
+      Array.prototype.forEach.call(kutu.querySelectorAll('[data-tamamla]'), function (b) {
+        b.onclick = function () {
+          var id = b.getAttribute('data-tamamla');
+          if (!confirm('Bu etkinliği tamamladığını onaylıyor musun? +' + PUAN_BASINA + ' puan kazanacaksın.')) return;
+          API.tamamla(oturum, id).then(function (yeniPuan) {
+            oturum.puan = yeniPuan;
+            oturumKaydet(oturum);
+            ogrenciProfilCiz();
+            rozetleriCiz();
+            ogrenciEtkinlikleriCiz();
+          }).catch(function (e) { alert('Hata: ' + e.message); });
+        };
+      });
+    });
+  }
+
+  function avatarSeciciCiz() {
+    var kutu = $('avatarSecici');
+    var h = '<p class="kucuk-not" style="margin-bottom:6px">Puanına göre avatarlar açılır. Açılanlardan birini seç:</p>';
+    AVATARLAR.forEach(function (a) {
+      var acik = oturum.puan >= a.puan;
+      h += '<span class="avatar-sec' + (oturum.avatar === a.e ? ' secili' : '') + (acik ? '' : ' kilitli') + '" data-avatar="' + a.e + '" title="' + esc(a.ad) + (acik ? '' : ' (' + a.puan + ' puan)') + '">' + a.e + '</span>';
+    });
+    kutu.innerHTML = h;
+    Array.prototype.forEach.call(kutu.querySelectorAll('[data-avatar]'), function (s) {
+      s.onclick = function () {
+        var av = s.getAttribute('data-avatar');
+        var acik = AVATARLAR.filter(function (a) { return a.e === av; })[0];
+        if (oturum.puan < acik.puan) { alert('Bu avatar için ' + acik.puan + ' puan gerekli.'); return; }
+        API.avatarGuncelle(oturum, av).then(function () {
+          oturum.avatar = av;
+          oturumKaydet(oturum);
+          $('ogAvatar').textContent = av;
+          avatarSeciciCiz();
+        }).catch(function (e) { alert('Hata: ' + e.message); });
+      };
+    });
+  }
+
+  /* ---------- Panel ana ---------- */
+  function paneliGoster() {
+    gosterEkran('panel');
+    $('cikisBtn').style.display = '';
+    $('ogretmenIcerik').style.display = oturum.rol === 'ogretmen' ? '' : 'none';
+    $('ogrenciIcerik').style.display = oturum.rol === 'ogrenci' ? '' : 'none';
+    if (oturum.rol === 'ogretmen') ogretmenYukle();
+    else ogrenciYukle();
+  }
+
+  function cikis() {
+    oturumTemizle();
+    oturum = null;
+    $('cikisBtn').style.display = 'none';
+    gosterEkran('giris');
+  }
+
+  /* ---------- Olaylar ---------- */
+  $('girisBtn').onclick = function () {
+    var k = $('gKullanici').value.trim();
+    var s = $('gSifre').value;
+    if (!k || !s) { hataGoster($('gHata'), 'Kullanıcı adı ve şifre girin.'); return; }
+    hataGoster($('gHata'), '');
+    $('girisBtn').disabled = true;
+    API.giris(k, s).then(function (o) {
+      oturum = o;
+      oturumKaydet(o);
+      paneliGoster();
+    }).catch(function (e) {
+      hataGoster($('gHata'), e.message);
+    }).finally(function () { $('girisBtn').disabled = false; });
+  };
+  $('gSifre').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('girisBtn').click(); });
+
+  $('kayitBtn').onclick = function () {
+    var kamp = $('kKampus').value.trim();
+    var ad = $('kAd').value.trim();
+    var k = $('kKullanici').value.trim();
+    var s1 = $('kSifre').value;
+    var s2 = $('kSifre2').value;
+    if (!kamp || !ad || !k || !s1) { hataGoster($('kHata'), 'Lütfen tüm alanları doldur.'); return; }
+    if (s1 !== s2) { hataGoster($('kHata'), 'Şifreler eşleşmiyor.'); return; }
+    if (s1.length < 4) { hataGoster($('kHata'), 'Şifre en az 4 karakter olmalı.'); return; }
+    hataGoster($('kHata'), '');
+    $('kayitBtn').disabled = true;
+    API.kayitOgretmen(kamp, ad, k, s1).then(function (o) {
+      oturum = o;
+      oturumKaydet(o);
+      paneliGoster();
+    }).catch(function (e) {
+      hataGoster($('kHata'), e.message);
+    }).finally(function () { $('kayitBtn').disabled = false; });
+  };
+
+  $('kayitGec').onclick = function (e) { e.preventDefault(); gosterEkran('kayit'); };
+  $('girisGec').onclick = function (e) { e.preventDefault(); gosterEkran('giris'); };
+  $('cikisBtn').onclick = cikis;
+
+  $('ogrenciEkleBtn').onclick = function () {
+    var ad = $('oAd').value.trim();
+    var k = $('oKullanici').value.trim();
+    var s = $('oSifre').value;
+    if (!ad || !k || !s) { hataGoster($('oHata'), 'Ad, kullanıcı adı ve şifre girin.'); return; }
+    if (s.length < 4) { hataGoster($('oHata'), 'Şifre en az 4 karakter olmalı.'); return; }
+    hataGoster($('oHata'), '');
+    $('ogrenciEkleBtn').disabled = true;
+    API.ogrenciEkle(oturum, ad, k, s).then(function () {
+      $('oAd').value = ''; $('oKullanici').value = ''; $('oSifre').value = '';
+      bilgiGoster($('oBilgi'), '✅ Öğrenci eklendi. Kullanıcı adı: @' + k);
+      ogrenciListesiniCiz();
+      etkinlikYonetiminiCiz();
+      setTimeout(function () { bilgiGoster($('oBilgi'), ''); }, 3000);
+    }).catch(function (e) {
+      hataGoster($('oHata'), e.message);
+    }).finally(function () { $('ogrenciEkleBtn').disabled = false; });
+  };
+
+  $('sekmeOgrenci').onclick = function () {
+    $('sekmeOgrenci').classList.add('secili'); $('sekmeEtkinlik').classList.remove('secili');
+    $('ogrenciSekme').style.display = ''; $('etkinlikSekme').style.display = 'none';
+    ogrenciListesiniCiz();
+  };
+  $('sekmeEtkinlik').onclick = function () {
+    $('sekmeEtkinlik').classList.add('secili'); $('sekmeOgrenci').classList.remove('secili');
+    $('etkinlikSekme').style.display = ''; $('ogrenciSekme').style.display = 'none';
+    etkinlikYonetiminiCiz();
+  };
+
+  $('hepsiniAcBtn').onclick = function () {
+    if (!confirm('Bütün etkinlikleri açık yap (tarih ayarları silinir)?')) return;
+    var isler = ETKINLIKLER.map(function (e) { return API.atamaKaydet(oturum, e.id, true, null, null); });
+    Promise.all(isler).then(function () { etkinlikYonetiminiCiz(); }).catch(function (e) { alert('Hata: ' + e.message); });
+  };
+  $('hepsiniKapatBtn').onclick = function () {
+    if (!confirm('Bütün etkinlikleri kapat? Öğrenciler oynayamaz.')) return;
+    var isler = ETKINLIKLER.map(function (e) { return API.atamaKaydet(oturum, e.id, false, null, null); });
+    Promise.all(isler).then(function () { etkinlikYonetiminiCiz(); }).catch(function (e) { alert('Hata: ' + e.message); });
+  };
+
+  $('avatarBtn').onclick = function () {
+    var kutu = $('avatarSecici');
+    if (kutu.style.display === 'none') { avatarSeciciCiz(); kutu.style.display = ''; }
+    else kutu.style.display = 'none';
+  };
+
+  /* ---------- Başlangıç ---------- */
+  if (DEMO) $('demoBanner').style.display = '';
+  var s = oturumOku();
+  if (s && s.kullaniciAdi) {
+    oturum = s;
+    paneliGoster();
+  } else {
+    gosterEkran('giris');
+  }
+})();
+</script>
+</body>
+</html>

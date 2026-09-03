@@ -16,6 +16,8 @@ Robi maskotuyla birlikte tüm etkinlikler tek çatı altında: karta tıkla, hem
 ```
 bilfenbilisimai/
 ├── index.html              ← Portal ana sayfası (bu dosya)
+├── panel.html              ← Öğretmen/Öğrenci paneli (giriş, etkinlik yönetimi, puan)
+├── supabase-schema.sql     ← Bulut (Supabase) veritabanı şeması
 ├── robi.png                ← Robi maskotu
 ├── games/                  ← Etkinlikler (her etkinlik bir klasör)
 │   └── carkifelek/
@@ -51,9 +53,41 @@ bilfenbilisimai/
 ```
 
 4. Dosyayı kaydet — etkinlik portalda seçtiğin sınıfın / IPT kategorisinin bölümünde görünür. ✅
+   Öğrenci panelinde de görünmesi için aynı etkinliği `panel.html` içindeki
+   `ETKINLIKLER` listesine de ekle (id, ad, url, açıklama).
 
 > İpucu: Etkinlikler saf HTML + CSS + JavaScript ile yapılır; internet
 > gerekmez ve her tarayıcıda (bilgisayar, tablet, projeksiyon) çalışır.
+
+## 🔐 Panel & Giriş (Öğretmen + Öğrenci)
+
+Sağ üstteki **👤 Panel** düğmesi `panel.html`'i açar:
+
+- **Öğretmen:** kayıt olur ve kampüsünü oluşturur → öğrencilerini ekler,
+  şifrelerini sıfırlar, etkinlikleri **açık / kapalı / tarihli** yapar
+  (tek kayıt bütün kampüse uygulanır).
+- **Öğrenci:** öğretmenin verdiği kullanıcı adı + şifreyle girer, açık
+  etkinlikleri oynar, "Tamamladım" der → **puan** kazanır, **rozetler** ve
+  **avatarlar** açılır.
+- Portaldaki etkinlik kartları öğrenci hesabıyla açılmaya çalışılırsa
+  öğretmenin belirlediği açık/kapalı/tarih durumuna göre izin verilir.
+
+### Bulut senkronu (Supabase) — tek seferlik kurulum
+
+Verilerin gerçekten çok cihazlı senkron olması için ücretsiz Supabase
+kullanılır. (Kurulmadan da panel **demo modunda** bu cihazda çalışır.)
+
+1. [supabase.com](https://supabase.com) → **New project** (ücretsiz plan).
+2. Sol menüden **SQL Editor** → `supabase-schema.sql` dosyasının içeriğini
+   yapıştır → **RUN**.
+3. **Settings → API** sayfasından **Project URL** ve **anon public** anahtarını kopyala.
+4. `panel.html` içinde `SUPABASE_URL` ve `SUPABASE_ANON` değerlerini yapıştır.
+5. `index.html` içinde `CONFIG = { url: ..., anon: ... }` değerlerini aynı şekilde doldur.
+6. Sayfayı yenile — demo bandı kaybolur, artık her cihazdan aynı kampüse erişilir.
+
+> Güvenlik notu: Bu araç sınıf içi kullanım içindir. Kimlik doğrulama
+> uygulama katmanında yapılır; anon anahtar ile veriler okunabilir/yazılabilir.
+> Okul dışına taşınacaksa Supabase Auth'a geçilmelidir.
 
 ## ✨ Portal Özellikleri
 
@@ -64,4 +98,6 @@ bilfenbilisimai/
 - ▶️ Karta tıklayınca tam ekran oynatma penceresi (+ yeni sekmede aç)
 - 🤖 Robi hem logoda hem de portalda ziyaretçileri karşılar
 - 🎯 Sınıf Çarkıfeleği gibi tahta etkinlikleri, sınıf/IPC bölümlerini şişirmeden yalnız Öğretmen kategorisinde durur
+- 👤 Sağ üstte **Panel** düğmesi: öğretmen kaydı + kampüs, öğrenci ekleme, şifre sıfırlama, etkinlik aç/kapa/tarih
+- ⭐ Öğrenci panelinde puan toplama, rozet kazanma ve avatar seçme
 - 📱 Telefon, tablet ve projeksiyonda çalışan duyarlı tasarım

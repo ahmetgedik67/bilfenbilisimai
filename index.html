@@ -255,11 +255,21 @@
     .hero { flex-direction: column; text-align: center; }
     .pencere-baslik .ad { font-size: 14px; }
   }
+  header { position: relative; }
+  .panel-btn {
+    position: absolute; top: 14px; right: 14px; z-index: 5;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff;
+    text-decoration: none; font-weight: 700; font-size: 14px;
+    padding: 9px 16px; border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(79,70,229,.35); transition: transform .15s;
+  }
+  .panel-btn:hover { transform: translateY(-2px); }
 </style>
 </head>
 <body>
 
 <header>
+  <a class="panel-btn" href="panel.html" title="Öğretmen ve Öğrenci Paneli — giriş, etkinlik yönetimi, puan ve rozetler">👤 Panel</a>
   <div class="hero">
     <div class="robi-wrap">
       <img class="robi" id="robiMaskot" alt="Robi" title="Robi">
@@ -570,12 +580,15 @@
 
   /* ---------- Oynatma penceresi ---------- */
   function oynat(oyun) {
-    $('oyunAdi').textContent = oyun.ad;
-    $('yeniSekme').href = oyun.url;
-    const cerceve = $('oyunCerceve');
-    cerceve.src = oyun.url;
-    $('pencere').classList.add('acik');
-    document.body.style.overflow = 'hidden';
+    etkinlikAcikMi(oyun.id).then(function (sonuc) {
+      if (!sonuc.ok) { alert(sonuc.msg); return; }
+      $('oyunAdi').textContent = oyun.ad;
+      $('yeniSekme').href = oyun.url;
+      const cerceve = $('oyunCerceve');
+      cerceve.src = oyun.url;
+      $('pencere').classList.add('acik');
+      document.body.style.overflow = 'hidden';
+    });
   }
   function kapat() {
     $('pencere').classList.remove('acik');
@@ -591,6 +604,48 @@
   $('robiMaskot').src = ROBI_DATA;
   $('robiLogo').src = ROBI_DATA;
   render();
+})();
+</script>
+<script>
+/* ===== Panel / oturum yardımcıları (index.html) ===== */
+(function () {
+  'use strict';
+  /* Supabase ayarları panel.html ile aynı olmalı; boşsa demo modu (bu cihaz). */
+  var CONFIG = { url: '', anon: '' };
+
+  function oturumOku() {
+    try { return JSON.parse(localStorage.getItem('bt_oturum') || 'null'); } catch (e) { return null; }
+  }
+  function durumKontrol(a) {
+    if (!a || !a.aktif) return { ok: false, msg: '🔒 Bu etkinlik şu an kapalı. Öğretmeninin açmasını bekle.' };
+    var now = Date.now();
+    if (a.acilis && now < new Date(a.acilis).getTime()) {
+      var t;
+      try { t = new Date(a.acilis).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }); } catch (e) { t = new Date(a.acilis).toLocaleDateString(); }
+      return { ok: false, msg: '📅 Bu etkinlik ' + t + ' tarihinde açılacak.' };
+    }
+    if (a.kapanis && now > new Date(a.kapanis).getTime()) return { ok: false, msg: '⏰ Bu etkinliğin süresi doldu.' };
+    return { ok: true };
+  }
+  window.etkinlikAcikMi = function (oyunId) {
+    return Promise.resolve().then(function () {
+      var s = oturumOku();
+      /* Misafir ve öğretmen her zaman açabilir; kısıtlama yalnız öğrenci hesaplarına uygulanır. */
+      if (!s || s.rol !== 'ogrenci') return { ok: true };
+      if (!CONFIG.url) {
+        var as = [];
+        try { as = JSON.parse(localStorage.getItem('bt_demo_atama') || '[]'); } catch (e) {}
+        var a = null;
+        for (var i = 0; i < as.length; i++) if (as[i].campusId === s.campusId && as[i].oyun_id === oyunId) { a = as[i]; break; }
+        return durumKontrol(a);
+      }
+      return fetch(CONFIG.url + '/rest/v1/etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&oyun_id=eq.' + encodeURIComponent(oyunId) + '&select=*', {
+        headers: { apikey: CONFIG.anon, Authorization: 'Bearer ' + CONFIG.anon }
+      }).then(function (r) { return r.json(); }).then(function (rows) {
+        return durumKontrol(rows && rows[0]);
+      }).catch(function () { return { ok: true }; });
+    });
+  };
 })();
 </script>
 </body>
