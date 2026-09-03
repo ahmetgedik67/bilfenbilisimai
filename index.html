@@ -580,7 +580,8 @@
 
   /* ---------- Oynatma penceresi ---------- */
   function oynat(oyun) {
-    etkinlikAcikMi(oyun.id).then(function (sonuc) {
+    /* Öğretmen araçları giriş/atama kapısına takılmaz: herkese her zaman açıktır. */
+    etkinlikAcikMi(oyun.id, !!oyun.ogretmen).then(function (sonuc) {
       if (!sonuc.ok) { alert(sonuc.msg); return; }
       $('oyunAdi').textContent = oyun.ad;
       $('yeniSekme').href = oyun.url;
@@ -627,8 +628,10 @@
     if (a.kapanis && now > new Date(a.kapanis).getTime()) return { ok: false, msg: '⏰ Bu etkinliğin süresi doldu.' };
     return { ok: true };
   }
-  window.etkinlikAcikMi = function (oyunId) {
+  window.etkinlikAcikMi = function (oyunId, herkeseAcik) {
     return Promise.resolve().then(function () {
+      /* Öğretmen araçları: giriş yapılmadan da, öğrenci hesabıyla da her zaman açık. */
+      if (herkeseAcik) return { ok: true };
       var s = oturumOku();
       /* Misafir ve öğretmen her zaman açabilir; kısıtlama yalnız öğrenci hesaplarına uygulanır. */
       if (!s || s.rol !== 'ogrenci') return { ok: true };

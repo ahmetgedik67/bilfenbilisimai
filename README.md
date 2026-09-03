@@ -139,7 +139,7 @@ atlanır ve kaç satırın eklenemediği bildirilir.
 ## ✨ Portal Özellikleri
 
 - 🏫 Üst menüde **SINIF** çipleri (1 – 7), **IPT KATEGORİSİ** açılır menüsü (2 IPT – 7 IPT) ve **ÖĞRETMEN** kategorisi ayrı ayrı durur
-- 👩‍🏫 Öğretmen kategorisinde tahtada yalnız öğretmenin uyguladığı etkinlikler toplanır (ör. Sınıf Çarkıfeleği)
+- 👩‍🏫 Öğretmen kategorisinde tahtada yalnız öğretmenin uyguladığı etkinlikler toplanır (ör. Sınıf Çarkıfeleği) — bu araçlar **giriş yapılmadan da herkese açıktır**; öğrenci ataması/kapalı durumu bunlara uygulanmaz
 - 🗂️ IPT kategorilerine göre bölümler (2 IPT – 7 IPT); 1. sınıf seçilince o sınıfa uygun etkinlikler görünür
 - 🖼️ Her etkinlik için gerçek önizleme görüntüsü ve açıklama kartı
 - ▶️ Karta tıklayınca tam ekran oynatma penceresi (+ yeni sekmede aç)
