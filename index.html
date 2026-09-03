@@ -82,6 +82,20 @@
     border-bottom: 1px solid rgba(255,255,255,.14);
   }
   .dd { position: relative; }
+  .filtre-kutu { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .numaralar { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .numara {
+    min-width: 40px; height: 40px; padding: 0 8px; font-family: inherit;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1.5px solid rgba(255,255,255,.4); background: rgba(255,255,255,.14);
+    color: #fff; border-radius: 999px; cursor: pointer;
+    font-size: 15px; font-weight: 800; transition: transform .15s, background .15s;
+  }
+  .numara:hover { background: rgba(255,255,255,.3); transform: translateY(-1px); }
+  .numara.secili {
+    background: linear-gradient(135deg, #f59e0b, #ef4444); border-color: transparent;
+    box-shadow: 0 6px 16px rgba(239,68,68,.45);
+  }
   .dd-dugme {
     display: inline-flex; align-items: center; gap: 10px;
     border: 1.5px solid rgba(255,255,255,.35); background: linear-gradient(135deg, #f59e0b, #ef4444);
@@ -239,11 +253,14 @@
 </header>
 
 <nav class="filtre-bar" aria-label="Seviye filtresi">
-  <div class="dd">
-    <button type="button" class="dd-dugme" id="seviyeDugme" aria-haspopup="listbox" aria-expanded="false">
-      <span id="seviyeEtiket">🗂️ Tümü</span><span class="dd-ok">▾</span>
-    </button>
-    <div class="dd-liste" id="seviyeListe" role="listbox" aria-label="IPT seviyeleri"></div>
+  <div class="filtre-kutu">
+    <div class="numaralar" id="numaralar" role="tablist" aria-label="IPT seviyeleri"></div>
+    <div class="dd">
+      <button type="button" class="dd-dugme" id="seviyeDugme" aria-haspopup="listbox" aria-expanded="false">
+        <span id="seviyeEtiket">🗂️ Tümü</span><span class="dd-ok">▾</span>
+      </button>
+      <div class="dd-liste" id="seviyeListe" role="listbox" aria-label="IPT seviyeleri"></div>
+    </div>
   </div>
 </nav>
 
@@ -316,7 +333,8 @@
   function etiketBul(deger) {
     if (deger === 'tumu') return '🗂️ Tümü';
     const k = KATEGORILER.find(x => String(x.no) === deger);
-    return k ? k.ad : '🗂️ Tümü';
+    if (k) return k.ad;
+    return /^[1-7]$/.test(deger) ? deger + ' IPT' : '🗂️ Tümü';
   }
   function menuKapat() {
     seviyeListe.classList.remove('acik');
@@ -345,6 +363,21 @@
       o.onclick = () => secimYap(s.d);
       seviyeListe.appendChild(o);
     });
+  }
+  function numaralarCiz() {
+    const kutu = $('numaralar');
+    kutu.innerHTML = '';
+    for (let n = 1; n <= 7; n++) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'numara' + (aktifFiltre === String(n) ? ' secili' : '');
+      b.textContent = n;
+      b.title = n + ' IPT';
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', String(aktifFiltre === String(n)));
+      b.onclick = () => secimYap(aktifFiltre === String(n) ? 'tumu' : String(n));
+      kutu.appendChild(b);
+    }
   }
   seviyeDugme.addEventListener('click', menuAcKapat);
   document.addEventListener('click', e => { if (!e.target.closest('.dd')) menuKapat(); });
@@ -424,14 +457,21 @@
   /* ---------- Bölümler ---------- */
   function render() {
     seviyeListeCiz();
+    numaralarCiz();
     const icerik = $('icerik');
     icerik.innerHTML = '';
 
     let gorunenOyunSayaci = 0;
-    KATEGORILER.forEach((kategori, idx) => {
+    let kategoriler;
+    if (aktifFiltre === 'tumu') {
+      kategoriler = KATEGORILER;
+    } else {
+      const n = parseInt(aktifFiltre, 10);
+      const varMi = KATEGORILER.some(k => k.no === n);
+      kategoriler = varMi ? KATEGORILER.filter(k => k.no === n) : [{ no: n, ad: n + ' IPT' }];
+    }
+    kategoriler.forEach((kategori, idx) => {
       const oyunlar = OYUNLAR.filter(o => (o.kategoriler || []).includes(kategori.no));
-      const seciliMi = aktifFiltre === 'tumu' || aktifFiltre === String(kategori.no);
-      if (!seciliMi) return;
 
       const bolum = document.createElement('section');
       bolum.className = 'sinifli';
@@ -453,7 +493,7 @@
 
       if (oyunlar.length) {
         oyunlar.forEach(o => kartlar.appendChild(kartYap(o, gorunenOyunSayaci++)));
-      } else if (aktifFiltre === 'tumu') {
+      } else {
         kartlar.appendChild(bosKartYap(kategori.ad));
       }
 
