@@ -255,7 +255,6 @@
     </div>
     <div class="hero-text">
       <div class="brand"><img class="brand-robi" id="robiLogo" alt="Robi"> Bilfen Bilişim AI</div>
-      <h1>HTML <span class="accent">Oyunları</span></h1>
       <p>Robi ile Kodla &amp; Keşfet! Bilişim Teknolojileri ve Yazılım dersi için hazırladığımız oyunlar — 2 IPT’den 7 IPT’ye, tek çatı altında.</p>
     </div>
   </div>
@@ -344,6 +343,7 @@
 
   /* ---------- Seviye filtresi (açılır menü) ---------- */
   let aktifFiltre = 'tumu';
+  let secimKaynagi = 'menu'; // 'sinif' → çiplerden (N. Sınıf), 'menu' → IPT açılır menüsünden (N IPT)
   const seviyeDugme = $('seviyeDugme');
   const seviyeListe = $('seviyeListe');
 
@@ -356,9 +356,11 @@
     seviyeDugme.setAttribute('aria-expanded', acik ? 'true' : 'false');
   }
   /* Sınıf çipleri ve IPT açılır menüsü aynı seviyeyi seçer: sınıf N = N IPT
-     (1. sınıfın IPT kategorisi yoktur; orada yalnız sınıf bazlı oyunlar görünür). */
-  function secimYap(deger) {
+     (1. sınıfın IPT kategorisi yoktur; orada yalnız sınıf bazlı oyunlar görünür).
+     Başlık, seçimin kaynağına göre yazılır: çipten “N. Sınıf”, IPT menüsünden “N IPT”. */
+  function secimYap(deger, kaynak) {
     aktifFiltre = deger;
+    secimKaynagi = kaynak || 'menu';
     menuKapat();
     render();
   }
@@ -372,7 +374,7 @@
       o.setAttribute('role', 'option');
       o.setAttribute('aria-selected', String(aktifFiltre === s.d));
       o.innerHTML = s.e + (aktifFiltre === s.d ? ' <span class="tik">✓</span>' : '');
-      o.onclick = () => secimYap(s.d);
+      o.onclick = () => secimYap(s.d, 'menu');
       seviyeListe.appendChild(o);
     });
   }
@@ -387,7 +389,7 @@
       b.title = n + '. sınıf';
       b.setAttribute('role', 'tab');
       b.setAttribute('aria-selected', String(aktifFiltre === String(n)));
-      b.onclick = () => secimYap(aktifFiltre === String(n) ? 'tumu' : String(n));
+      b.onclick = () => secimYap(aktifFiltre === String(n) ? 'tumu' : String(n), 'sinif');
       kutu.appendChild(b);
     }
   }
@@ -500,7 +502,9 @@
       baslik.className = 'sinif-baslik';
       const seviye = document.createElement('span');
       seviye.className = 'seviye';
-      seviye.textContent = kategori.ad;
+      // Sınıf çipinden seçildiyse başlık “N. Sınıf” olur; IPT menüsündense kategori adı (N IPT) yazılır
+      const sinifBasligi = aktifFiltre !== 'tumu' && secimKaynagi === 'sinif' && !kategori.sadeceSiniflar;
+      seviye.textContent = kategori.sadeceSiniflar ? '1. Sınıf' : sinifBasligi ? kategori.no + '. Sınıf' : kategori.ad;
       seviye.style.background = 'linear-gradient(135deg, ' + KATEGORI_RENK[idx % KATEGORI_RENK.length] + ', #ef4444)';
       const h2 = document.createElement('h2');
       h2.textContent = 'Bilişim Oyunları';
