@@ -7,7 +7,7 @@
 <!--
   Bilfen Bilişim AI – HTML Oyunları
   Bilişim Teknolojileri ve Yazılım dersi için hazırlanan oyunların
-  sınıf sınıf toplandığı portal ana sayfası.
+  IPT seviyelerine göre (2 IPT – 7 IPT) toplandığı portal ana sayfası.
   Yeni oyun eklemek: games/<oyun>/index.html dosyasını ekle,
   bir önizleme görüntüsünü thumbnails/ klasörüne koy ve aşağıdaki
   OYUNLAR listesine tek bir satır ekle.
@@ -57,12 +57,13 @@
   }
   .hero-text { text-align: center; }
   .brand {
-    display: inline-flex; align-items: center; gap: 8px;
+    display: inline-flex; align-items: center; gap: 9px;
     background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25);
-    padding: 5px 16px; border-radius: 999px;
-    font-size: 12.5px; font-weight: 800; letter-spacing: 1.5px; color: #e0e7ff;
+    padding: 6px 20px 6px 8px; border-radius: 999px;
+    font-size: 13px; font-weight: 800; letter-spacing: 1.5px; color: #e0e7ff;
     text-transform: uppercase; margin-bottom: 12px;
   }
+  .brand-robi { width: 34px; height: auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,.45)); }
   .hero h1 {
     font-size: clamp(30px, 5.5vw, 54px); letter-spacing: .5px;
     text-shadow: 0 4px 20px rgba(0,0,0,.35); line-height: 1.1;
@@ -211,14 +212,14 @@
       <span class="robi-tag">ROBİ</span>
     </div>
     <div class="hero-text">
-      <div class="brand">🎓 Bilfen Bilişim AI</div>
+      <div class="brand"><img class="brand-robi" src="robi.png" alt="Robi"> Bilfen Bilişim AI</div>
       <h1>HTML <span class="accent">Oyunları</span></h1>
-      <p>Robi ile Kodla &amp; Keşfet! Bilişim Teknolojileri ve Yazılım dersi için hazırladığımız oyunlar — sınıf sınıf, tek çatı altında. Bir karta tıkla, hemen oyna! 🎮</p>
+      <p>Robi ile Kodla &amp; Keşfet! Bilişim Teknolojileri ve Yazılım dersi için hazırladığımız oyunlar — 2 IPT’den 7 IPT’ye, tek çatı altında. Bir karta tıkla, hemen oyna! 🎮</p>
     </div>
   </div>
 </header>
 
-<nav class="chips" id="chips" aria-label="Sınıf filtresi"></nav>
+<nav class="chips" id="chips" aria-label="Seviye filtresi"></nav>
 
 <main id="icerik"></main>
 
@@ -251,22 +252,33 @@
      Yeni oyun eklemek için:
      1. games/<isim>/index.html dosyanı ekle
      2. thumbnails/<isim>.jpg önizleme görüntüsünü ekle
-     3. Aşağıya tek bir satır ekle (sinif: 5-8 arası bir sınıf)
+     3. Aşağıya tek bir satır ekle:
+        kategoriler: [5]          → yalnızca 5 IPT
+        kategoriler: [2,3,4,5,6,7] → bütün seviyeler
   ========================================= */
+
+  /* Seviyeler: bilişim dersinin IPT kategorileri */
+  const KATEGORILER = [
+    { no: 2, ad: '2 IPT' },
+    { no: 3, ad: '3 IPT' },
+    { no: 4, ad: '4 IPT' },
+    { no: 5, ad: '5 IPT' },
+    { no: 6, ad: '6 IPT' },
+    { no: 7, ad: '7 IPT' }
+  ];
+  const KATEGORI_RENK = ['#f59e0b', '#22c55e', '#38bdf8', '#a78bfa', '#f472b6', '#facc15'];
+
   const OYUNLAR = [
     {
       id: 'carkifelek',
       ad: 'Sınıf Çarkıfeleği',
-      sinif: 5,
+      kategoriler: KATEGORILER.map(k => k.no), // tanışma çarkı bütün seviyelerde görünür
       url: 'games/carkifelek/index.html',
       onizleme: 'thumbnails/carkifelek.jpg',
       aciklama: 'Tanışma etkinliği ve oturma planı için animasyonlu isim çekme çarkı. Dönüş sesleri, konfeti ve Robi maskotuyla kazananı seç!',
       etiketler: ['Tanışma', 'Çark', 'Sesli', 'Robi']
     }
   ];
-
-  const SINIFLAR = [5, 6, 7, 8];
-  const SINIF_RENK = ['#f59e0b', '#22c55e', '#38bdf8', '#a78bfa'];
 
   /* ---------- Filtre çipleri ---------- */
   let aktifFiltre = 'tumu';
@@ -281,7 +293,7 @@
   function cipsCiz() {
     chipsEl.innerHTML = '';
     chipsEl.appendChild(cipYap('tumu', '🗂️ Tümü', aktifFiltre === 'tumu'));
-    SINIFLAR.forEach(s => chipsEl.appendChild(cipYap(String(s), s + '. Sınıf', aktifFiltre === String(s))));
+    KATEGORILER.forEach(k => chipsEl.appendChild(cipYap(String(k.no), k.ad, aktifFiltre === String(k.no))));
   }
 
   /* ---------- Kart ---------- */
@@ -313,7 +325,10 @@
     no.textContent = 'OYUN ' + (sira + 1);
     const rozet = document.createElement('span');
     rozet.className = 'rozet';
-    rozet.textContent = oyun.sinif + '. SINIF';
+    const tumSeviyeler = (oyun.kategoriler || []).length >= KATEGORILER.length;
+    rozet.textContent = tumSeviyeler
+      ? 'TÜM SEVİYELER'
+      : oyun.kategoriler.map(n => n + ' IPT').join(' • ');
     ust.append(no, rozet);
 
     const h3 = document.createElement('h3');
@@ -343,12 +358,12 @@
   }
 
   /* ---------- Boş sınıf ---------- */
-  function bosKartYap(sinif) {
+  function bosKartYap(kategoriAdi) {
     const bos = document.createElement('div');
     bos.className = 'bos-kart';
     bos.innerHTML =
       '<div class="buyuk">🧩</div>' +
-      '<p><b>' + sinif + '. sınıf</b> için oyunlar hazırlanıyor…<br>Yeni oyun eklemek için README.md dosyasına göz atın.</p>';
+      '<p><b>' + kategoriAdi + '</b> seviyesi için oyunlar hazırlanıyor…<br>Yeni oyun eklemek için README.md dosyasına göz atın.</p>';
     return bos;
   }
 
@@ -359,9 +374,9 @@
     icerik.innerHTML = '';
 
     let gorunenOyunSayaci = 0;
-    SINIFLAR.forEach((sinif, idx) => {
-      const oyunlar = OYUNLAR.filter(o => o.sinif === sinif);
-      const seciliMi = aktifFiltre === 'tumu' || aktifFiltre === String(sinif);
+    KATEGORILER.forEach((kategori, idx) => {
+      const oyunlar = OYUNLAR.filter(o => (o.kategoriler || []).includes(kategori.no));
+      const seciliMi = aktifFiltre === 'tumu' || aktifFiltre === String(kategori.no);
       if (!seciliMi) return;
 
       const bolum = document.createElement('section');
@@ -371,8 +386,8 @@
       baslik.className = 'sinif-baslik';
       const seviye = document.createElement('span');
       seviye.className = 'seviye';
-      seviye.textContent = sinif + '. SINIF';
-      seviye.style.background = 'linear-gradient(135deg, ' + SINIF_RENK[idx % 4] + ', #ef4444)';
+      seviye.textContent = kategori.ad;
+      seviye.style.background = 'linear-gradient(135deg, ' + KATEGORI_RENK[idx % KATEGORI_RENK.length] + ', #ef4444)';
       const h2 = document.createElement('h2');
       h2.textContent = 'Bilişim Oyunları';
       const cizgi = document.createElement('span');
@@ -385,7 +400,7 @@
       if (oyunlar.length) {
         oyunlar.forEach(o => kartlar.appendChild(kartYap(o, gorunenOyunSayaci++)));
       } else if (aktifFiltre === 'tumu') {
-        kartlar.appendChild(bosKartYap(sinif));
+        kartlar.appendChild(bosKartYap(kategori.ad));
       }
 
       bolum.append(baslik, kartlar);
@@ -396,7 +411,7 @@
       const bos = document.createElement('div');
       bos.className = 'bos-kart';
       bos.style.minHeight = '220px';
-      bos.innerHTML = '<div class="buyuk">🎮</div><p>Bu sınıf için henüz oyun yok.</p>';
+      bos.innerHTML = '<div class="buyuk">🎮</div><p>Bu seviye için henüz oyun yok.</p>';
       icerik.appendChild(bos);
     }
   }

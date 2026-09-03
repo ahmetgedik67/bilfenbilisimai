@@ -1,8 +1,8 @@
 # 🎮 Bilfen Bilişim AI – HTML Oyunları
 
 Bilişim Teknolojileri ve Yazılım dersi için hazırlanan HTML oyunlarının
-**sınıf sınıf** toplandığı portal ana sayfası. Robi maskotuyla birlikte
-tüm oyunlar tek çatı altında: karta tıkla, hemen oyna.
+**IPT seviyelerine göre** (2 IPT – 7 IPT) toplandığı portal ana sayfası.
+Robi maskotuyla birlikte tüm oyunlar tek çatı altında: karta tıkla, hemen oyna.
 
 🔗 **Canlı:** https://ahmetgedik67.github.io/bilfenbilisimai/
 
@@ -38,7 +38,8 @@ bilfenbilisimai/
 {
   id: 'oyun-adi',
   ad: 'Oyunun Görünen Adı',
-  sinif: 5,                          // 5, 6, 7 veya 8
+  kategoriler: [5],                   // [5] → yalnız 5 IPT
+                                      // [2,3,4,5,6,7] → bütün seviyeler
   url: 'games/oyun-adi/index.html',
   onizleme: 'thumbnails/oyun-adi.jpg',
   aciklama: 'Oyunu tek cümleyle anlatan açıklama…',
@@ -46,15 +47,16 @@ bilfenbilisimai/
 }
 ```
 
-4. Dosyayı kaydet — oyun portalda kendi sınıfının bölümünde görünür. ✅
+4. Dosyayı kaydet — oyun portalda seçtiğin IPT seviyesinin bölümünde görünür. ✅
 
 > İpucu: Oyunlar saf HTML + CSS + JavaScript ile yapılır; internet
 > gerekmez ve her tarayıcıda (bilgisayar, tablet, projeksiyon) çalışır.
 
 ## ✨ Portal Özellikleri
 
-- 🗂️ Sınıf sınıf bölümler ve üstte hızlı filtre çipleri (5.–8. sınıf)
+- 🗂️ IPT seviyelerine göre bölümler (2 IPT – 7 IPT) ve üstte hızlı filtre çipleri
 - 🖼️ Her oyun için gerçek önizleme görüntüsü ve açıklama kartı
 - ▶️ Karta tıklayınca tam ekran oynatma penceresi (+ yeni sekmede aç)
-- 🤖 Robi maskotu portalda ziyaretçileri karşılar
+- 🤖 Robi hem logoda hem de portalda ziyaretçileri karşılar
+- 🎯 Tanışma Çarkı gibi her seviyede kullanılacak oyunlar tüm bölümlerde görünebilir
 - 📱 Telefon, tablet ve projeksiyonda çalışan duyarlı tasarım
