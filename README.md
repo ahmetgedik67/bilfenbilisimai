@@ -147,6 +147,7 @@ atlanır ve kaç satırın eklenemediği bildirilir.
 - 🤖 Robi hem logoda hem de portalda ziyaretçileri karşılar
 - 🎯 Sınıf Çarkıfeleği gibi tahta etkinlikleri, sınıf/IPC bölümlerini şişirmeden yalnız Öğretmen kategorisinde durur
 - 👤 Sağ üstte **Panel** düğmesi: öğretmen kaydı + kampüs (örn. Kurtköy Bilfen), öğrenci ekleme (tek tek veya **CSV toplu**), şifre sıfırlama, etkinlik aç/kapa/tarih
+- 🔐 Anasayfada **Giriş Yap** düğmesi; giriş yapınca başlık altında profil şeridi: öğrenci için avatar + ⭐ puan + ✅ etkinlik + **rozetler** (kazanılan renkli, kazanılmayan gri), öğretmen için kampüs + öğrenci/açık etkinlik sayısı, yönetici için sistem bilgisi; panel kısayolu ve **Çıkış**
 - 🛡️ **admin** hesabıyla tüm kampüs, öğretmen ve öğrencilerin ekleme/silme/düzenleme, şifre sıfırlama ve takibi
 - 📊 Yönetici için kampüs bazlı etkinlik raporu: etkinlik başına tamamlayan öğrenci sayısı ve zamana göre tamamlanma grafiği
 - ⭐ Öğrenci panelinde puan toplama, rozet kazanma ve avatar seçme

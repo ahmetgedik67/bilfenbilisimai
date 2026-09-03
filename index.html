@@ -287,12 +287,67 @@
     box-shadow: 0 4px 14px rgba(79,70,229,.35); transition: transform .15s;
   }
   .panel-btn:hover { transform: translateY(-2px); }
+  .panel-btn.maxi {
+    max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+
+  /* ---------- Anasayfa oturum şeridi (giriş yapınca görünür) ---------- */
+  .oturum-sert {
+    max-width: 1180px; margin: 0 auto 4px; padding: 14px 18px;
+    background: rgba(255,255,255,.97); border-radius: 0 0 18px 18px;
+    box-shadow: 0 10px 26px rgba(30,27,75,.18);
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    font-size: 14px; color: #1e1b4b;
+  }
+  .os-kimlik { display: flex; align-items: center; gap: 10px; min-width: 180px; flex: 1 1 220px; }
+  .os-avatar {
+    width: 52px; height: 52px; font-size: 30px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #eef2ff; border-radius: 14px; box-shadow: inset 0 0 0 2px #e0e7ff;
+  }
+  .os-ad { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .os-rol {
+    font-size: 10px; font-weight: 800; letter-spacing: 1px; padding: 3px 8px; border-radius: 999px;
+  }
+  .os-rol.ogrenci { background: #dbeafe; color: #1d4ed8; }
+  .os-rol.ogretmen { background: #ede9fe; color: #6d28d9; }
+  .os-rol.admin { background: #fef3c7; color: #92400e; }
+  .os-alt { font-size: 12px; color: #6b7280; margin-top: 2px; }
+  .os-sayac { background: #f5f3ff; border-radius: 10px; padding: 5px 12px; text-align: center; }
+  .os-sayac b { display: block; font-size: 16px; color: #4f46e5; line-height: 1.2; }
+  .os-sayac span { font-size: 10px; color: #6b7280; }
+  .os-bilgiler { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .os-rozetler { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; }
+  .os-rozet {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; font-size: 18px; background: #fefce8;
+    border-radius: 10px; box-shadow: 0 0 0 2px #fde68a; cursor: help;
+  }
+  .os-rozet.kilitli { background: #f1f5f9; box-shadow: 0 0 0 2px #e2e8f0; opacity: .45; filter: grayscale(1); }
+  .os-islem { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  .os-panel {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; text-decoration: none;
+    font-weight: 700; font-size: 13px; padding: 8px 14px; border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(79,70,229,.3);
+  }
+  .os-panel:hover { filter: brightness(1.08); }
+  .os-cikis {
+    background: #fee2e2; color: #b91c1c; border: none; cursor: pointer;
+    font-weight: 700; font-size: 13px; padding: 8px 13px; border-radius: 999px; font-family: inherit;
+  }
+  .os-cikis:hover { background: #fecaca; }
+  .os-mesaj { flex: 1 1 100%; font-size: 12px; color: #92400e; background: #fef3c7; border-radius: 8px; padding: 6px 10px; }
+  @media (max-width: 700px) {
+    .oturum-sert { padding: 12px 14px; gap: 10px; }
+    .os-avatar { width: 44px; height: 44px; font-size: 25px; }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <a class="panel-btn" href="panel.html" title="Öğretmen ve Öğrenci Paneli — giriş, etkinlik yönetimi, puan ve rozetler">👤 Panel</a>
+  <a class="panel-btn" id="girisBtn" href="panel.html" title="Giriş yap — öğretmen/öğrenci paneli">🔐 Giriş Yap</a>
   <div class="hero">
     <div class="robi-wrap">
       <img class="robi" id="robiMaskot" alt="Robi" title="Robi">
@@ -720,6 +775,140 @@
       }).catch(function () { return { ok: true }; });
     });
   };
+
+  /* ===== Anasayfa oturum arayüzü: Giriş Yap + profil/rozet şeridi ===== */
+  var ROZET_TANIM = [
+    { e: '🎯', ad: 'İlk Adım', aciklama: '1 etkinlik tamamla', k: function (c, p) { return c >= 1; } },
+    { e: '🌟', ad: 'Aktif', aciklama: '3 etkinlik tamamla', k: function (c, p) { return c >= 3; } },
+    { e: '🏅', ad: 'Etkinlik Ustası', aciklama: '5 etkinlik tamamla', k: function (c, p) { return c >= 5; } },
+    { e: '🚀', ad: 'Yıldız', aciklama: '10 etkinlik tamamla', k: function (c, p) { return c >= 10; } },
+    { e: '💎', ad: 'Puan Avcısı', aciklama: '100 puan topla', k: function (c, p) { return p >= 100; } },
+    { e: '👑', ad: 'Kampüs Şampiyonu', aciklama: '250 puan topla', k: function (c, p) { return p >= 250; } }
+  ];
+  function escS(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function ilkAd(s) { return String(s || '').trim().split(' ')[0] || s || ''; }
+
+  /* Oturuma ait güncel bilgileri getir (demo: bu cihaz; supabase: bulut). */
+  function oturumVerisi(s) {
+    if (s.rol === 'admin') {
+      return Promise.resolve({ rol: 'admin', kampusAdi: 'Tüm kampüsler', ad: s.ad, kullaniciAdi: s.kullaniciAdi });
+    }
+    if (!CONFIG.url) {
+      try {
+        var ps = JSON.parse(localStorage.getItem('bt_demo_profil') || '[]');
+        var ks = JSON.parse(localStorage.getItem('bt_demo_campus') || '[]');
+        var ts = JSON.parse(localStorage.getItem('bt_demo_tamamlanan') || '[]');
+        var as = JSON.parse(localStorage.getItem('bt_demo_atama') || '[]');
+        var p = null;
+        for (var i = 0; i < ps.length; i++) if (ps[i].id === s.id) { p = ps[i]; break; }
+        var k = null;
+        for (var j = 0; j < ks.length; j++) if (ks[j].id === s.campusId) { k = ks[j]; break; }
+        var kampusAdi = k ? k.ad : (s.kampusAdi || '');
+        if (s.rol === 'ogretmen') {
+          var ogr = 0;
+          ps.forEach(function (x) { if (x.campusId === s.campusId && x.rol === 'ogrenci') ogr++; });
+          var acikEtk = 0;
+          as.forEach(function (a) { if (a.campusId === s.campusId && a.aktif) acikEtk++; });
+          return Promise.resolve({ rol: 'ogretmen', kampusAdi: kampusAdi, ad: (p ? p.ad : s.ad), kullaniciAdi: (p ? p.kullaniciAdi : s.kullaniciAdi), avatar: (p ? p.avatar : (s.avatar || '👩‍🏫')), ogrenciSayisi: ogr, acikEtkinlik: acikEtk });
+        }
+        var tam = 0;
+        ts.forEach(function (t) { if (t.ogrenci_id === s.id) tam++; });
+        return Promise.resolve({
+          rol: 'ogrenci', kampusAdi: kampusAdi, ad: (p ? p.ad : s.ad), kullaniciAdi: (p ? p.kullaniciAdi : s.kullaniciAdi),
+          avatar: (p ? p.avatar : (s.avatar || '🐣')), puan: (p ? (p.puan || 0) : (s.puan || 0)), tamamlanan: tam
+        });
+      } catch (e) {
+        return Promise.resolve({ rol: s.rol, ad: s.ad, kullaniciAdi: s.kullaniciAdi, kampusAdi: s.kampusAdi || '', avatar: s.avatar || (s.rol === 'ogretmen' ? '👩‍🏫' : '🐣'), puan: s.puan || 0, tamamlanan: 0 });
+      }
+    }
+    /* Supabase kurulu: buluttan güncel bilgiler */
+    function sbGet(path) {
+      return fetch(CONFIG.url + '/rest/v1/' + path, {
+        headers: { apikey: CONFIG.anon, Authorization: 'Bearer ' + CONFIG.anon }
+      }).then(function (r) { return r.json(); });
+    }
+    if (s.rol === 'ogretmen') {
+      return Promise.all([
+        sbGet('profil?id=eq.' + encodeURIComponent(s.id) + '&select=ad,kullanici_adi,avatar'),
+        sbGet('profil?campus_id=eq.' + encodeURIComponent(s.campusId) + '&rol=eq.ogrenci&select=id'),
+        sbGet('etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&aktif=eq.true&select=id')
+      ]).then(function (r) {
+        return { rol: 'ogretmen', kampusAdi: s.kampusAdi || '', ad: (r[0] && r[0][0] ? r[0][0].ad : s.ad), kullaniciAdi: s.kullaniciAdi, avatar: (r[0] && r[0][0] ? r[0][0].avatar : (s.avatar || '👩‍🏫')), ogrenciSayisi: (r[1] || []).length, acikEtkinlik: (r[2] || []).length };
+      }).catch(function () {
+        return { rol: 'ogretmen', kampusAdi: s.kampusAdi || '', ad: s.ad, kullaniciAdi: s.kullaniciAdi, avatar: s.avatar || '👩‍🏫' };
+      });
+    }
+    return Promise.all([
+      sbGet('profil?id=eq.' + encodeURIComponent(s.id) + '&select=puan,avatar'),
+      sbGet('tamamlanan?ogrenci_id=eq.' + encodeURIComponent(s.id) + '&select=id')
+    ]).then(function (r) {
+      return { rol: 'ogrenci', kampusAdi: s.kampusAdi || '', ad: s.ad, kullaniciAdi: s.kullaniciAdi, avatar: (r[0] && r[0][0] ? (r[0][0].avatar || '🐣') : (s.avatar || '🐣')), puan: (r[0] && r[0][0] ? (r[0][0].puan || 0) : (s.puan || 0)), tamamlanan: (r[1] || []).length };
+    }).catch(function () {
+      return { rol: 'ogrenci', kampusAdi: s.kampusAdi || '', ad: s.ad, kullaniciAdi: s.kullaniciAdi, avatar: s.avatar || '🐣', puan: s.puan || 0, tamamlanan: 0 };
+    });
+  }
+
+  /* Üst sağ düğme + oturum şeridini çizer. */
+  function oturumArayuzu() {
+    var s = oturumOku();
+    var btn = document.getElementById('girisBtn');
+    var eski = document.querySelector('.oturum-sert');
+    if (eski) eski.remove();
+    if (!s || !s.kullaniciAdi) {
+      btn.textContent = '🔐 Giriş Yap';
+      btn.className = 'panel-btn';
+      btn.title = 'Giriş yap — öğretmen/öğrenci paneli';
+      return;
+    }
+    var kisa = ilkAd(s.ad);
+    var ikon = s.rol === 'ogretmen' ? '👩‍🏫' : (s.rol === 'admin' ? '🛡️' : (s.avatar || '🐣'));
+    btn.textContent = ikon + ' ' + kisa;
+    btn.className = 'panel-btn maxi';
+    btn.title = 'Paneline git: @' + s.kullaniciAdi;
+    oturumVerisi(s).then(function (v) {
+      var sert = document.createElement('div');
+      sert.className = 'oturum-sert';
+      var rolEtiket = v.rol === 'ogretmen' ? 'ÖĞRETMEN' : (v.rol === 'admin' ? 'YÖNETİCİ' : 'ÖĞRENCİ');
+      var rolSinif = v.rol === 'ogretmen' ? 'ogretmen' : (v.rol === 'admin' ? 'admin' : 'ogrenci');
+      var h = '<div class="os-kimlik"><span class="os-avatar">' + escS(v.avatar || '🐣') + '</span>' +
+        '<div><div class="os-ad">' + escS(v.ad) + ' <span class="os-rol ' + rolSinif + '">' + rolEtiket + '</span></div>' +
+        '<div class="os-alt">@' + escS(v.kullaniciAdi) + ' · 🏫 ' + escS(v.kampusAdi) + '</div></div></div>';
+      if (v.rol === 'ogrenci') {
+        var puan = v.puan || 0;
+        var c = v.tamamlanan || 0;
+        var rozetler = '';
+        ROZET_TANIM.forEach(function (rz) {
+          var kazandi = rz.k(c, puan);
+          rozetler += '<span class="os-rozet' + (kazandi ? '' : ' kilitli') + '" title="' + escS(rz.ad + ': ' + rz.aciklama + (kazandi ? ' — kazandın! 🎉' : '')) + '">' + rz.e + '</span>';
+        });
+        h += '<div class="os-bilgiler">' +
+          '<div class="os-sayac"><b>' + puan + '</b><span>⭐ Puan</span></div>' +
+          '<div class="os-sayac"><b>' + c + '</b><span>✅ Etkinlik</span></div>' +
+          '<div class="os-rozetler" title="Rozetlerin: renkli = kazandın, gri = henüz kazanılmadı">' + rozetler + '</div></div>';
+      } else if (v.rol === 'ogretmen') {
+        h += '<div class="os-bilgiler">' +
+          (v.ogrenciSayisi !== undefined ? '<div class="os-sayac"><b>' + v.ogrenciSayisi + '</b><span>👨‍🎓 Öğrenci</span></div>' : '') +
+          (v.acikEtkinlik !== undefined ? '<div class="os-sayac"><b>' + v.acikEtkinlik + '</b><span>🎮 Açık etkinlik</span></div>' : '') +
+          '</div>';
+      }
+      h += '<div class="os-islem"><a class="os-panel" href="panel.html">' +
+        (v.rol === 'admin' ? '🛡️ Yönetim Paneli' : (v.rol === 'ogretmen' ? '👩‍🏫 Öğretmen Paneli' : '👤 Panelim')) +
+        '</a><button class="os-cikis" id="cikisSertBtn">Çıkış</button></div>';
+      sert.innerHTML = h;
+      var baslik = document.querySelector('header');
+      if (baslik) baslik.insertAdjacentElement('afterend', sert);
+      var cik = document.getElementById('cikisSertBtn');
+      if (cik) cik.onclick = function () {
+        localStorage.removeItem('bt_oturum');
+        oturumArayuzu();
+      };
+    });
+  }
+  oturumArayuzu();
 })();
 </script>
 </body>
