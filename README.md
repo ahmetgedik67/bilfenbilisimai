@@ -63,9 +63,9 @@ bilfenbilisimai/
 
 Sağ üstteki **👤 Panel** düğmesi `panel.html`'i açar:
 
-- **Öğretmen:** kayıt olur ve kampüsünü oluşturur → öğrencilerini ekler,
-  şifrelerini sıfırlar, etkinlikleri **açık / kapalı / tarihli** yapar
-  (tek kayıt bütün kampüse uygulanır).
+- **Öğretmen:** kayıt olur ve kampüsünü oluşturur (örn. Kurtköy Bilfen) →
+  öğrencilerini tek tek veya **CSV ile topluca** ekler, şifrelerini sıfırlar,
+  etkinlikleri **açık / kapalı / tarihli** yapar (tek kayıt bütün kampüse uygulanır).
 - **Öğrenci:** öğretmenin verdiği kullanıcı adı + şifreyle girer, açık
   etkinlikleri oynar, "Tamamladım" der → **puan** kazanır, **rozetler** ve
   **avatarlar** açılır.
@@ -89,6 +89,26 @@ kullanılır. (Kurulmadan da panel **demo modunda** bu cihazda çalışır.)
 > uygulama katmanında yapılır; anon anahtar ile veriler okunabilir/yazılabilir.
 > Okul dışına taşınacaksa Supabase Auth'a geçilmelidir.
 
+### 📄 CSV ile toplu öğrenci ekleme
+
+Öğretmen paneli → **👨‍🎓 Öğrencilerim** sekmesinde **📥 Örnek CSV İndir**
+düğmesi hazır şablonu indirir. Sütunlar: **Ad;Kullanıcı adı;Şifre**
+(ayraç noktalı virgül veya virgül olabilir; başlık satırı isteğe bağlıdır):
+
+```
+Ad;Kullanıcı adı;Şifre
+Ali Yılmaz;ali.yilmaz;ali1234
+Ayşe Demir;ayse.demir;ayse1234
+Mehmet Kaya;mehmet.kaya;mehmet1234
+```
+
+- Yüklemeden önce **önizleme** gösterilir: hangi satırlar eklenecek, hangilerinin
+düzeltilmesi gerektiği (boş alan, kısa şifre, tekrar eden/alınmış kullanıcı adı) görünür.
+- Şifresi boş satırlar için **"Şifresi boş satırlara otomatik şifre üret"** seçeneği
+vardır (örn. `bt4821`); üretilen şifreler önizlemede gösterilir — eklemeden önce not alın.
+- **➕ Toplu Ekle** tek tıkla bütün satırları kaydeder; kullanıcı adı alınmış bir satır
+atlanır ve kaç satırın eklenemediği bildirilir.
+
 ## ✨ Portal Özellikleri
 
 - 🏫 Üst menüde **SINIF** çipleri (1 – 7), **IPT KATEGORİSİ** açılır menüsü (2 IPT – 7 IPT) ve **ÖĞRETMEN** kategorisi ayrı ayrı durur
@@ -98,6 +118,6 @@ kullanılır. (Kurulmadan da panel **demo modunda** bu cihazda çalışır.)
 - ▶️ Karta tıklayınca tam ekran oynatma penceresi (+ yeni sekmede aç)
 - 🤖 Robi hem logoda hem de portalda ziyaretçileri karşılar
 - 🎯 Sınıf Çarkıfeleği gibi tahta etkinlikleri, sınıf/IPC bölümlerini şişirmeden yalnız Öğretmen kategorisinde durur
-- 👤 Sağ üstte **Panel** düğmesi: öğretmen kaydı + kampüs, öğrenci ekleme, şifre sıfırlama, etkinlik aç/kapa/tarih
+- 👤 Sağ üstte **Panel** düğmesi: öğretmen kaydı + kampüs (örn. Kurtköy Bilfen), öğrenci ekleme (tek tek veya **CSV toplu**), şifre sıfırlama, etkinlik aç/kapa/tarih
 - ⭐ Öğrenci panelinde puan toplama, rozet kazanma ve avatar seçme
 - 📱 Telefon, tablet ve projeksiyonda çalışan duyarlı tasarım

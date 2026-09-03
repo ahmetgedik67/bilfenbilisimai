@@ -78,6 +78,22 @@
   .alt-link { text-align: center; margin-top: 14px; font-size: 14px; }
   .alt-link a { color: #4f46e5; font-weight: 700; text-decoration: none; }
   .kucuk-not { font-size: 12px; color: #94a3b8; margin-top: 6px; }
+  /* CSV toplu ekleme */
+  .csv-alan { margin-top: 18px; border-top: 2px dashed #c7d2fe; padding-top: 14px; }
+  .csv-baslik { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+  .csv-satir { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+  .csv-satir label { margin: 0; }
+  .csv-kutu { max-height: 190px; overflow: auto; border: 1px solid #e0e7ff; border-radius: 10px; margin-top: 10px; background: #fff; }
+  .csv-kutu table { font-size: 13px; }
+  .csv-kutu th { position: sticky; top: 0; background: #f5f3ff; z-index: 1; }
+  .csv-kutu td, .csv-kutu th { padding: 6px 8px; }
+  .csv-kutu tr.hatali td { background: #fef2f2; color: #b91c1c; }
+  .csv-kutu tr.yeni td { background: #f0fdf4; }
+  .csv-hata-yazi { color: #b91c1c; font-weight: 600; }
+  .csv-badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+  .csv-badge.iyi { background: #dcfce7; color: #166534; }
+  .csv-badge.kotu { background: #fee2e2; color: #b91c1c; }
+  .csv-badge.otomatik { background: #fef9c3; color: #854d0e; }
 </style>
 </head>
 <body>
@@ -113,8 +129,8 @@
     <div class="kart">
       <h2>👩‍🏫 Öğretmen Kaydı</h2>
       <p class="kucuk-not">Kayıt olunca bir kampüs oluşturulur; öğrencilerini bu kampüse eklersin.</p>
-      <label>Kampüs adı (örn. 5-A Sınıfı)</label>
-      <input id="kKampus">
+      <label>Kampüs adı (örn. Kurtköy Bilfen)</label>
+      <input id="kKampus" placeholder="Kurtköy Bilfen">
       <label>Adın soyadın</label>
       <input id="kAd">
       <label>Kullanıcı adı</label>
@@ -151,6 +167,37 @@
           <div style="margin-top:12px"><button class="btn yesil" id="ogrenciEkleBtn">Öğrenciyi Ekle</button></div>
           <div class="hata" id="oHata"></div>
           <div class="bilgi" id="oBilgi"></div>
+
+          <!-- Toplu ekleme (CSV) -->
+          <div class="csv-alan">
+            <div class="csv-baslik">
+              <div>
+                <div style="font-weight:800;font-size:14px">📄 Toplu Öğrenci Ekle (CSV)</div>
+                <div class="kucuk-not" style="margin-top:2px">Format: <b>Ad;Kullanıcı adı;Şifre</b> — başlık satırı isteğe bağlı (virgülle ayırma da okunur).</div>
+              </div>
+              <button class="btn ikincil kucuk" id="csvOrnekBtn" type="button">📥 Örnek CSV İndir</button>
+            </div>
+            <div class="csv-satir">
+              <label class="btn kucuk" style="cursor:pointer">📂 CSV Dosyası Seç
+                <input type="file" id="csvDosya" accept=".csv,text/csv,.txt" style="display:none">
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+                <input type="checkbox" id="csvOtomatik" checked style="width:auto">
+                Şifresi boş satırlara otomatik şifre üret
+              </label>
+              <span class="kucuk-not" id="csvDosyaAdi" style="margin:0"></span>
+            </div>
+            <div id="csvOnizleme" style="display:none;margin-top:8px">
+              <div id="csvOzet" style="font-size:13px;font-weight:700;margin-top:8px"></div>
+              <div class="csv-kutu" id="csvListe"></div>
+              <div class="csv-satir">
+                <button class="btn yesil" id="csvEkleBtn">➕ Toplu Ekle</button>
+                <button class="btn ikincil kucuk" id="csvIptalBtn">Vazgeç</button>
+              </div>
+            </div>
+            <div class="hata" id="csvHata"></div>
+            <div class="bilgi" id="csvBilgi"></div>
+          </div>
         </div>
         <div class="kart">
           <h2>👨‍🎓 Kampüsümdeki Öğrenciler</h2>
@@ -735,6 +782,174 @@
     }).catch(function (e) {
       hataGoster($('oHata'), e.message);
     }).finally(function () { $('ogrenciEkleBtn').disabled = false; });
+  };
+
+  /* ---------- CSV ile toplu öğrenci ekleme ---------- */
+  var csvSatirlar = [];
+  var csvVarOlan = {};
+
+  function csvSatirlaraAyir(text) {
+    text = String(text || '').replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    var ilk = text.split('\n')[0] || '';
+    var virgul = (ilk.match(/,/g) || []).length;
+    var noktali = (ilk.match(/;/g) || []).length;
+    var ayrac = noktali > virgul ? ';' : ',';
+    var sonuc = [], satir = [], hucre = '', tirnak = false;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (tirnak) {
+        if (ch === '"') { if (text[i + 1] === '"') { hucre += '"'; i++; } else tirnak = false; }
+        else hucre += ch;
+      } else if (ch === '"') { tirnak = true; }
+      else if (ch === ayrac) { satir.push(hucre); hucre = ''; }
+      else if (ch === '\n') {
+        satir.push(hucre); hucre = '';
+        if (satir.some(function (c) { return c.trim() !== ''; })) sonuc.push(satir);
+        satir = [];
+      } else hucre += ch;
+    }
+    satir.push(hucre);
+    if (satir.some(function (c) { return c.trim() !== ''; })) sonuc.push(satir);
+    return sonuc;
+  }
+
+  function csvDosyayiIsle(text) {
+    var tablo = csvSatirlaraAyir(text);
+    if (!tablo.length) { hataGoster($('csvHata'), 'Dosya boş görünüyor.'); return; }
+    var ilk = tablo[0];
+    var baslikVar = ilk.some(function (c) { return String(c).toLowerCase().indexOf('kullan') >= 0; });
+    var adI = 0, kI = 1, sI = 2, basla = 0;
+    if (baslikVar) {
+      basla = 1;
+      adI = -1; kI = -1; sI = -1;
+      ilk.forEach(function (c, j) {
+        var t = String(c).toLowerCase();
+        if (kI < 0 && t.indexOf('kullan') >= 0) kI = j;
+        if (sI < 0 && (t.indexOf('şif') >= 0 || t.indexOf('sif') >= 0 || t.indexOf('parola') >= 0 || t.indexOf('pass') >= 0)) sI = j;
+        if (adI < 0 && t.indexOf('kullan') < 0 && (t.indexOf('ad') >= 0 || t.indexOf('isim') >= 0 || t.indexOf('name') >= 0)) adI = j;
+      });
+      if (kI < 0) { hataGoster($('csvHata'), 'Başlıkta "Kullanıcı adı" sütunu bulunamadı. Örnek CSV dosyasını indirip ona göre düzenle.'); return; }
+      if (adI < 0) adI = 0;
+    }
+    var otomatik = $('csvOtomatik').checked;
+    var eklenecek = [], sorunlar = [], gorusen = {};
+    for (var i = basla; i < tablo.length; i++) {
+      var r = tablo[i];
+      var ad = (r[adI] != null ? String(r[adI]) : '').trim();
+      var k = (r[kI] != null ? String(r[kI]) : '').trim();
+      var s = (sI >= 0 && r[sI] != null) ? String(r[sI]).trim() : '';
+      if (!ad && !k) continue;
+      var sorun = [], otomatikMi = false;
+      if (!ad) sorun.push('Ad boş');
+      if (!k) sorun.push('Kullanıcı adı boş');
+      else if (/\s/.test(k)) sorun.push('Kullanıcı adında boşluk var');
+      else {
+        var kk = k.toLowerCase();
+        if (csvVarOlan[kk]) sorun.push('Bu kullanıcı adı zaten kayıtlı');
+        else if (gorusen[kk]) sorun.push('Dosyada tekrar ediyor');
+        else gorusen[kk] = true;
+      }
+      if (!s && otomatik) { s = 'bt' + (Math.floor(Math.random() * 9000) + 1000); otomatikMi = true; }
+      if (!s) sorun.push('Şifre boş');
+      else if (s.length < 4) sorun.push('Şifre en az 4 karakter olmalı');
+      var bilgi = { no: i + 1, ad: ad, k: k, s: s, otomatik: otomatikMi, sorun: sorun };
+      if (sorun.length) sorunlar.push(bilgi);
+      else eklenecek.push(bilgi);
+    }
+    if (!eklenecek.length && !sorunlar.length) { hataGoster($('csvHata'), 'Dosyada eklenebilecek öğrenci satırı bulunamadı.'); return; }
+    csvSatirlar = eklenecek;
+    hataGoster($('csvHata'), '');
+    bilgiGoster($('csvBilgi'), '');
+    csvOnizlemeCiz(eklenecek, sorunlar);
+  }
+
+  function csvOnizlemeCiz(eklenecek, sorunlar) {
+    var kutu = $('csvListe');
+    var h = '<table><tr><th>#</th><th>Ad</th><th>Kullanıcı adı</th><th>Şifre</th><th>Durum</th></tr>';
+    eklenecek.forEach(function (s) {
+      h += '<tr class="yeni"><td>' + s.no + '</td><td>' + esc(s.ad) + '</td><td>@' + esc(s.k) + '</td><td>' + (s.otomatik ? '<span class="csv-badge otomatik">otomatik</span> <b>' + esc(s.s) + '</b>' : '<span title="' + esc(s.s) + '">••••</span>') + '</td><td><span class="csv-badge iyi">✓ Eklenecek</span></td></tr>';
+    });
+    sorunlar.forEach(function (s) {
+      h += '<tr class="hatali"><td>' + s.no + '</td><td>' + esc(s.ad) + '</td><td>@' + esc(s.k) + '</td><td>—</td><td class="csv-hata-yazi">' + esc(s.sorun.join('; ')) + '</td></tr>';
+    });
+    h += '</table>';
+    kutu.innerHTML = h;
+    var ozet = '📋 ' + (eklenecek.length + sorunlar.length) + ' satır okundu → <span class="csv-badge iyi">' + eklenecek.length + ' eklenecek</span>';
+    if (sorunlar.length) ozet += ' <span class="csv-badge kotu">' + sorunlar.length + ' satır düzeltilmeli</span>';
+    $('csvOzet').innerHTML = ozet;
+    var btn = $('csvEkleBtn');
+    btn.textContent = eklenecek.length ? '➕ ' + eklenecek.length + ' Öğrenciyi Ekle' : 'Eklenecek satır yok';
+    btn.disabled = !eklenecek.length;
+    $('csvOnizleme').style.display = '';
+  }
+
+  $('csvDosya').addEventListener('change', function () {
+    var dosya = this.files && this.files[0];
+    if (!dosya) return;
+    $('csvDosyaAdi').textContent = '📎 ' + dosya.name;
+    hataGoster($('csvHata'), '');
+    bilgiGoster($('csvBilgi'), '');
+    var oku = new FileReader();
+    oku.onload = function () {
+      API.ogrenciListesi(oturum).then(function (ogrenciler) {
+        csvVarOlan = {};
+        ogrenciler.forEach(function (o) { csvVarOlan[o.kullaniciAdi.toLowerCase()] = true; });
+        csvDosyayiIsle(String(oku.result || ''));
+      }).catch(function (e) { hataGoster($('csvHata'), e.message); });
+    };
+    oku.onerror = function () { hataGoster($('csvHata'), 'Dosya okunamadı.'); };
+    oku.readAsText(dosya);
+  });
+
+  $('csvOrnekBtn').onclick = function () {
+    var icerik = '\uFEFFAd;Kullanıcı adı;Şifre\nAli Yılmaz;ali.yilmaz;ali1234\nAyşe Demir;ayse.demir;ayse1234\nMehmet Kaya;mehmet.kaya;mehmet1234\n';
+    var blob = new Blob([icerik], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ogrenciler-ornek.csv';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 600);
+  };
+
+  $('csvIptalBtn').onclick = function () {
+    $('csvOnizleme').style.display = 'none';
+    $('csvDosya').value = '';
+    $('csvDosyaAdi').textContent = '';
+    hataGoster($('csvHata'), '');
+    csvSatirlar = [];
+  };
+
+  $('csvEkleBtn').onclick = function () {
+    var liste = csvSatirlar;
+    if (!liste.length) return;
+    var toplam = liste.length, i = 0, basarili = 0, hatali = 0;
+    var btn = $('csvEkleBtn');
+    function siradaki() {
+      if (i >= toplam) {
+        btn.disabled = false;
+        btn.textContent = '➕ Toplu Ekle';
+        $('csvOnizleme').style.display = 'none';
+        $('csvDosya').value = '';
+        $('csvDosyaAdi').textContent = '';
+        csvSatirlar = [];
+        ogrenciListesiniCiz();
+        etkinlikYonetiminiCiz();
+        if (hatali) hataGoster($('csvHata'), '⚠ ' + basarili + ' öğrenci eklendi; ' + hatali + ' satır eklenemedi (kullanıcı adı alınmış olabilir).');
+        else bilgiGoster($('csvBilgi'), '✅ ' + basarili + ' öğrenci toplu eklendi.');
+        setTimeout(function () { bilgiGoster($('csvBilgi'), ''); hataGoster($('csvHata'), ''); }, 6000);
+        return;
+      }
+      var satir = liste[i]; i++;
+      btn.textContent = '⏳ Ekleniyor ' + i + '/' + toplam + '…';
+      API.ogrenciEkle(oturum, satir.ad, satir.k, satir.s).then(function () {
+        basarili++; siradaki();
+      }).catch(function () {
+        hatali++; siradaki();
+      });
+    }
+    btn.disabled = true;
+    siradaki();
   };
 
   $('sekmeOgrenci').onclick = function () {
