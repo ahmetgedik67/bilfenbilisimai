@@ -777,6 +777,35 @@
     return { siniflar: s, kategoriler: k, ogretmen: arac };
   }
   var OZEL_ETKINLIKLER = [];
+  /** Tip ve başlığa göre renk üret */
+  function ozelRenkUret(tip) {
+    var renkler = { kod: ['#6366f1','#818cf8'], dosya: ['#0ea5e9','#38bdf8'], drive: ['#10b981','#34d399'] };
+    return renkler[tip] || ['#8b5cf6','#a78bfa'];
+  }
+  /** Tip ikonu */
+  function ozelIkon(tip) {
+    return { kod: '✂️', dosya: '📄', drive: '🔗' }[tip] || '📝';
+  }
+  /** Başlık ve tipten dinamik SVG önizleme üret */
+  function ozelOnizlemeSvg(ad, tip, konu) {
+    var renkler = ozelRenkUret(tip);
+    var ikon = ozelIkon(tip);
+    var baslik = (ad || 'Etkinlik').substring(0, 30);
+    var alt = konu ? konu.substring(0, 40) : (tip === 'kod' ? 'Kod Etkinliği' : tip === 'dosya' ? 'HTML Dosyası' : 'Drive Bağlantısı');
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">'
+      + '<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">'
+      + '<stop offset="0%" stop-color="' + renkler[0] + '"/>'
+      + '<stop offset="100%" stop-color="' + renkler[1] + '"/>'
+      + '</linearGradient></defs>'
+      + '<rect fill="url(#bg)" width="400" height="300" rx="16"/>'
+      + '<text x="200" y="110" text-anchor="middle" font-size="52">' + ikon + '</text>'
+      + '<text x="200" y="175" text-anchor="middle" font-size="22" font-weight="bold" fill="white" font-family="sans-serif">' + baslik.replace(/</g,'&lt;') + '</text>'
+      + '<text x="200" y="210" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.8)" font-family="sans-serif">' + alt.replace(/</g,'&lt;') + '</text>'
+      + '<rect x="130" y="240" width="140" height="32" rx="16" fill="rgba(255,255,255,0.25)"/>'
+      + '<text x="200" y="262" text-anchor="middle" font-size="13" fill="white" font-family="sans-serif" font-weight="bold">▶ Oyna</text>'
+      + '</svg>';
+    return 'data:image/svg+xml,' + encodeURIComponent(svg);
+  }
   function ozelEtkinlikleriYukle() {
     if (!SUPABASE_CONFIG.url) return Promise.resolve();
     return fetch(SUPABASE_CONFIG.url + '/rest/v1/ozel_etkinlik?durum=eq.onaylandi&select=*&order=olusturma_tarihi', {
@@ -784,12 +813,12 @@
     }).then(function (r) { return r.json(); }).then(function (rows) {
       OZEL_ETKINLIKLER = (rows || []).map(function (o) {
         var coz = seviyeleriCoz(o.seviyeler);
-        var onizlemeData = null;
-        if (o.tip === 'kod' || o.tip === 'dosya') onizlemeData = 'data:text/html;charset=utf-8,' + encodeURIComponent(o.icerik || '');
         return {
           id: 'ozel_' + o.id, ad: o.ad, aciklama: o.konu || '',
-          url: null, onizleme: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect fill="%23e0e7ff" width="400" height="300"/><text x="200" y="150" text-anchor="middle" font-size="40">📝</text></svg>'),
-          onizlemeData: onizlemeData, kategoriler: coz.kategoriler, siniflar: coz.siniflar, ogretmen: coz.ogretmen,
+          url: null,
+          onizleme: ozelOnizlemeSvg(o.ad, o.tip, o.konu),
+          onizlemeData: null,
+          kategoriler: coz.kategoriler, siniflar: coz.siniflar, ogretmen: coz.ogretmen,
           etiketler: ['Özel Etkinlik'], ozel: true, ozelTip: o.tip, ozelIcerik: o.icerik || '',
           nasil: ['Öğretmeniniz bu etkinliği oluşturdu.', '▶ Oyna ile açın.'],
           _ozelId: o.id
