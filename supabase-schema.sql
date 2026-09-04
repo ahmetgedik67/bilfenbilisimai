@@ -130,6 +130,7 @@ alter table ozel_etkinlik add column if not exists ogretmen_kullanici text not n
 alter table ozel_etkinlik add column if not exists durum text not null default 'onaylandi';
 alter table ozel_etkinlik add column if not exists red_nedeni text not null default '';
 alter table ozel_etkinlik add column if not exists onay_tarihi timestamptz;
+alter table ozel_etkinlik add column if not exists gorsel text not null default '';
 create index if not exists ozel_etkinlik_durum_idx on ozel_etkinlik (durum);
 
 -- 'ayar' tablosu (eski kurulumlar için eksikse tamamlar):

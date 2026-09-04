@@ -818,6 +818,7 @@
           url: null,
           onizleme: ozelOnizlemeSvg(o.ad, o.tip, o.konu),
           onizlemeData: null,
+          gorsel: o.gorsel || '',
           kategoriler: coz.kategoriler, siniflar: coz.siniflar, ogretmen: coz.ogretmen,
           etiketler: ['Özel Etkinlik'], ozel: true, ozelTip: o.tip, ozelIcerik: o.icerik || '',
           nasil: ['Öğretmeniniz bu etkinliği oluşturdu.', '▶ Oyna ile açın.'],
@@ -904,7 +905,7 @@
     const thumb = document.createElement('div');
     thumb.className = 'kart-thumb';
     const img = document.createElement('img');
-    img.src = oyun.onizlemeData || oyun.onizleme;
+    img.src = oyun.gorsel || oyun.onizlemeData || oyun.onizleme;
     img.alt = oyun.ad + ' önizleme';
     img.loading = 'lazy';
     const overlay = document.createElement('div');
