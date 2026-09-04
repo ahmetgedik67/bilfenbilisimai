@@ -821,7 +821,7 @@
     var tablolar = ['campus', 'profil', 'etkinlik_atama', 'tamamlanan', 'ayar', 'ozel_etkinlik'];
     var sonuc = {};
     var isler = tablolar.map(function (t) {
-      return sb(t + '?select=id&limit=1').then(function () {
+      return sb(t + '?select=*&limit=1').then(function () {
         sonuc[t] = 'ok';
       }).catch(function (e) {
         sonuc[t] = (e && e.message) || String(e);
@@ -903,7 +903,7 @@
     var eksikTablo = [];
     var eksikKolon = {};
     var isler = Object.keys(SEMA_BEKLENEN).map(function (t) {
-      return sb(t + '?select=id&limit=1').then(function () {
+      return sb(t + '?select=*&limit=1').then(function () {
         return semaKolonlariDenetle(t, SEMA_BEKLENEN[t]).then(function (eks) {
           if (eks.length) eksikKolon[t] = eks;
         });
