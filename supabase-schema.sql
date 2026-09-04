@@ -105,11 +105,17 @@ alter table tamamlanan enable row level security;
 alter table ayar enable row level security;
 alter table ozel_etkinlik enable row level security;
 
+drop policy if exists "campus_public_all" on campus;
 create policy "campus_public_all" on campus for all to anon using (true) with check (true);
+drop policy if exists "profil_public_all" on profil;
 create policy "profil_public_all" on profil for all to anon using (true) with check (true);
+drop policy if exists "etkinlik_atama_public_all" on etkinlik_atama;
 create policy "etkinlik_atama_public_all" on etkinlik_atama for all to anon using (true) with check (true);
+drop policy if exists "tamamlanan_public_all" on tamamlanan;
 create policy "tamamlanan_public_all" on tamamlanan for all to anon using (true) with check (true);
+drop policy if exists "ayar_public_all" on ayar;
 create policy "ayar_public_all" on ayar for all to anon using (true) with check (true);
+drop policy if exists "ozel_etkinlik_public_all" on ozel_etkinlik;
 create policy "ozel_etkinlik_public_all" on ozel_etkinlik for all to anon using (true) with check (true);
 
 -- ============================================================
@@ -126,7 +132,6 @@ alter table ozel_etkinlik add column if not exists red_nedeni text not null defa
 alter table ozel_etkinlik add column if not exists onay_tarihi timestamptz;
 create index if not exists ozel_etkinlik_durum_idx on ozel_etkinlik (durum);
 
--- 'ayar' tablosu ve politikası (eski kurulumlar için eksikse tamamlar):
+-- 'ayar' tablosu (eski kurulumlar için eksikse tamamlar):
 create table if not exists ayar (anahtar text primary key, deger text not null, guncelleme_tarihi timestamptz not null default now());
 alter table ayar enable row level security;
-create policy if not exists "ayar_public_all" on ayar for all to anon using (true) with check (true);
