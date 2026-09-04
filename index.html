@@ -728,6 +728,11 @@
         ogretmen: true              → yalnız ÖĞRETMEN kategorisinde (tahta etkinliği)
   ========================================= */
 
+  var SUPABASE_CONFIG = {
+    url: localStorage.getItem('bt_supabase_url') || 'https://zvqwhesibqntcnpqoytm.supabase.co',
+    anon: localStorage.getItem('bt_supabase_anon') || 'sb_publishable_hU6il_Kq9_E_57WqaOT8BA_iLtDPpuM'
+  };
+
   /* Seviyeler: bilişim dersinin IPT kategorileri */
   const KATEGORILER = [
     { no: 2, ad: '2 IPT' },
@@ -773,9 +778,9 @@
   }
   var OZEL_ETKINLIKLER = [];
   function ozelEtkinlikleriYukle() {
-    if (!CONFIG.url) return Promise.resolve();
-    return fetch(CONFIG.url + '/rest/v1/ozel_etkinlik?durum=eq.onaylandi&select=*&order=olusturma_tarihi', {
-      headers: { apikey: CONFIG.anon, Authorization: 'Bearer ' + CONFIG.anon }
+    if (!SUPABASE_CONFIG.url) return Promise.resolve();
+    return fetch(SUPABASE_CONFIG.url + '/rest/v1/ozel_etkinlik?durum=eq.onaylandi&select=*&order=olusturma_tarihi', {
+      headers: { apikey: SUPABASE_CONFIG.anon, Authorization: 'Bearer ' + SUPABASE_CONFIG.anon }
     }).then(function (r) { return r.json(); }).then(function (rows) {
       OZEL_ETKINLIKLER = (rows || []).map(function (o) {
         var coz = seviyeleriCoz(o.seviyeler);
