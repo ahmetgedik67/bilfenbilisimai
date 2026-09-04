@@ -299,6 +299,7 @@
       <input id="gSifre" type="password" autocomplete="current-password">
       <div style="margin-top:16px"><button class="btn" id="girisBtn" style="width:100%">Giriş Yap</button></div>
       <div class="hata" id="gHata"></div>
+      <div style="text-align:center;margin-top:8px"><a href="#" id="sifremiUnuttum" style="font-size:12px;color:#6366f1">🔑 Şifremi unuttum</a></div>
       <div class="alt-link">Hesabın yok mu? <a href="#" id="kayitGec">Öğretmen kaydı oluştur</a></div>
       <div class="kucuk-not" style="text-align:center;margin-top:12px">🛡️ Sistem yöneticisi: <b>@admin</b> kullanıcı adıyla giriş yapabilir.</div>
     </div>
@@ -1205,6 +1206,15 @@
     ozelReddet: async function (id, neden) {
       await sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id), { method: 'PATCH', body: { durum: 'reddedildi', red_nedeni: neden || '' } });
     },
+    ozelEtkinlikGuncelle: async function (s, id, veri) {
+      await sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id) + '&ogretmen_id=eq.' + encodeURIComponent(s.id), { method: 'PATCH', body: {
+        ad: veri.ad, konu: veri.konu || '',
+        seviyeler: JSON.stringify(veri.secim || []),
+        tip: veri.tip, icerik: veri.icerik || '',
+        durum: 'bekliyor', gorsel: veri.gorsel || '',
+        red_nedeni: '', onay_tarihi: null
+      } });
+    },
     ozelEtkinlikSil: async function (s, id) {
       await sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id) + '&ogretmen_id=eq.' + encodeURIComponent(s.id), { method: 'DELETE' });
       await ozelKalintiTemizle(id);
@@ -1496,6 +1506,19 @@
       os.forEach(function (o) { if (o.id === id) { o.durum = 'reddedildi'; o.redNedeni = neden || ''; } });
       dSet(DK.ozel, os);
     },
+    ozelEtkinlikGuncelle: async function (s, id, veri) {
+      var os = dGet(DK.ozel);
+      os.forEach(function (o) {
+        if (o.id === id && (o.ogretmenId === s.id || (!o.ogretmenId && o.campusId === s.campusId))) {
+          o.ad = veri.ad; o.konu = veri.konu || '';
+          o.seviyeler = JSON.stringify(veri.secim || []);
+          o.tip = veri.tip; o.icerik = veri.icerik || '';
+          o.durum = 'bekliyor'; o.gorsel = veri.gorsel || '';
+          o.redNedeni = ''; o.red_nedeni = '';
+        }
+      });
+      dSet(DK.ozel, os);
+    },
     ozelEtkinlikSil: async function (s, id) {
       dSet(DK.ozel, dGet(DK.ozel).filter(function (o) {
         return !(o.id === id && (o.ogretmenId === s.id || (!o.ogretmenId && o.campusId === s.campusId)));
@@ -1678,14 +1701,16 @@
     API.ozelEtkinliklerim(oturum).then(function (ozeller) {
       var kutu = $('oeListe');
       if (!ozeller.length) { kutu.innerHTML = '<div class="bos">Henüz etkinlik oluşturmadın. Üstteki formla ekle.</div>'; return; }
-      var h = '<table><tr><th>Etkinlik</th><th>Konu &amp; Tema</th><th>Kullanım yeri</th><th>Kaynak</th><th>İşlem</th></tr>';
-      ozeller.forEach(function (o) {
-        h += '<tr class="satir"><td><b>' + esc(o.ad) + '</b><br>' + durumRozeti(o) + '</td>' +
+      var h = '<table><tr><th>Etkinlik</th><th>Konu &amp; Tema</th><th>Kullanım yeri</th><th>Kaynak</th><th>İşlem</th></tr>';      ozeller.forEach(function (o) {
+        var redBanner = (o.redNedeni && o.durum === 'reddedildi') ? '<div style="background:#fee2e2;border-left:4px solid #ef4444;padding:6px 10px;margin-top:6px;border-radius:4px;font-size:12px;color:#991b1b">❌ Red nedeni: ' + esc(o.redNedeni) + '</div>' : '';
+        var duzenleBtn = (o.durum !== 'onaylandi') ? ' <button class="btn ikincil kucuk" data-oe-duzenle="' + esc(o.id) + '">✏️ Düzenle</button>' : '';
+        h += '<tr class="satir"><td><b>' + esc(o.ad) + '</b><br>' + durumRozeti(o) + redBanner + '</td>' +
           '<td>' + esc(o.konu || '') + '</td>' +
           '<td>' + esc(secimEtiketList(o.secim) || '—') + '</td>' +
           '<td><span class="tip-rozet">' + kaynakEtiketi(o.tip) + '</span></td>' +
           '<td><button class="btn ikincil kucuk" data-oe-goster="' + esc(o.id) + '">👁 Görüntüle</button> ' +
           '<button class="btn ikincil kucuk" data-oe-indir="' + esc(o.id) + '">📥 İndir</button>' +
+          duzenleBtn +
           (o.durum === 'onaylandi' ? '' : ' <button class="btn kirmizi kucuk" data-oe-sil="' + esc(o.id) + '">🗑 Sil</button>') +
           '</td></tr>';
       });
@@ -1729,12 +1754,34 @@
             setTimeout(function () { bilgiGoster($('oeBilgi'), ''); }, 2500);
           }).catch(function (e) { hataGoster($('oeHata'), e.message); });
         };
+      });      Array.prototype.forEach.call(kutu.querySelectorAll('[data-oe-duzenle]'), function (b) {
+        b.onclick = function () {
+          var id = b.getAttribute('data-oe-duzenle');
+          var o = ozeller.filter(function (x) { return x.id === id; })[0];
+          if (!o) return;
+          oeFormuTemizle();
+          oe.duzenleId = id;
+          $('oeAd').value = o.ad || '';
+          $('oeKonu').value = o.konu || '';
+          oe.tip = o.tip || 'dosya';
+          oe.secim = (o.secim || []).slice();
+          if (o.tip === 'kod') { $('oeKod').value = o.icerik || ''; oeKaynakGoster('kod'); }
+          else if (o.tip === 'drive') { $('oeDrive').value = o.icerik || ''; oeKaynakGoster('drive'); }
+          else { oe.dosyaMetin = o.icerik || ''; oeKaynakGoster('dosya'); }
+          seviyeCipsCiz();
+          if (o.gorsel) { $('oeGorselOnizle').src = o.gorsel; $('oeGorselOnizle').style.display = ''; oe.gorsel = o.gorsel; $('oeGorselDurum').textContent = '✅ Mevcut gorsel yuklu'; }
+          bilgiGoster($('oeBilgi'), '✏️ Duzenleme modu: \"' + o.ad + '\" — Degisiklikleri yapip tekrar kaydet.');
+          $('oeKaydetBtn').textContent = '💾 Degisiklikleri Kaydet';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
       });
     }).catch(function (e) { $('oeListe').innerHTML = '<div class="hata" style="display:block">' + esc(e.message) + '</div>'; });
   }
 
+
   function oeFormuTemizle() {
-    oe.secim = []; oe.dosyaMetin = ''; oe.gorsel = '';
+    oe.secim = []; oe.dosyaMetin = ''; oe.gorsel = ''; oe.duzenleId = null;
+    $('oeKaydetBtn').textContent = '\ud83d\udcbe Etkinli\u011fi Kaydet';
     $('oeAd').value = ''; $('oeKonu').value = ''; $('oeKod').value = ''; $('oeDrive').value = '';
     $('oeDosya').value = ''; $('oeDosyaAdi').textContent = '';
     $('oeGorsel').value = ''; $('oeGorselOnizle').style.display = 'none';
@@ -2930,6 +2977,27 @@
   };
   $('gSifre').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('girisBtn').click(); });
 
+  /* Şifremi Unuttum */
+  $('sifremiUnuttum').onclick = function (e) {
+    e.preventDefault();
+    var kullanici = prompt('Kullanıcı adınızı girin (örn: Ahmet):');
+    if (!kullanici) return;
+    kullanici = kullanici.trim();
+    API.ogrenciListesi(oturum || { campusId: null, rol: 'ogretmen' }).catch(function () { return []; }).then(function () {
+      return sb('profil?kullanici_adi=eq.' + encodeURIComponent(kullanici) + '&rol=eq.ogretmen&select=id,ad,kullanici_adi', { headers: {} });
+    }).then(function (rs) {
+      if (!rs || !rs.length) { alert('Öğretmen bulunamadı.'); return; }
+      var yeniSifre = prompt('Yeni şifrenizi girin (en az 4 karakter):');
+      if (!yeniSifre || yeniSifre.length < 4) { alert('Şifre en az 4 karakter olmalı.'); return; }
+      tuzUret();
+      sifreHash(yeniSifre).then(function (hash) {
+        return sb('profil?kullanici_adi=eq.' + encodeURIComponent(kullanici), { method: 'PATCH', body: { sifre_hash: hash, sifre_tuz: tuzUret() } });
+      }).then(function () {
+        alert('✅ Şifreniz güncellendi. Yeni şifrenizle giriş yapabilirsiniz.');
+      }).catch(function () { alert('❌ Şifre güncellenemedi.'); });
+    }).catch(function () { alert('Bağlantı hatası.'); });
+  };
+
   $('kayitBtn').onclick = function () {
     var kamp = $('kKampus').value.trim();
     var ad = $('kAd').value.trim();
@@ -3323,9 +3391,15 @@
     var svgGorsel = gorselOlustur(ad, oe.tip, konu);
     if (!oe.gorsel) oe.gorsel = svgGorsel;
     var kaydetFn = function (finalGorsel) {
-      API.ozelEtkinlikEkle(oturum, { ad: ad, konu: konu, secim: oe.secim.slice(), tip: oe.tip, icerik: icerik, gorsel: finalGorsel }).then(function () {
+      var duzenleModu = oe.duzenleId;
+      var kayitFn = duzenleModu
+        ? API.ozelEtkinlikGuncelle(oturum, duzenleModu, { ad: ad, konu: konu, secim: oe.secim.slice(), tip: oe.tip, icerik: icerik, gorsel: finalGorsel })
+        : API.ozelEtkinlikEkle(oturum, { ad: ad, konu: konu, secim: oe.secim.slice(), tip: oe.tip, icerik: icerik, gorsel: finalGorsel });
+      kayitFn.then(function () {
         oeFormuTemizle();
-        bilgiGoster($('oeBilgi'), '📨 Etkinlik yönetici onayına gönderildi: ' + ad);
+        oe.duzenleId = null;
+        $('oeKaydetBtn').textContent = '💾 Etkinliği Kaydet';
+        bilgiGoster($('oeBilgi'), duzenleModu ? '✏️ Etkinlik güncellendi: ' + ad + ' — yöneticiye yeniden gönderildi.' : '📨 Etkinlik yönetici onayına gönderildi: ' + ad);
         ozelListeCiz();
         setTimeout(function () { bilgiGoster($('oeBilgi'), ''); }, 6000);
         /* Arka planda html2canvas ile gerçek screenshot almaya çalış */
