@@ -2079,7 +2079,7 @@
     var btn = $('topluGorselBtn');
     btn.disabled = true; btn.textContent = '⏳ Oluşturuluyor…';
     var tumOzeller = await API.tumOzelEtkinlikler();
-    var gorselsiz = tumOzeller.filter(function (o) { return !o.gorsel && o.tip !== 'drive'; });
+    var gorselsiz = tumOzeller.filter(function (o) { return o.tip !== 'drive'; });
     if (!gorselsiz.length) { btn.disabled = false; btn.textContent = '📸 Tüm Görselleri Oluştur'; bilgiGoster($('onayBilgi'), '✅ Tüm etkinliklerin görseli mevcut.'); setTimeout(function () { bilgiGoster($('onayBilgi'), ''); }, 3000); return; }
     var tamamlanan = 0;
     for (var i = 0; i < gorselsiz.length; i++) {
@@ -3199,40 +3199,54 @@
     };
     oku.readAsDataURL(dosya);
   };
-  /* --- SVG tabanlı görsel oluşturma (anlık, iframe gerektirmez) --- */
-  /* İsimden benzersiz renk üretici */
-  function _hashRenk(str) {
-    var h = 0; for (var i = 0; i < (str||'').length; i++) h = ((h << 5) - h + str.charCodeAt(i)) | 0;
-    var palettes = [
-      ['#6366f1','#8b5cf6'], ['#ec4899','#f472b6'], ['#f59e0b','#fbbf24'],
-      ['#10b981','#34d399'], ['#ef4444','#f87171'], ['#8b5cf6','#c084fc'],
-      ['#0ea5e9','#38bdf8'], ['#f97316','#fb923c'], ['#14b8a6','#2dd4bf'],
-      ['#e11d48','#fb7185'], ['#7c3aed','#a78bfa'], ['#059669','#6ee7b7']
-    ];
-    return palettes[Math.abs(h) % palettes.length];
-  }
-  function _hashIkon(str) {
-    var ikonlar = ['\u2702','\uD83D\uDD2C','\uD83D\uDE80','\uD83D\uDD2E','\u2B50','\uD83C\uDFAE','\uD83D\uDCBB','\uD83C\uDF1F','\uD83D\uDCD6','\uD83C\uDFB5','\uD83D\uDD35','\uD83D\uDEE0','\uD83D\uDCDA','\u26A1','\uD83C\uDF08','\uD83D\uDCAB'];
-    var h = 0; for (var i = 0; i < (str||'').length; i++) h = ((h << 5) - h + str.charCodeAt(i)) | 0;
-    return ikonlar[Math.abs(h) % ikonlar.length];
+  /* --- SVG tabanlı görsel oluşturma (benzersiz, çocuk dostu) --- */
+  function _ozelHash(str) {
+    var h = 5381; for (var i = 0; i < (str||'').length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+    return Math.abs(h);
   }
   function gorselOlustur(ad, tip, konu) {
-    var r = _hashRenk(ad + tip);
-    var ikon = _hashIkon(ad);
+    var h = _ozelHash((ad||'') + (tip||'') + (konu||''));
+    var palettes = [
+      ['#6366f1','#a78bfa'],['#ec4899','#f9a8d4'],['#f59e0b','#fcd34d'],
+      ['#10b981','#6ee7b7'],['#ef4444','#fca5a5'],['#8b5cf6','#d8b4fe'],
+      ['#0ea5e9','#7dd3fc'],['#f97316','#fdba74'],['#14b8a6','#5eead4'],
+      ['#e11d48','#fda4af'],['#7c3aed','#c4b5fd'],['#059669','#a7f3d0'],
+      ['#0284c7','#38bdf8'],['#d946ef','#f0abfc'],['#ea580c','#fb923c'],
+      ['#4f46e5','#818cf8'],['#0d9488','#2dd4bf'],['#be123c','#fb7185']
+    ];
+    var ikonlar = ['\u2702','\uD83D\uDD2C','\uD83D\uDE80','\uD83D\uDD2E','\u2B50','\uD83C\uDFAE','\uD83D\uDCBB','\uD83C\uDF1F','\uD83D\uDCD6','\uD83C\uDFB5','\uD83D\uDD35','\uD83D\uDEE0','\uD83D\uDCDA','\u26A1','\uD83C\uDF08','\uD83D\uDCAB','\uD83D\uDCBB','\uD83C\uDFB2','\uD83D\uDCBB','\uD83C\uDFC6'];
+    var r = palettes[h % palettes.length];
+    var ikon = ikonlar[(h >> 3) % ikonlar.length];
     var kisaAd = (ad || 'Etkinlik').substring(0, 30);
-    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250">' +
-      '<defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">' +
-      '<stop offset="0%" stop-color="' + r[0] + '"/>' +
-      '<stop offset="100%" stop-color="' + r[1] + '"/>' +
-      '</linearGradient></defs>' +
-      '<rect width="400" height="250" rx="16" fill="url(#g)"/>' +
-      '<text x="200" y="95" text-anchor="middle" font-size="48">' + ikon + '</text>' +
-      '<text x="200" y="150" text-anchor="middle" font-size="22" font-weight="bold" fill="white" font-family="system-ui,sans-serif">' +
+    var aciklama = (konu || (tip === 'kod' ? 'Kod Etkinliği' : tip === 'dosya' ? 'HTML Dosyası' : 'Drive')).substring(0, 40);
+    var ac1 = r[0], ac2 = r[1];
+    /* Rastgele dekoratif şekiller */
+    var sekil1 = '<circle cx="' + (30 + h % 60) + '" cy="' + (20 + h % 40) + '" r="' + (20 + h % 30) + '" fill="rgba(255,255,255,0.08)"/>';
+    var sekil2 = '<circle cx="' + (300 + (h>>2) % 80) + '" cy="' + (170 + (h>>2) % 50) + '" r="' + (25 + (h>>2) % 25) + '" fill="rgba(255,255,255,0.06)"/>';
+    var sekil3 = '<circle cx="' + (180 + (h>>4) % 60) + '" cy="' + (30 + (h>>4) % 30) + '" r="' + (12 + (h>>4) % 18) + '" fill="rgba(255,255,255,0.1)"/>';
+    var sekil4 = '<rect x="' + (320 + (h>>6) % 60) + '" y="' + (10 + (h>>6) % 40) + '" width="' + (30 + (h>>6) % 40) + '" height="' + (30 + (h>>6) % 40) + '" rx="8" fill="rgba(255,255,255,0.07)" transform="rotate(' + (h % 45) + ' 350 30)"/>';
+    /* Tip rozeti */
+    var tipRozeti = tip === 'kod' ? 'Kod' : tip === 'dosya' ? 'HTML' : 'Drive';
+    var tipRengi = tip === 'kod' ? 'rgba(255,255,255,0.35)' : tip === 'dosya' ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.25)';
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="280">' +
+      '<defs>' +
+        '<linearGradient id="g' + h + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
+        '<stop offset="0%" stop-color="' + ac1 + '"/>' +
+        '<stop offset="100%" stop-color="' + ac2 + '"/>' +
+        '</linearGradient>' +
+        '<filter id="s' + h + '"><feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="rgba(0,0,0,0.15)"/></filter>' +
+      '</defs>' +
+      '<rect width="400" height="280" rx="18" fill="url(#g' + h + ')" filter="url(#s' + h + ')"/>' +
+      sekil1 + sekil2 + sekil3 + sekil4 +
+      '<text x="200" y="100" text-anchor="middle" font-size="56">' + ikon + '</text>' +
+      '<rect x="120" y="120" width="160" height="26" rx="13" fill="' + tipRengi + '"/>' +
+      '<text x="200" y="138" text-anchor="middle" font-size="12" fill="white" font-weight="bold" font-family="system-ui,sans-serif">' + tipRozeti + '</text>' +
+      '<text x="200" y="180" text-anchor="middle" font-size="20" font-weight="bold" fill="white" font-family="system-ui,sans-serif" style="text-shadow:0 2px 4px rgba(0,0,0,0.2)">' +
       kisaAd.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</text>' +
-      '<text x="200" y="185" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.8)" font-family="system-ui,sans-serif">' +
-      (konu || '').substring(0,40).replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</text>' +
-      '<rect x="140" y="205" width="120" height="30" rx="15" fill="rgba(255,255,255,0.25)"/>' +
-      '<text x="200" y="226" text-anchor="middle" font-size="13" fill="white" font-family="system-ui,sans-serif">\u25B6 Oyna</text>' +
+      '<text x="200" y="208" text-anchor="middle" font-size="13" fill="rgba(255,255,255,0.85)" font-family="system-ui,sans-serif">' +
+      aciklama.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</text>' +
+      '<rect x="145" y="225" width="110" height="32" rx="16" fill="rgba(255,255,255,0.3)" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>' +
+      '<text x="200" y="246" text-anchor="middle" font-size="13" fill="white" font-weight="bold" font-family="system-ui,sans-serif">\u25B6 Oyna</text>' +
       '</svg>';
     return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
   }
