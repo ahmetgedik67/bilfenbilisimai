@@ -137,7 +137,7 @@
   /* ============================================================
      ÇOCUK DOSTU GÖRSEL KATMAN — panel (Robi temalı, okunaklı)
      Öğretmen/yönetici yoğun tablolarına dokunmadan buton, kart,
-     giriş ve durum öğelerine oyuncak gibi yumuşak detaylar ekler.
+     giriş ve durum öğelerine etkinlik gibi yumuşak detaylar ekler.
      ============================================================ */
   :root {
     --murekkep: #332b63;
@@ -402,7 +402,7 @@
       <div id="olusturSekme" style="display:none">
         <div class="kart">
           <h2>✍️ Yeni Etkinlik Oluştur</h2>
-          <p class="kucuk-not">Oluşturduğun etkinlik <b>önce yönetici onayına gider</b> (dosya ve bilgiler yalnız yöneticiye ulaşır). Onaylanınca etkinlik <b>tüm kampüslerdeki</b> öğrencilerin "Etkinliklerim" listesine düşer; <b>🎮 Etkinlik Yönetimi</b> sekmesinden açık / kapalı / tarihli yapılabilir. Etkinliği kendi HTML oyununla (dosya veya kod) ya da Drive bağlantısıyla ekleyebilirsin.</p>
+          <p class="kucuk-not">Oluşturduğun etkinlik <b>önce yönetici onayına gider</b> (dosya ve bilgiler yalnız yöneticiye ulaşır). Onaylanınca etkinlik <b>tüm kampüslerdeki</b> öğrencilerin "Etkinliklerim" listesine düşer; <b>🎮 Etkinlik Yönetimi</b> sekmesinden açık / kapalı / tarihli yapılabilir. Etkinliği kendi HTML etkinliğinle (dosya veya kod) ya da Drive bağlantısıyla ekleyebilirsin.</p>
           <div class="satir">
             <div><label>Etkinlik adı</label><input id="oeAd" placeholder="örn. Algoritma Macerası"></div>
             <div><label>Konu &amp; Tema</label><input id="oeKonu" placeholder="örn. Algoritma — Uzay Teması"></div>
@@ -445,7 +445,7 @@
               <span class="kucuk-not" id="oeGorselDurum"></span>
             </div>
             <img id="oeGorselOnizle" style="display:none;max-width:120px;max-height:80px;border-radius:8px;margin-top:6px;border:2px solid var(--line)">
-            <p class="kucuk-not" style="margin-top:4px">Görsel eklenmezse otomatik oluşturulur. "📸 Oluştur" ile oyunun ekran görüntüsü alınır.</p>
+            <p class="kucuk-not" style="margin-top:4px">Görsel eklenmezse otomatik oluşturulur. "📸 Oluştur" ile etkinliğin ekran görüntüsü alınır.</p>
           </div>
 
           <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
@@ -888,8 +888,8 @@
   var SEMA_BEKLENEN = {
     campus: ['id', 'ad', 'olusturma_tarihi'],
     profil: ['id', 'campus_id', 'kullanici_adi', 'sifre_tuz', 'sifre_hash', 'ad', 'rol', 'avatar', 'puan', 'olusturma_tarihi'],
-    etkinlik_atama: ['campus_id', 'oyun_id', 'aktif', 'acilis', 'kapanis', 'guncelleme_tarihi'],
-    tamamlanan: ['id', 'ogrenci_id', 'campus_id', 'oyun_id', 'puan', 'tarih'],
+    etkinlik_atama: ['campus_id', 'etkinlik_id', 'aktif', 'acilis', 'kapanis', 'guncelleme_tarihi'],
+    tamamlanan: ['id', 'ogrenci_id', 'campus_id', 'etkinlik_id', 'puan', 'tarih'],
     ayar: ['anahtar', 'deger', 'guncelleme_tarihi'],
     ozel_etkinlik: ['id', 'campus_id', 'ogretmen_id', 'ogretmen_ad', 'ogretmen_kullanici', 'ad', 'konu', 'seviyeler', 'tip', 'icerik', 'durum', 'red_nedeni', 'onay_tarihi', 'olusturma_tarihi', 'gorsel']
   };
@@ -1028,14 +1028,14 @@
   function ozelSiralama(a, b) { return (b.tarih || '').localeCompare(a.tarih || ''); }
   /* Onaylı/onaysız özel etkinlik silinirken atama ve tamamlanma kayıtlarını (tüm kampüslerde) temizle */
   function ozelKalintiTemizle(id) {
-    var oyunId = 'ozel:' + id;
+    var etkinlikId = 'ozel:' + id;
     if (DEMO) {
-      dSet(DK.atama, dGet(DK.atama).filter(function (a) { return a.oyun_id !== oyunId; }));
-      dSet(DK.tamamlanan, dGet(DK.tamamlanan).filter(function (t) { return t.oyun_id !== oyunId; }));
+      dSet(DK.atama, dGet(DK.atama).filter(function (a) { return a.etkinlik_id !== etkinlikId; }));
+      dSet(DK.tamamlanan, dGet(DK.tamamlanan).filter(function (t) { return t.etkinlik_id !== etkinlikId; }));
       return Promise.resolve();
     }
-    return sb('etkinlik_atama?oyun_id=eq.' + encodeURIComponent(oyunId), { method: 'DELETE' }).then(function () {
-      return sb('tamamlanan?oyun_id=eq.' + encodeURIComponent(oyunId), { method: 'DELETE' });
+    return sb('etkinlik_atama?etkinlik_id=eq.' + encodeURIComponent(etkinlikId), { method: 'DELETE' }).then(function () {
+      return sb('tamamlanan?etkinlik_id=eq.' + encodeURIComponent(etkinlikId), { method: 'DELETE' });
     });
   }
 
@@ -1149,8 +1149,8 @@
     /* ---------- Yönetici: rapor ---------- */
     raporVerileri: async function (campusId) {
       var q = campusId
-        ? 'tamamlanan?campus_id=eq.' + encodeURIComponent(campusId) + '&select=ogrenci_id,campus_id,oyun_id,tarih&order=tarih'
-        : 'tamamlanan?select=ogrenci_id,campus_id,oyun_id,tarih&order=tarih';
+        ? 'tamamlanan?campus_id=eq.' + encodeURIComponent(campusId) + '&select=ogrenci_id,campus_id,etkinlik_id,tarih&order=tarih'
+        : 'tamamlanan?select=ogrenci_id,campus_id,etkinlik_id,tarih&order=tarih';
       var ts = await sb(q);
       var ps = await sb('profil?rol=eq.ogrenci&select=id,ad,campus_id');
       var cs = await sb('campus?select=id,ad');
@@ -1158,7 +1158,7 @@
       (ps || []).forEach(function (p) { pAd[p.id] = p.ad; });
       (cs || []).forEach(function (c) { cAd[c.id] = c.ad; });
       return (ts || []).map(function (t) {
-        return { ogrenciId: t.ogrenci_id, ogrenciAd: pAd[t.ogrenci_id] || '', campusId: t.campus_id, campusAdi: cAd[t.campus_id] || '', oyunId: t.oyun_id, tarih: t.tarih };
+        return { ogrenciId: t.ogrenci_id, ogrenciAd: pAd[t.ogrenci_id] || '', campusId: t.campus_id, campusAdi: cAd[t.campus_id] || '', etkinlikId: t.etkinlik_id, tarih: t.tarih };
       });
     },
     /* ---------- Öğretmenin oluşturduğu özel etkinlikler (onay akışı) ----------
@@ -1219,7 +1219,7 @@
     },
     ogrenciListesi: async function (s) {
       var ps = await sb('profil?campus_id=eq.' + encodeURIComponent(s.campusId) + '&rol=eq.ogrenci&select=*&order=ad');
-      var ts = await sb('tamamlanan?campus_id=eq.' + encodeURIComponent(s.campusId) + '&select=ogrenci_id,oyun_id');
+      var ts = await sb('tamamlanan?campus_id=eq.' + encodeURIComponent(s.campusId) + '&select=ogrenci_id,etkinlik_id');
       var sayilar = {};
       (ts || []).forEach(function (t) { sayilar[t.ogrenci_id] = (sayilar[t.ogrenci_id] || 0) + 1; });
       return (ps || []).map(function (p) {
@@ -1229,18 +1229,18 @@
     atamaListesi: async function (s) {
       return (await sb('etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&select=*')) || [];
     },
-    atamaKaydet: async function (s, oyunId, aktif, acilis, kapanis) {
+    atamaKaydet: async function (s, etkinlikId, aktif, acilis, kapanis) {
       await sb('etkinlik_atama', {
         method: 'POST',
         prefer: 'resolution=merge-duplicates,return=representation',
-        body: { campus_id: s.campusId, oyun_id: oyunId, aktif: !!aktif, acilis: acilis, kapanis: kapanis }
+        body: { campus_id: s.campusId, etkinlik_id: etkinlikId, aktif: !!aktif, acilis: acilis, kapanis: kapanis }
       });
     },
     tamamlananlar: async function (s) {
-      return (await sb('tamamlanan?ogrenci_id=eq.' + encodeURIComponent(s.id) + '&select=oyun_id,puan,tarih')) || [];
+      return (await sb('tamamlanan?ogrenci_id=eq.' + encodeURIComponent(s.id) + '&select=etkinlik_id,puan,tarih')) || [];
     },
-    tamamla: async function (s, oyunId) {
-      await sb('tamamlanan', { method: 'POST', body: { ogrenci_id: s.id, campus_id: s.campusId, oyun_id: oyunId, puan: PUAN_BASINA } });
+    tamamla: async function (s, etkinlikId) {
+      await sb('tamamlanan', { method: 'POST', body: { ogrenci_id: s.id, campus_id: s.campusId, etkinlik_id: etkinlikId, puan: PUAN_BASINA } });
       var ps = await sb('profil?id=eq.' + encodeURIComponent(s.id) + '&select=puan');
       var yeni = (ps[0].puan || 0) + PUAN_BASINA;
       await sb('profil?id=eq.' + encodeURIComponent(s.id), { method: 'PATCH', body: { puan: yeni } });
@@ -1315,19 +1315,19 @@
     atamaListesi: async function (s) {
       return dGet(DK.atama).filter(function (a) { return a.campusId === s.campusId; });
     },
-    atamaKaydet: async function (s, oyunId, aktif, acilis, kapanis) {
+    atamaKaydet: async function (s, etkinlikId, aktif, acilis, kapanis) {
       var as = dGet(DK.atama);
-      as = as.filter(function (a) { return !(a.campusId === s.campusId && a.oyun_id === oyunId); });
-      as.push({ campusId: s.campusId, oyun_id: oyunId, aktif: !!aktif, acilis: acilis, kapanis: kapanis });
+      as = as.filter(function (a) { return !(a.campusId === s.campusId && a.etkinlik_id === etkinlikId); });
+      as.push({ campusId: s.campusId, etkinlik_id: etkinlikId, aktif: !!aktif, acilis: acilis, kapanis: kapanis });
       dSet(DK.atama, as);
     },
     tamamlananlar: async function (s) {
       return dGet(DK.tamamlanan).filter(function (t) { return t.ogrenci_id === s.id; });
     },
-    tamamla: async function (s, oyunId) {
+    tamamla: async function (s, etkinlikId) {
       var ts = dGet(DK.tamamlanan);
-      if (ts.some(function (t) { return t.ogrenci_id === s.id && t.oyun_id === oyunId; })) throw new Error('Bu etkinliği zaten tamamladın.');
-      ts.push({ id: dId(), ogrenci_id: s.id, campusId: s.campusId, oyun_id: oyunId, puan: PUAN_BASINA, tarih: new Date().toISOString() });
+      if (ts.some(function (t) { return t.ogrenci_id === s.id && t.etkinlik_id === etkinlikId; })) throw new Error('Bu etkinliği zaten tamamladın.');
+      ts.push({ id: dId(), ogrenci_id: s.id, campusId: s.campusId, etkinlik_id: etkinlikId, puan: PUAN_BASINA, tarih: new Date().toISOString() });
       dSet(DK.tamamlanan, ts);
       var ps = dGet(DK.profil);
       var p = ps.filter(function (x) { return x.id === s.id; })[0];
@@ -1449,7 +1449,7 @@
       ps.forEach(function (p) { pAd[p.id] = p.ad; });
       cs.forEach(function (c) { cAd[c.id] = c.ad; });
       return ts.filter(function (t) { return !campusId || t.campusId === campusId; }).map(function (t) {
-        return { ogrenciId: t.ogrenci_id, ogrenciAd: pAd[t.ogrenci_id] || '', campusId: t.campusId, campusAdi: cAd[t.campusId] || '', oyunId: t.oyun_id, tarih: t.tarih };
+        return { ogrenciId: t.ogrenci_id, ogrenciAd: pAd[t.ogrenci_id] || '', campusId: t.campusId, campusAdi: cAd[t.campusId] || '', etkinlikId: t.etkinlik_id, tarih: t.tarih };
       });
     },
     /* ---------- Öğretmenin oluşturduğu özel etkinlikler (onay akışı) ---------- */
@@ -1777,7 +1777,7 @@
       API.ogrenciListesi(oturum).then(function (ogrenciler) {
         katalogGetir('ogretmen').then(function (katalog) {
           var byId = {};
-          atamalar.forEach(function (a) { byId[a.oyun_id] = a; });
+          atamalar.forEach(function (a) { byId[a.etkinlik_id] = a; });
           var kutu = $('etkinlikListe');
           var h = '';
           katalog.forEach(function (e) {
@@ -1886,9 +1886,9 @@
     ogrenciVerileri().then(function (v) {
       katalogGetir('ogrenci').then(function (katalog) {
         var byId = {};
-        v.atamalar.forEach(function (a) { byId[a.oyun_id] = a; });
+        v.atamalar.forEach(function (a) { byId[a.etkinlik_id] = a; });
         var tamam = {};
-        v.tamamlananlar.forEach(function (t) { tamam[t.oyun_id] = t; });
+        v.tamamlananlar.forEach(function (t) { tamam[t.etkinlik_id] = t; });
         var kutu = $('ogrenciEtkinlikler');
         if (!katalog.length) { kutu.innerHTML = '<div class="bos">Henüz etkinlik yok.</div>'; return; }
         var h = '';
@@ -2262,7 +2262,7 @@
   }
   /* Demo (localStorage) yedeğini Supabase satır biçimine çevir.
      Supabase uuid tipinde olduğu için tüm kimlikler yeniden üretilir ve
-     campus/profil/ozel başvuruları + 'ozel:' oyun bağlantıları eşlenir. */
+     campus/profil/ozel başvuruları + 'ozel:' etkinlik bağlantıları eşlenir. */
   function demoVeridenSupabase(veri) {
     var simdi = new Date().toISOString();
     var kampusId = {}, profilId = {}, ozelId = {};
@@ -2310,7 +2310,7 @@
         olusturma_tarihi: o.tarih || o.olusturma_tarihi || simdi
       };
     });
-    function oyunIdCevir(id) {
+    function etkinlikIdCevir(id) {
       if (typeof id === 'string' && id.indexOf('ozel:') === 0) {
         var eski = id.slice(5);
         return ozelId[eski] ? 'ozel:' + ozelId[eski] : id;
@@ -2320,7 +2320,7 @@
     var atama = (veri.etkinlik_atama || []).filter(function (a) { return a && a.campusId; }).map(function (a) {
       return {
         campus_id: kampusId[a.campusId] || null,
-        oyun_id: oyunIdCevir(a.oyun_id),
+        etkinlik_id: etkinlikIdCevir(a.etkinlik_id),
         aktif: a.aktif !== false,
         acilis: a.acilis || null,
         kapanis: a.kapanis || null,
@@ -2332,7 +2332,7 @@
         id: yeniUuid(),
         ogrenci_id: profilId[t.ogrenci_id] || null,
         campus_id: kampusId[t.campusId] || null,
-        oyun_id: oyunIdCevir(t.oyun_id),
+        etkinlik_id: etkinlikIdCevir(t.etkinlik_id),
         puan: t.puan || 10,
         tarih: t.tarih || simdi
       };
@@ -2738,7 +2738,7 @@
 
   /* ---------- Yönetici: kampüs raporu ---------- */
   var ETKINLIK_RENKLER = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#84cc16', '#14b8a6'];
-  var raporGorunum = { detayOyun: '' };
+  var raporGorunum = { detayEtkinlik: '' };
 
   function etkinlikAdBul(id) {
     for (var i = 0; i < ETKINLIKLER.length; i++) if (ETKINLIKLER[i].id === id) return ETKINLIKLER[i].ad;
@@ -2750,7 +2750,7 @@
   }
 
   function raporuCiz() {
-    raporGorunum.detayOyun = '';
+    raporGorunum.detayEtkinlik = '';
     $('raporOgrenciler').innerHTML = '';
     var campusId = $('raporKampus').value;
     var donemGun = parseInt($('raporDonem').value || '0', 10);
@@ -2773,8 +2773,8 @@
     var kutu = $('raporEtkinlikler');
     var sayi = {}, ogrenciler = {};
     satirlar.forEach(function (t) {
-      sayi[t.oyunId] = (sayi[t.oyunId] || 0) + 1;
-      (ogrenciler[t.oyunId] = ogrenciler[t.oyunId] || []).push(t.ogrenciAd || '?');
+      sayi[t.etkinlikId] = (sayi[t.etkinlikId] || 0) + 1;
+      (ogrenciler[t.etkinlikId] = ogrenciler[t.etkinlikId] || []).push(t.ogrenciAd || '?');
     });
     var ids = [];
     ETKINLIKLER.forEach(function (e) { ids.push(e.id); });
@@ -2801,8 +2801,8 @@
       b.onclick = function () {
         var id = b.getAttribute('data-rapor-detay');
         var k = $('raporOgrenciler');
-        if (raporGorunum.detayOyun === id) { k.innerHTML = ''; raporGorunum.detayOyun = ''; return; }
-        raporGorunum.detayOyun = id;
+        if (raporGorunum.detayEtkinlik === id) { k.innerHTML = ''; raporGorunum.detayEtkinlik = ''; return; }
+        raporGorunum.detayEtkinlik = id;
         var liste = ogrenciler[id] || [];
         k.innerHTML = '<div style="background:#f5f3ff;border-radius:12px;padding:10px 14px;margin-top:8px;font-size:13px"><b>' +
           esc(etkinlikAdBul(id)) + ' tamamlayan öğrenciler:</b> ' + esc(liste.join(', ')) + '</div>';
@@ -2827,7 +2827,7 @@
     satirlar.forEach(function (t) {
       var k = kovaAnahtari(new Date(t.tarih));
       kovalar[k] = kovalar[k] || {};
-      kovalar[k][t.oyunId] = (kovalar[k][t.oyunId] || 0) + 1;
+      kovalar[k][t.etkinlikId] = (kovalar[k][t.etkinlikId] || 0) + 1;
     });
     var anahtarlar = Object.keys(kovalar).map(Number).sort(function (a, b) { return a - b; });
     var enBuyuk = 1;
@@ -2855,7 +2855,7 @@
     });
     h += '</div><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:12px">';
     var gosterilen = {};
-    satirlar.forEach(function (t) { gosterilen[t.oyunId] = 1; });
+    satirlar.forEach(function (t) { gosterilen[t.etkinlikId] = 1; });
     Object.keys(gosterilen).forEach(function (o) {
       h += '<span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:' + etkinlikRengi(o) + ';margin-right:5px"></span>' + esc(etkinlikAdBul(o)) + '</span>';
     });

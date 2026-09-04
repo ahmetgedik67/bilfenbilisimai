@@ -59,12 +59,12 @@ create index if not exists ozel_etkinlik_durum_idx on ozel_etkinlik (durum);
 -- ---------- Etkinlik atamaları (kampüs bazlı, öğretmen kontrolünde) ----------
 create table if not exists etkinlik_atama (
   campus_id uuid references campus(id) on delete cascade,
-  oyun_id text not null,
+  etkinlik_id text not null,
   aktif boolean not null default true,
   acilis timestamptz,
   kapanis timestamptz,
   guncelleme_tarihi timestamptz not null default now(),
-  primary key (campus_id, oyun_id)
+  primary key (campus_id, etkinlik_id)
 );
 
 -- ---------- Tamamlanan etkinlikler (öğrenci başına puan kaydı) ----------
@@ -72,10 +72,10 @@ create table if not exists tamamlanan (
   id uuid primary key default gen_random_uuid(),
   ogrenci_id uuid references profil(id) on delete cascade,
   campus_id uuid references campus(id) on delete cascade,
-  oyun_id text not null,
+  etkinlik_id text not null,
   puan integer not null default 10,
   tarih timestamptz not null default now(),
-  unique (ogrenci_id, oyun_id)
+  unique (ogrenci_id, etkinlik_id)
 );
 
 -- ---------- Ayarlar (genel sistem yöneticisi şifresi burada saklanır) ----------
@@ -132,6 +132,10 @@ alter table ozel_etkinlik add column if not exists red_nedeni text not null defa
 alter table ozel_etkinlik add column if not exists onay_tarihi timestamptz;
 alter table ozel_etkinlik add column if not exists gorsel text not null default '';
 create index if not exists ozel_etkinlik_durum_idx on ozel_etkinlik (durum);
+
+-- oyun_id → etkinlik_id yeniden adlandırma (mevcut tablolar için):
+DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='etkinlik_atama' AND column_name='oyun_id') THEN ALTER TABLE etkinlik_atama RENAME COLUMN oyun_id TO etkinlik_id; END IF; END $$;
+DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tamamlanan' AND column_name='oyun_id') THEN ALTER TABLE tamamlanan RENAME COLUMN oyun_id TO etkinlik_id; END IF; END $$;
 
 -- 'ayar' tablosu (eski kurulumlar için eksikse tamamlar):
 create table if not exists ayar (anahtar text primary key, deger text not null, guncelleme_tarihi timestamptz not null default now());

@@ -10,7 +10,7 @@
   sınıflara (1-7) ve IPT kategorilerine (2 IPT – 7 IPT) göre toplandığı portal ana sayfası.
   Yeni etkinlik eklemek: games/<etkinlik>/index.html dosyasını ekle,
   bir önizleme görüntüsünü thumbnails/ klasörüne koy ve aşağıdaki
-  OYUNLAR listesine tek bir satır ekle.
+  ETKINLIKLER listesine tek bir satır ekle.
 -->
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -502,7 +502,7 @@
     background: linear-gradient(90deg, rgba(139,92,246,.35), rgba(255,143,199,.35), transparent);
   }
 
-  /* ---------- Kartlar: oyuncak kutusu ---------- */
+  /* ---------- Kartlar: etkinlik kutusu ---------- */
   .kartlar { gap: 22px; }
   .kart {
     --kart-renk: #8b5cf6;
@@ -703,13 +703,13 @@
 <div class="oynat-pencere" id="pencere">
   <div class="pencere-kutu">
     <div class="pencere-baslik">
-      <div class="ad">🎮 <span id="oyunAdi"></span></div>
+      <div class="ad">🎮 <span id="etkinlikAdi"></span></div>
       <div class="pencere-aksiyon">
         <a id="yeniSekme" href="#" target="_blank" rel="noopener">↗ Yeni sekmede aç</a>
         <button class="kapat" id="pencereKapat" title="Kapat (Esc)">✕</button>
       </div>
     </div>
-    <iframe id="oyunCerceve" title="Etkinlik" allow="autoplay; fullscreen"></iframe>
+    <iframe id="etkinlikCerceve" title="Etkinlik" allow="autoplay; fullscreen"></iframe>
   </div>
 </div>
 
@@ -744,7 +744,7 @@
   ];
   const KATEGORI_RENK = ['#f59e0b', '#22c55e', '#38bdf8', '#a78bfa', '#f472b6', '#facc15'];
 
-  const OYUNLAR = [
+  const ETKINLIKLER = [
     {
       id: 'carkifelek',
       ad: 'Sınıf Çarkıfeleği',
@@ -889,24 +889,24 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') menuKapat(); });
 
   /* ---------- Kart ---------- */
-  function kartYap(oyun, sira) {
+  function kartYap(etkinlik, sira) {
     const kart = document.createElement('article');
     kart.className = 'kart';
     kart.style.animationDelay = (sira * 60) + 'ms';
     /* Kart vurgu rengi: öğretmen araçları → gök mavisi, tüm seviyeler → turuncu,
        aksi halde etkinliğin ilk kategorisinin gökkuşağı rengi */
     let vurgu = '#8b5cf6';
-    if (oyun.ogretmen) vurgu = '#0ea5e9';
-    else if ((oyun.kategoriler || []).length >= KATEGORILER.length) vurgu = '#ff7a3d';
-    else if ((oyun.kategoriler || [])[0]) vurgu = KATEGORI_RENK[(oyun.kategoriler[0] - 2) % KATEGORI_RENK.length];
+    if (etkinlik.ogretmen) vurgu = '#0ea5e9';
+    else if ((etkinlik.kategoriler || []).length >= KATEGORILER.length) vurgu = '#ff7a3d';
+    else if ((etkinlik.kategoriler || [])[0]) vurgu = KATEGORI_RENK[(etkinlik.kategoriler[0] - 2) % KATEGORI_RENK.length];
     kart.style.setProperty('--kart-renk', vurgu);
-    kart.onclick = () => oynat(oyun);
+    kart.onclick = () => oynat(etkinlik);
 
     const thumb = document.createElement('div');
     thumb.className = 'kart-thumb';
     const img = document.createElement('img');
-    img.src = oyun.gorsel || oyun.onizlemeData || oyun.onizleme;
-    img.alt = oyun.ad + ' önizleme';
+    img.src = etkinlik.gorsel || etkinlik.onizlemeData || etkinlik.onizleme;
+    img.alt = etkinlik.ad + ' önizleme';
     img.loading = 'lazy';
     const overlay = document.createElement('div');
     overlay.className = 'oyna-overlay';
@@ -924,24 +924,24 @@
     no.textContent = 'ETKİNLİK ' + (sira + 1);
     const rozet = document.createElement('span');
     rozet.className = 'rozet';
-    const tumSeviyeler = (oyun.kategoriler || []).length >= KATEGORILER.length;
-    rozet.textContent = oyun.ogretmen
+    const tumSeviyeler = (etkinlik.kategoriler || []).length >= KATEGORILER.length;
+    rozet.textContent = etkinlik.ogretmen
       ? '👩‍🏫 ÖĞRETMEN'
       : tumSeviyeler
         ? 'TÜM SEVİYELER'
-        : (oyun.kategoriler || []).map(n => n + ' IPT').join(' • ');
+        : (etkinlik.kategoriler || []).map(n => n + ' IPT').join(' • ');
     ust.append(no, rozet);
 
     const h3 = document.createElement('h3');
-    h3.textContent = oyun.ad;
+    h3.textContent = etkinlik.ad;
     const p = document.createElement('p');
-    p.textContent = oyun.aciklama;
+    p.textContent = etkinlik.aciklama;
 
     const alt = document.createElement('div');
     alt.className = 'kart-alt';
     const etiketler = document.createElement('div');
     etiketler.className = 'etiketler';
-    (oyun.etiketler || []).forEach(t => {
+    (etkinlik.etiketler || []).forEach(t => {
       const s = document.createElement('span');
       s.className = 'etiket';
       s.textContent = t;
@@ -950,7 +950,7 @@
     const btn = document.createElement('button');
     btn.className = 'oynat-btn';
     btn.textContent = '▶ Oyna';
-    btn.onclick = e => { e.stopPropagation(); oynat(oyun); };
+    btn.onclick = e => { e.stopPropagation(); oynat(etkinlik); };
     alt.append(etiketler, btn);
 
     govde.append(ust, h3, p, alt);
@@ -964,13 +964,13 @@
     bos.className = 'bos-kart';
     bos.innerHTML =
       '<div class="buyuk">🧩</div>' +
-      '<p><b>' + kategoriAdi + '</b> seviyesinde yeni oyunlar hazırlanıyor… 🚀<br>Robi yakında buraya sürpriz etkinlikler getirecek!</p>';
+      '<p><b>' + kategoriAdi + '</b> seviyesinde yeni etkinlikler hazırlanıyor… 🚀<br>Robi yakında buraya sürpriz etkinlikler getirecek!</p>';
     return bos;
   }
 
   /* Öğretmen araçları için mini kullanım rehberi (giriş gerekmez). */
   function rehberYap() {
-    const araclar = OYUNLAR.filter(o => o.ogretmen);
+    const araclar = ETKINLIKLER.filter(o => o.ogretmen);
     if (!araclar.length) return null;
     const d = document.createElement('details');
     d.className = 'rehber';
@@ -1013,9 +1013,9 @@
     ogretmenDugme.classList.toggle('secili', aktifFiltre === 'ogretmen');
     const icerik = $('icerik');
     icerik.innerHTML = '';
-    var tumOyunlar = OYUNLAR.concat(OZEL_ETKINLIKLER);
+    var tumEtkinlikler = ETKINLIKLER.concat(OZEL_ETKINLIKLER);
 
-    let gorunenOyunSayaci = 0;
+    let gorunenEtkinlikSayaci = 0;
 
     /* Görüntülenecek bölümler:
        - Öğretmen kategorisi: tahtada yalnız öğretmenin uyguladığı etkinlikler (öğretmen: true)
@@ -1037,9 +1037,9 @@
 
     bolumler.forEach((bl) => {
       const ogretmenBolumu = !!bl.ogretmen;
-      const oyunlar = ogretmenBolumu
-        ? tumOyunlar.filter(o => o.ogretmen)
-        : tumOyunlar.filter(o =>
+      const etkinlikler = ogretmenBolumu
+        ? tumEtkinlikler.filter(o => o.ogretmen)
+        : tumEtkinlikler.filter(o =>
             (o.kategoriler || []).includes(bl.no) || (o.siniflar || []).includes(bl.no)
           );
 
@@ -1064,8 +1064,8 @@
       const kartlar = document.createElement('div');
       kartlar.className = 'kartlar';
 
-      if (oyunlar.length) {
-        oyunlar.forEach(o => kartlar.appendChild(kartYap(o, gorunenOyunSayaci++)));
+      if (etkinlikler.length) {
+        etkinlikler.forEach(o => kartlar.appendChild(kartYap(o, gorunenEtkinlikSayaci++)));
       } else {
         kartlar.appendChild(bosKartYap(ogretmenBolumu ? 'Öğretmen' : bl.ad));
       }
@@ -1081,7 +1081,7 @@
       const bos = document.createElement('div');
       bos.className = 'bos-kart';
       bos.style.minHeight = '220px';
-      bos.innerHTML = '<div class="buyuk">🧩</div><p>Bu seviye için henüz etkinlik yok — Robi yeni oyunlar hazırlıyor! 🚀</p>';
+      bos.innerHTML = '<div class="buyuk">🧩</div><p>Bu seviye için henüz etkinlik yok — Robi yeni etkinlikler hazırlıyor! 🚀</p>';
       icerik.appendChild(bos);
     }
   }
@@ -1094,28 +1094,28 @@
     if (/<!doctype\s+html>/i.test(k) || /<html[\s>]/i.test(k)) return k;
     return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>' + k + '</body></html>';
   }
-  function oynat(oyun) {
+  function oynat(etkinlik) {
     /* Öğretmen araçları giriş/atama kapısına takılmaz: herkese her zaman açıktır. */
-    etkinlikAcikMi(oyun.id, !!oyun.ogretmen).then(function (sonuc) {
+    etkinlikAcikMi(etkinlik.id, !!etkinlik.ogretmen).then(function (sonuc) {
       if (!sonuc.ok) { alert(sonuc.msg); return; }
-      $('oyunAdi').textContent = oyun.ad;
-      const cerceve = $('oyunCerceve');
-      if (oyun.ozel && (oyun.ozelTip === 'kod' || oyun.ozelTip === 'dosya') && oyun.ozelIcerik) {
+      $('etkinlikAdi').textContent = etkinlik.ad;
+      const cerceve = $('etkinlikCerceve');
+      if (etkinlik.ozel && (etkinlik.ozelTip === 'kod' || etkinlik.ozelTip === 'dosya') && etkinlik.ozelIcerik) {
         /* Kod/dosya etkinlikleri: srcdoc ile tam HTML olarak ac (url null) */
-        var _blob = new Blob([htmlSarmala(oyun.ozelIcerik)], { type: 'text/html' });
+        var _blob = new Blob([htmlSarmala(etkinlik.ozelIcerik)], { type: 'text/html' });
         var _blobUrl = URL.createObjectURL(_blob);
         $('yeniSekme').href = _blobUrl;
         $('yeniSekme').target = '_blank';
         cerceve.removeAttribute('src');
-        cerceve.srcdoc = htmlSarmala(oyun.ozelIcerik);
-      } else if (oyun.ozel && oyun.ozelTip === 'drive' && oyun.ozelIcerik) {
+        cerceve.srcdoc = htmlSarmala(etkinlik.ozelIcerik);
+      } else if (etkinlik.ozel && etkinlik.ozelTip === 'drive' && etkinlik.ozelIcerik) {
         /* Drive baglantisi: yeni sekmede ac */
-        window.open(oyun.ozelIcerik, '_blank');
+        window.open(etkinlik.ozelIcerik, '_blank');
         return;
       } else {
-        /* Dahili oyunlar: src ile ac */
-        $('yeniSekme').href = oyun.url;
-        cerceve.src = oyun.url;
+        /* Dahili etkinlikler: src ile ac */
+        $('yeniSekme').href = etkinlik.url;
+        cerceve.src = etkinlik.url;
       }
       $('pencere').classList.add('acik');
       document.body.style.overflow = 'hidden';
@@ -1123,8 +1123,8 @@
   }
   function kapat() {
     $('pencere').classList.remove('acik');
-    $('oyunCerceve').src = 'about:blank';
-    $('oyunCerceve').srcdoc = '';
+    $('etkinlikCerceve').src = 'about:blank';
+    $('etkinlikCerceve').srcdoc = '';
     $('yeniSekme').href = '#';
     document.body.style.overflow = '';
   }
@@ -1165,7 +1165,7 @@
     if (a.kapanis && now > new Date(a.kapanis).getTime()) return { ok: false, msg: '⏰ Bu etkinliğin süresi doldu.' };
     return { ok: true };
   }
-  window.etkinlikAcikMi = function (oyunId, herkeseAcik) {
+  window.etkinlikAcikMi = function (etkinlikId, herkeseAcik) {
     return Promise.resolve().then(function () {
       /* Öğretmen araçları: giriş yapılmadan da, öğrenci hesabıyla da her zaman açık. */
       if (herkeseAcik) return { ok: true };
@@ -1176,10 +1176,10 @@
         var as = [];
         try { as = JSON.parse(localStorage.getItem('bt_demo_atama') || '[]'); } catch (e) {}
         var a = null;
-        for (var i = 0; i < as.length; i++) if (as[i].campusId === s.campusId && as[i].oyun_id === oyunId) { a = as[i]; break; }
+        for (var i = 0; i < as.length; i++) if (as[i].campusId === s.campusId && as[i].etkinlik_id === etkinlikId) { a = as[i]; break; }
         return durumKontrol(a);
       }
-      return fetch(CONFIG.url + '/rest/v1/etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&oyun_id=eq.' + encodeURIComponent(oyunId) + '&select=*', {
+      return fetch(CONFIG.url + '/rest/v1/etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&etkinlik_id=eq.' + encodeURIComponent(etkinlikId) + '&select=*', {
         headers: { apikey: CONFIG.anon, Authorization: 'Bearer ' + CONFIG.anon }
       }).then(function (r) { return r.json(); }).then(function (rows) {
         return durumKontrol(rows && rows[0]);
