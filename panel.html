@@ -3256,30 +3256,34 @@
       '</svg>';
     return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
   }
-  /* --- html2canvas ile gerçek ekran görüntüsü yakalama --- */
+  /* --- html2canvas ile iframe tabanlı ekran görüntüsü yakalama --- */
   function gorselCek(html) {
     return new Promise(function (resolve) {
       try {
         if (typeof html2canvas === 'undefined') { resolve(null); return; }
-        var kutu = document.createElement('div');
-        kutu.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;height:500px;overflow:hidden;background:white;z-index:-9999;pointer-events:none';
-        kutu.innerHTML = htmlSarmala(html);
-        document.body.appendChild(kutu);
-        var timeout = setTimeout(function () {
-          try { kutu.remove(); } catch(e) {}
-          resolve(null);
-        }, 5000);
-        setTimeout(function () {
-          html2canvas(kutu, { width: 800, height: 500, scale: 1, useCORS: true, allowTaint: true, backgroundColor: '#ffffff' }).then(function (canvas) {
-            clearTimeout(timeout);
-            try { kutu.remove(); } catch(e) {}
-            resolve(canvas.toDataURL('image/jpeg', 0.7));
-          }).catch(function () {
-            clearTimeout(timeout);
-            try { kutu.remove(); } catch(e) {}
-            resolve(null);
-          });
-        }, 800);
+        var iframe = document.createElement('iframe');
+        iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;height:500px;border:none;opacity:0;z-index:-9999;pointer-events:none';
+        document.body.appendChild(iframe);
+        var resolved = false;
+        var done = function (val) { if (!resolved) { resolved = true; resolve(val); try { iframe.remove(); } catch(e) {} } };
+        var timeout = setTimeout(function () { done(null); }, 6000);
+        iframe.onload = function () {
+          /* iframe yüklendi, JS çalışması icin 2.5s bekle */
+          setTimeout(function () {
+            try {
+              var doc = iframe.contentDocument || iframe.contentWindow.document;
+              html2canvas(doc.body, {
+                width: 800, height: 500, scale: 1,
+                useCORS: true, allowTaint: true,
+                backgroundColor: '#ffffff'
+              }).then(function (canvas) {
+                clearTimeout(timeout);
+                done(canvas.toDataURL('image/jpeg', 0.75));
+              }).catch(function () { clearTimeout(timeout); done(null); });
+            } catch (e) { clearTimeout(timeout); done(null); }
+          }, 2500);
+        };
+        iframe.srcdoc = htmlSarmala(html);
       } catch (e) { resolve(null); }
     });
   }
