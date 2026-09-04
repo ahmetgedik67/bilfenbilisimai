@@ -1659,7 +1659,8 @@
           '<td>' + esc(o.konu || '') + '</td>' +
           '<td>' + esc(secimEtiketList(o.secim) || '—') + '</td>' +
           '<td><span class="tip-rozet">' + kaynakEtiketi(o.tip) + '</span></td>' +
-          '<td><button class="btn ikincil kucuk" data-oe-goster="' + esc(o.id) + '">👁 Görüntüle</button>' +
+          '<td><button class="btn ikincil kucuk" data-oe-goster="' + esc(o.id) + '">👁 Görüntüle</button> ' +
+          '<button class="btn ikincil kucuk" data-oe-indir="' + esc(o.id) + '">📥 İndir</button>' +
           (o.durum === 'onaylandi' ? '' : ' <button class="btn kirmizi kucuk" data-oe-sil="' + esc(o.id) + '">🗑 Sil</button>') +
           '</td></tr>';
       });
@@ -1670,6 +1671,26 @@
           var id = b.getAttribute('data-oe-goster');
           var o = ozeller.filter(function (x) { return x.id === id; })[0];
           if (o) ozelOynatAc(o.ad, o.icerik, o.tip);
+        };
+      });
+      Array.prototype.forEach.call(kutu.querySelectorAll('[data-oe-indir]'), function (b) {
+        b.onclick = function () {
+          var id = b.getAttribute('data-oe-indir');
+          var o = ozeller.filter(function (x) { return x.id === id; })[0];
+          if (!o) return;
+          var icerik = o.icerik || '';
+          if (o.tip === 'drive') {
+            if (icerik) window.open(icerik, '_blank');
+            return;
+          }
+          var dosyaAdi = (o.ad || 'etkinlik').replace(/[^a-zA-Z0-9ığüşöçİĞÜŞÖÇ\s]/g, '').replace(/\s+/g, '_') + '.html';
+          var blob = new Blob([icerik], { type: 'text/html;charset=utf-8' });
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = dosyaAdi;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
         };
       });
       Array.prototype.forEach.call(kutu.querySelectorAll('[data-oe-sil]'), function (b) {
@@ -1949,6 +1970,7 @@
           '<td class="kucuk-not">' + esc(tarihKisa(o.tarih)) + '</td>' +
           '<td style="white-space:nowrap">' +
           '<button class="btn ikincil kucuk" data-onay-goster="' + esc(o.id) + '">👁 Görüntüle</button> ' +
+          '<button class="btn ikincil kucuk" data-onay-indir="' + esc(o.id) + '">📥 İndir</button> ' +
           (o.durum === 'bekliyor'
             ? '<button class="btn yesil kucuk" data-onayla="' + esc(o.id) + '">✅ Onayla</button> ' +
               '<button class="btn kirmizi kucuk" data-reddet="' + esc(o.id) + '">❌ Reddet</button>'
@@ -1961,6 +1983,25 @@
         b.onclick = function () {
           var o = ozeller.filter(function (x) { return x.id === b.getAttribute('data-onay-goster'); })[0];
           if (o) ozelOynatAc(o.ad, o.icerik, o.tip);
+        };
+      });
+      Array.prototype.forEach.call(kutu.querySelectorAll('[data-onay-indir]'), function (b) {
+        b.onclick = function () {
+          var o = ozeller.filter(function (x) { return x.id === b.getAttribute('data-onay-indir'); })[0];
+          if (!o) return;
+          var icerik = o.icerik || '';
+          if (o.tip === 'drive') {
+            if (icerik) window.open(icerik, '_blank');
+            return;
+          }
+          var dosyaAdi = (o.ad || 'etkinlik').replace(/[^a-zA-Z0-9ığüşöçİĞÜŞÖÇ\s]/g, '').replace(/\s+/g, '_') + '.html';
+          var blob = new Blob([icerik], { type: 'text/html;charset=utf-8' });
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = dosyaAdi;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
         };
       });
       Array.prototype.forEach.call(kutu.querySelectorAll('[data-onayla]'), function (b) {
