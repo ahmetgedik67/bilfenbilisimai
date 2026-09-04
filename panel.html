@@ -267,6 +267,7 @@
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -2086,7 +2087,12 @@
       var o = gorselsiz[i];
       btn.textContent = '⏳ ' + (i + 1) + '/' + gorselsiz.length + ' — ' + o.ad;
       try {
+        /* Önce html2canvas ile gerçek screenshot dene */
         var gorsel = gorselOlustur(o.ad, o.tip, o.konu);
+        if (o.tip !== 'drive' && o.icerik) {
+          var realGorsel = await gorselCek(o.icerik);
+          if (realGorsel) gorsel = realGorsel;
+        }
         await sb('ozel_etkinlik?id=eq.' + encodeURIComponent(o.id), { method: 'PATCH', body: { gorsel: gorsel } });
         tamamlanan++;
       } catch (e) { /* atla */ }
@@ -3250,14 +3256,52 @@
       '</svg>';
     return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
   }
+  /* --- html2canvas ile gerçek ekran görüntüsü yakalama --- */
+  function gorselCek(html) {
+    return new Promise(function (resolve) {
+      try {
+        if (typeof html2canvas === 'undefined') { resolve(null); return; }
+        var kutu = document.createElement('div');
+        kutu.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;height:500px;overflow:hidden;background:white;z-index:-1;opacity:0.01';
+        kutu.innerHTML = htmlSarmala(html);
+        document.body.appendChild(kutu);
+        var timeout = setTimeout(function () {
+          try { kutu.remove(); } catch(e) {}
+          resolve(null);
+        }, 5000);
+        setTimeout(function () {
+          html2canvas(kutu, { width: 800, height: 500, scale: 0.5, useCORS: true, allowTaint: true, backgroundColor: '#ffffff' }).then(function (canvas) {
+            clearTimeout(timeout);
+            try { kutu.remove(); } catch(e) {}
+            resolve(canvas.toDataURL('image/jpeg', 0.7));
+          }).catch(function () {
+            clearTimeout(timeout);
+            try { kutu.remove(); } catch(e) {}
+            resolve(null);
+          });
+        }, 800);
+      } catch (e) { resolve(null); }
+    });
+  }
   /* --- Manuel görsel butonu --- */
   $('oeOtoGorsel').onclick = function () {
     var ad = $('oeAd').value.trim() || 'Etkinlik';
     var konu = $('oeKonu').value.trim();
-    oe.gorsel = gorselOlustur(ad, oe.tip, konu);
-    $('oeGorselOnizle').src = oe.gorsel;
-    $('oeGorselOnizle').style.display = '';
-    $('oeGorselDurum').textContent = '✅ Görsel oluşturuldu';
+    var icerik = oeIcerik();
+    $('oeGorselDurum').textContent = '⏳ Ekran görüntüsü alınıyor...';
+    if (oe.tip !== 'drive' && String(icerik || '').trim()) {
+      gorselCek(icerik).then(function (real) {
+        oe.gorsel = real || gorselOlustur(ad, oe.tip, konu);
+        $('oeGorselOnizle').src = oe.gorsel;
+        $('oeGorselOnizle').style.display = '';
+        $('oeGorselDurum').textContent = real ? '✅ Ekran görüntüsü alındı' : '✅ SVG görsel oluşturuldu';
+      });
+    } else {
+      oe.gorsel = gorselOlustur(ad, oe.tip, konu);
+      $('oeGorselOnizle').src = oe.gorsel;
+      $('oeGorselOnizle').style.display = '';
+      $('oeGorselDurum').textContent = '✅ SVG görsel oluşturuldu';
+    }
   };
   /* --- Kaydet (otomatik görsel oluşturarak) --- */
   $('oeKaydetBtn').onclick = function () {
@@ -3271,16 +3315,32 @@
     if (oe.tip === 'drive' && !/^https?:\/\//i.test(icerik)) { hataGoster($('oeHata'), 'Drive bağlantısı http(s) ile başlamalı.'); return; }
     hataGoster($('oeHata'), '');
     $('oeKaydetBtn').disabled = true;
-    /* Otomatik görsel: manuel seçilmediyse anlık SVG oluştur */
-    if (!oe.gorsel) oe.gorsel = gorselOlustur(ad, oe.tip, konu);
-    API.ozelEtkinlikEkle(oturum, { ad: ad, konu: konu, secim: oe.secim.slice(), tip: oe.tip, icerik: icerik, gorsel: oe.gorsel }).then(function () {
-      oeFormuTemizle();
-      bilgiGoster($('oeBilgi'), '📨 Etkinlik yönetici onayına gönderildi: ' + ad);
-      ozelListeCiz();
-      setTimeout(function () { bilgiGoster($('oeBilgi'), ''); }, 6000);
-    }).catch(function (e) {
-      hataGoster($('oeHata'), e.message);
-    }).finally(function () { $('oeKaydetBtn').disabled = false; });
+    /* Otomatik görsel: manuel seçilmediyse html2canvas dene,SVG fallback */
+    var svgGorsel = gorselOlustur(ad, oe.tip, konu);
+    if (!oe.gorsel) oe.gorsel = svgGorsel;
+    var kaydetFn = function (finalGorsel) {
+      API.ozelEtkinlikEkle(oturum, { ad: ad, konu: konu, secim: oe.secim.slice(), tip: oe.tip, icerik: icerik, gorsel: finalGorsel }).then(function () {
+        oeFormuTemizle();
+        bilgiGoster($('oeBilgi'), '📨 Etkinlik yönetici onayına gönderildi: ' + ad);
+        ozelListeCiz();
+        setTimeout(function () { bilgiGoster($('oeBilgi'), ''); }, 6000);
+        /* Arka planda html2canvas ile gerçek screenshot almaya çalış */
+        if (oe.tip !== 'drive') {
+          gorselCek(icerik).then(function (realGorsel) {
+            if (realGorsel) {
+              API.tumOzelEtkinlikler().then(function (tum) {
+                var bulunan = tum.find(function (t) { return t.ad === ad && t.durum === 'bekliyor'; });
+                if (bulunan) sb('ozel_etkinlik?id=eq.' + bulunan.id, { method: 'PATCH', body: { gorsel: realGorsel } });
+              });
+            }
+          });
+        }
+      }).catch(function (e) {
+        hataGoster($('oeHata'), e.message);
+      }).finally(function () { $('oeKaydetBtn').disabled = false; });
+    };
+    /* Kaydet SVG ile, sonra arka planda gerçek screenshot'a yükselt */
+    kaydetFn(oe.gorsel);
   };
   $('oeOnizleBtn').onclick = function () {
     var icerik = oeIcerik();
