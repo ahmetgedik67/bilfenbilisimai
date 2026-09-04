@@ -103,6 +103,43 @@ hesabı** içerir:
 - **📊 Kampüs Raporu**: kampüs ve dönem filtresiyle hangi etkinliği kaç öğrencinin
   tamamladığını (bar + 👥 öğrenci listesi), tamamlanmaların tarihe göre yığılım
   grafiğini (günlük; uzun dönemde haftalık kovalar + lejant) gösterir.
+- **⏳ Etkinlik Onayları**: öğretmenlerin oluşturduğu etkinlikler (dosya + bilgiler)
+  burada onay bekler. Onaylayınca etkinlik **tüm kampüslerin** öğrenci listelerine
+  düşer; reddedilirse nedeni öğretmene gösterilir. Yönetici yayındaki/reddedilen
+  kayıtları silebilir.
+- **💾 Veri Yedeği**: veriler demo modunda **yalnız o cihazın tarayıcısında**
+  (localStorage), Supabase kuruluysa buluttadır. Yönetici panelindeki yedek
+  kartından: (a) **📥 Yedek İndir** tek tıkla tüm veriyi `.json` olarak indirir
+  (kampüs, profil, atama, tamamlanan, şifre kaydı, özel etkinlikler),
+  (b) Chrome/Edge'de **📁 Günlük Otomatik Yedek Klasörü Seç** ile bir klasör
+  belirlenirse panel **günde bir kez** `bilfen-yedek-YYYY-MM-DD.json` dosyasını o
+  klasöre yazar (yazılması için panelin o gün bir kez açılması yeterli),
+  (c) **🔄 Yedekten Geri Yükle** ile seçilen yedek tüm verileri geri yükler
+  (mevcut veriler önce silinir). Demo (tarayıcı) yedeği, Supabase bağlantısı
+  açıkken geri yüklenirse otomatik olarak bulut biçimine çevrilir: yeni UUID
+  kimlikler üretilir, kampüs/öğretmen/öğrenci/etkinlik bağlantıları yeniden
+  eşlenir — böylece eski tarayıcı verileri tek dosyayla buluta taşınır.
+- **🔌 Bağlantı durumu**: panel açılışında bağlantı otomatik doğrulanır. Demo
+  modunda "🧪 Yerel demo" rozeti görünür; Supabase kuruluysa 6 tablonun
+  erişilebilirliği test edilir ve üstteki durum rozeti yeşil (tamam), sarı
+  (şema eksik/güncel değil — `supabase-schema.sql` çalıştırılmalı) ya da kırmızı
+  (URL/anon anahtar/ağ hatası) gösterir; "🔄 Yeniden kontrol" ile tekrar denenir.
+- **🔌 Bağlantı Ayarları (yönetici)**: yönetici panelindeki karttan **Project URL**
+  ve **anon public key** girilip "Kaydet ve Bağlan" denir; değerler o cihaza
+  kaydedilir ve sayfa Supabase modunda yeniden açılır (portal `index.html` aynı
+  ayarı kullanır). "Demo Moduna Dön" kaydı siler. Kalıcı yayın için aynı değerler
+  `panel.html` / `index.html` sabitlerine de yazılabilir; cihaza kaydedilen değer
+  kod sabitinin üzerine geçer.
+- **🧪 Şema / Bağlantı Kontrolü (yönetici)**: Supabase modunda panel açılınca
+  6 tablo ve uygulamanın kullandığı tüm kolonlar tek tek denetlenir; eksik
+  tablolar / kolonlar tablo bazında listelenir ve "supabase-schema.sql dosyasını
+  SQL Editor'da çalıştırın" yönergesi gösterilir. Sonuç 5 dakika önbellekte
+  tutulur, "🔄 Şimdi kontrol et" ile tazelenir.
+- **⏰ Yedek hatırlatıcısı**: bulut (Supabase) bağlantısı açıkken her panel
+  açılışında son yedek zamanı denetlenir; son bulut yedeği 24 saatten eskiyse
+  üstte "📥 Şimdi Yedek Al" kısayoluyla uyarı şeridi gösterilir (yalnızca bu
+  oturumda kapatılabilir). Yedek İndir veya günlük klasör yedeklemesi zamanı
+  otomatik günceller.
 - Kampüs silinince içindeki öğrenciler, etkinlik atamaları ve puan kayıtları da silinir.
 - `admin` kullanıcı adı kayıt formlarında engellenir (yöneticiye ayrılmıştır).
 - Şifre, diğer hesaplar gibi düz metin değil PBKDF2 ile hash'lenmiş olarak doğrulanır.
@@ -136,27 +173,35 @@ vardır (örn. `bt4821`); üretilen şifreler önizlemede gösterilir — ekleme
 - **➕ Toplu Ekle** tek tıkla bütün satırları kaydeder; kullanıcı adı alınmış bir satır
 atlanır ve kaç satırın eklenemediği bildirilir.
 
-### ✍️ Öğretmen kendi etkinliğini oluşturabilir
+### ✍️ Öğretmen kendi etkinliğini oluşturabilir (önce yönetici onayı)
 
 Öğretmen panelinde **✍️ Etkinlik Oluştur** sekmesi:
 
 1. **Etkinlik adı** + **Konu & Tema** yaz (örn. "Algoritma — Uzay Teması").
-2. **Sınıf seviyesi** seç — birden çok seçilebilir (1 → "1. Sınıf", 2–7 → "2 IPT … 7 IPT").
+2. **Kullanılacağı yerler** seç — bir veya birden fazla seçilebilir:
+   - **📚 Sınıf:** 1. sınıf … 7. sınıf
+   - **🗂️ IPT:** 2 IPT … 7 IPT
+   - **👩‍🏫 Öğretmen Aracı:** işaretlenirse etkinlik öğrencilere görünmez,
+     öğretmenler ders sırasında tahtada kullanır
 3. İçeriği üç yoldan biriyle ver:
    - **📄 HTML dosyası yükle** (tek dosyalık etkinlik .html)
    - **🔗 Drive bağlantısı** (paylaşım "Bağlantısı olan herkes" olmalı)
    - **✂️ Kodu yapıştır** (HTML kodunun tamamı)
 4. **👁 Önizle** ile önce dene, **💾 Etkinliği Kaydet** ile kaydet.
 
-Kaydedilen etkinlik o kampüsün öğrencilerinin **Etkinliklerim** listesine düşer
-(HTML içerik pencerede oynar, Drive bağlantısı yeni sekmede açılır);
+Kaydedilen etkinlik **yönetici onayına gider** — dosya ve bilgiler öğrencilere
+ve diğer öğretmenlere görünmez; öğretmen "Oluşturduğum Etkinlikler" listesinde
+**⏳ Onay bekleniyor** durumunu izler. Yönetici **⏳ Etkinlik Onayları** kartından
+**✅ Onayla** deyince etkinlik **tüm kampüslerin** öğrencilerinin **Etkinliklerim**
+listesine düşer (HTML içerik pencerede oynar, Drive bağlantısı yeni sekmede açılır);
 **🎮 Etkinlik Yönetimi** sekmesinden açık / kapalı / tarihli yapılır, puan/rozet
-akışı aynen çalışır. Liste altındaki **🗑 Sil**, açık/kapalı ayarı ve tamamlanma
-kayıtlarıyla birlikte siler.
+akışı aynen çalışır. **❌ Reddet** dersen gerekçe öğretmene gösterilir. Yayındaki
+etkinlikleri yalnız yönetici silebilir; onay bekleyen/reddedilenleri öğretmen silebilir.
 
-> Demo modunda etkinlikler bu cihazda saklanır; Supabase kuruluysa yeni
+> Demo modunda etkinlikler bu cihazda saklanır; Supabase kuruluysa
 > `ozel_etkinlik` tablosuna yazılır (`supabase-schema.sql` güncellendi — şemayı
-> daha önce kurduysan dosyadaki `ozel_etkinlik` bölümünü de çalıştır).
+> daha önce kurduysan dosyadaki onay akışı kolonları için yorumdaki `alter table`
+> komutlarını da çalıştır; eski kayıtlar varsayılan olarak yayında kalır).
 
 ## ✨ Portal Özellikleri
 
@@ -174,3 +219,5 @@ kayıtlarıyla birlikte siler.
 - 📊 Yönetici için kampüs bazlı etkinlik raporu: etkinlik başına tamamlayan öğrenci sayısı ve zamana göre tamamlanma grafiği
 - ⭐ Öğrenci panelinde puan toplama, rozet kazanma ve avatar seçme
 - 📱 Telefon, tablet ve projeksiyonda çalışan duyarlı tasarım
+- 🎨 **“Robi’nin Gökyüzü” çocuk dostu görsel katman** (portal): canlı ama dengeli pastel gökkuşağı paleti, büyük yuvarlak dokunma alanları, zıplayan Robi, süzülen ☁️🎈🪁 süsleri, gökkuşağı şeridi, kart başına gökkuşağı vurgu rengi ve kısa/akıcı mikro animasyonlar — tümü `prefers-reduced-motion` duyarlı ve internet gerektirmez (harici font/JS yok)
+- 🧸 Panel aynı oyuncak dilde ama yoğun tablolar okunur kalır: yumuşak kartlar, basınca tepki veren (eğilip zıplayan) butonlar, eğlenceli sekmeler ve maskotlu giriş/kayıt ekranı

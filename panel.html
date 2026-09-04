@@ -21,7 +21,6 @@
   .ust-bar button:hover, .ust-bar a:hover { background: rgba(255,255,255,.28); }
   .ust-bar .cikis { background: #ef4444; }
   .ust-bar .cikis:hover { background: #dc2626; }
-  .demo-banner { background: #fef3c7; color: #92400e; font-size: 13px; padding: 8px 16px; text-align: center; border-bottom: 1px solid #fde68a; }
   .sabit { max-width: 1000px; margin: 0 auto; padding: 20px 16px 60px; }
   .kart { background: #fff; border-radius: 16px; box-shadow: 0 8px 30px rgba(30,27,75,.10); padding: 20px; margin-bottom: 18px; }
   .kart h2 { font-size: 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
@@ -84,6 +83,9 @@
     cursor: pointer; transition: all .15s;
   }
   .seviye-cips button.secili { background: #4f46e5; border-color: #4f46e5; color: #fff; box-shadow: 0 4px 10px rgba(79,70,229,.3); }
+  .secim-grup { margin-top: 16px; }
+  .secim-grup:first-child { margin-top: 0; }
+  .secim-grup-ad { font-weight: 800; font-size: 12px; color: #6366f1; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
   .kaynak-sec { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
   .kaynak-btn {
     border: 2px solid #e0e7ff; background: #fafaff; color: #3730a3;
@@ -122,6 +124,147 @@
   .csv-badge.iyi { background: #dcfce7; color: #166534; }
   .csv-badge.kotu { background: #fee2e2; color: #b91c1c; }
   .csv-badge.otomatik { background: #fef9c3; color: #854d0e; }
+  /* Bağlantı durumu */
+  .baglanti-satiri { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 5px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 12.5px; }
+  .baglanti-pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 11px; font-weight: 700; }
+  .baglanti-pill.beklemede { background: #f1f5f9; color: #475569; }
+  .baglanti-pill.ok { background: #dcfce7; color: #166534; }
+  .baglanti-pill.uyari { background: #fef9c3; color: #854d0e; }
+  .baglanti-pill.hata { background: #fee2e2; color: #b91c1c; }
+  .yedek-uyari { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 7px 16px; background: #fffbeb; border-bottom: 1px solid #fde68a; color: #92400e; font-size: 13px; font-weight: 600; }
+
+  /* ============================================================
+     ÇOCUK DOSTU GÖRSEL KATMAN — panel (Robi temalı, okunaklı)
+     Öğretmen/yönetici yoğun tablolarına dokunmadan buton, kart,
+     giriş ve durum öğelerine oyuncak gibi yumuşak detaylar ekler.
+     ============================================================ */
+  :root {
+    --murekkep: #332b63;
+    --mor: #6d4aff;
+    --mor-acik: #a78bfa;
+    --pembe: #ff7ac8;
+    --gok: #35a7ff;
+  }
+  h1, h2, h3, .marka, .kart h2, .kart h3, .kullanici, .sekme, .os-ad {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI', system-ui, sans-serif;
+  }
+  body {
+    background:
+      radial-gradient(820px 380px at 8% -4%, rgba(255,176,32,.16), transparent 55%),
+      radial-gradient(900px 420px at 96% -8%, rgba(255,143,199,.16), transparent 55%),
+      linear-gradient(180deg, #e7f2ff 0%, #f4ecff 46%, #fff4ec 100%);
+    background-attachment: fixed;
+    color: var(--murekkep);
+  }
+  .ust-bar {
+    background: linear-gradient(90deg, #312e81 0%, #5b4bd6 60%, #8b5cf6 100%);
+    padding: 11px 18px; box-shadow: 0 6px 20px rgba(49,46,129,.25);
+  }
+  .ust-bar .marka { font-size: 16px; letter-spacing: .2px; }
+  .ust-bar a, .ust-bar button { border-radius: 999px; font-weight: 700; padding: 8px 16px; }
+  .ust-bar .cikis { background: linear-gradient(135deg, #ff5f6d, #ef4444); box-shadow: 0 3px 0 #b91c1c; }
+  .sabit { max-width: 1040px; }
+  .kart {
+    border-radius: 22px; border: 2px solid rgba(109,74,255,.10);
+    box-shadow: 0 4px 0 rgba(49,46,129,.05), 0 14px 34px rgba(49,46,129,.10);
+    position: relative;
+  }
+  .kart h2 { font-size: 19px; color: var(--murekkep); }
+  input, select {
+    border-radius: 14px; border: 2px solid #d8d3f0;
+    background: #fff; transition: border-color .15s, box-shadow .15s;
+  }
+  input:focus, select:focus {
+    border-color: var(--mor); box-shadow: 0 0 0 4px rgba(109,74,255,.15);
+  }
+  .btn {
+    border-radius: 14px; background: linear-gradient(135deg, #6d4aff, #a855f7);
+    box-shadow: 0 4px 0 #4c2fd0, 0 10px 18px rgba(109,74,255,.25);
+    transition: transform .16s cubic-bezier(.34,1.56,.64,1), box-shadow .16s, filter .16s;
+  }
+  .btn:hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 6px 0 #4c2fd0, 0 14px 22px rgba(109,74,255,.32); }
+  .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #4c2fd0; }
+  .btn.ikincil { background: #ece7fb; color: #4a3aa8; box-shadow: none; }
+  .btn.ikincil:hover { transform: translateY(-1px); filter: none; background: #e2daf8; }
+  .btn.yeşil, .btn.yesil { background: linear-gradient(135deg, #16a34a, #4ade80); box-shadow: 0 4px 0 #15803d, 0 8px 16px rgba(22,163,74,.22); }
+  .btn.kirmizi { background: linear-gradient(135deg, #ef4444, #ff7a7a); box-shadow: 0 4px 0 #b91c1c; }
+  .btn.kucuk { border-radius: 12px; }
+  .sekme {
+    background: #fff; border: 2px solid #e0d9f7; color: #5a4db5; border-radius: 999px;
+    padding: 10px 20px; box-shadow: 0 3px 0 rgba(49,46,129,.08);
+    transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s, background .18s;
+  }
+  .sekme:hover { transform: translateY(-2px); }
+  .sekme.secili {
+    background: linear-gradient(135deg, #6d4aff, #ff7ac8); color: #fff; border: none;
+    box-shadow: 0 4px 0 #5b2ec9, 0 10px 18px rgba(109,74,255,.3);
+    animation: sekmePatla .4s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes sekmePatla { 0% { transform: scale(.85); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
+  .seviye-cips button, .kaynak-btn {
+    border-radius: 999px; border: 2px solid #d8d3f0; background: #fff;
+    transition: transform .15s, border-color .15s, background .15s, box-shadow .15s;
+  }
+  .seviye-cips button:hover, .kaynak-btn:hover { border-color: var(--mor-acik); transform: translateY(-2px); }
+  .seviye-cips button.secili {
+    background: linear-gradient(135deg, #ffb020, #ff7a3d); border: none; color: #fff;
+    box-shadow: 0 4px 0 #d97f0a, 0 8px 14px rgba(255,159,28,.35);
+  }
+  .kaynak-btn.secili {
+    background: linear-gradient(135deg, #35a7ff, #6d4aff); border: none; color: #fff;
+    box-shadow: 0 4px 0 #2f6fd0, 0 8px 14px rgba(53,167,255,.3);
+  }
+  th { color: var(--mor); }
+  tr.satir:hover { background: #f6f1ff; }
+  .etkinlik {
+    border-radius: 18px; border: 2px solid #e4def8; background: #fff;
+    box-shadow: 0 6px 16px rgba(49,46,129,.06); transition: transform .16s, box-shadow .16s;
+  }
+  .etkinlik:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(49,46,129,.12); }
+  .grafik-kutu { border-radius: 16px; }
+  .rozetti { border-radius: 16px; transition: transform .15s; }
+  .rozetti:not(.kilitli):hover { transform: translateY(-3px) scale(1.04); }
+  .avatar-sec { border-radius: 16px; transition: transform .15s, border-color .15s; }
+  .avatar-sec:hover { transform: translateY(-2px); }
+  .avatar-sec.secili { border-color: var(--mor); background: #f0ebff; }
+  .tip-rozet, .csv-badge { border-radius: 999px; }
+  .csv-kutu { border-radius: 14px; }
+  .baglanti-satiri { background: rgba(255,255,255,.72); backdrop-filter: blur(8px); }
+  .yedek-uyari { background: #fff7e0; border-bottom: 2px solid #ffe9a8; color: #8a5a00; }
+
+  /* Giriş & kayıt ekranı süsleri (yalnız bu ekranlar görünürken) */
+  #ekranGiris, #ekranKayit { position: relative; margin-top: 64px; }
+  #ekranGiris::before {
+    content: '🤖'; position: absolute; top: -56px; left: 50%; transform: translateX(-50%);
+    font-size: 56px; filter: drop-shadow(0 10px 14px rgba(49,46,129,.25));
+    animation: ziplaKart 2.6s ease-in-out infinite; line-height: 1;
+  }
+  #ekranKayit::before {
+    content: '👩‍🏫'; position: absolute; top: -54px; left: 50%; transform: translateX(-50%);
+    font-size: 50px; filter: drop-shadow(0 10px 14px rgba(49,46,129,.25));
+    animation: ziplaKart 2.6s ease-in-out infinite; line-height: 1;
+  }
+  @keyframes ziplaKart {
+    0%, 100% { transform: translateX(-50%) translateY(0) rotate(-2deg); }
+    30% { transform: translateX(-50%) translateY(-10px) rotate(1deg); }
+    60% { transform: translateX(-50%) translateY(0); }
+  }
+  #ekranGiris .kart, #ekranKayit .kart {
+    border-radius: 26px; padding: 26px 24px;
+    box-shadow: 0 4px 0 rgba(49,46,129,.06), 0 24px 50px rgba(49,46,129,.18);
+    animation: kartYukaridan .45s cubic-bezier(.22,1.2,.36,1) both;
+  }
+  @keyframes kartYukaridan { 0% { opacity: 0; transform: translateY(16px) scale(.96); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+  #ekranGiris .kart h2, #ekranKayit .kart h2 { text-align: center; font-size: 21px; }
+  #ekranGiris label, #ekranKayit label { font-weight: 700; }
+
+  /* Öğrenci profil sayaçları */
+  .profil .sayac { border-radius: 16px; background: #f4efff; box-shadow: 0 3px 0 rgba(49,46,129,.06); }
+  .profil .avatar { filter: drop-shadow(0 8px 14px rgba(49,46,129,.16)); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  }
 </style>
 </head>
 <body>
@@ -132,8 +275,14 @@
   <a href="index.html" title="Portala dön">← Portala dön</a>
   <button id="cikisBtn" style="display:none" class="cikis">🚪 Çıkış</button>
 </div>
-<div class="demo-banner" id="demoBanner" style="display:none">
-  🧪 <b>Demo modu:</b> veriler yalnız bu cihazda tutuluyor. Gerçek çok cihazlı senkron (öğretmen + öğrenciler) için README'deki Supabase kurulumunu yap.
+<div class="baglanti-satiri" id="baglantiSatiri">
+  <span id="baglantiDurum" class="baglanti-pill beklemede">Bağlantı kontrol ediliyor…</span>
+  <button type="button" class="btn kucuk ikincil" id="baglantiYenile" style="display:none">🔄 Yeniden kontrol</button>
+</div>
+<div class="yedek-uyari" id="yedekUyari" style="display:none">
+  <span id="yedekUyariMetin"></span>
+  <button type="button" class="btn kucuk" id="yedekUyariAl">📥 Şimdi Yedek Al</button>
+  <button type="button" class="btn kucuk ikincil" id="yedekUyariKapat">✕ Daha sonra</button>
 </div>
 
 <div class="sabit">
@@ -252,13 +401,13 @@
       <div id="olusturSekme" style="display:none">
         <div class="kart">
           <h2>✍️ Yeni Etkinlik Oluştur</h2>
-          <p class="kucuk-not">Oluşturduğun etkinlik kampüsündeki öğrencilerin "Etkinliklerim" listesine düşer; <b>🎮 Etkinlik Yönetimi</b> sekmesinden açık / kapalı / tarihli yapabilirsin. İstersen aynı etkinliği kendi HTML oyununla (dosya veya kod) ya da Drive bağlantısıyla ekleyebilirsin.</p>
+          <p class="kucuk-not">Oluşturduğun etkinlik <b>önce yönetici onayına gider</b> (dosya ve bilgiler yalnız yöneticiye ulaşır). Onaylanınca etkinlik <b>tüm kampüslerdeki</b> öğrencilerin "Etkinliklerim" listesine düşer; <b>🎮 Etkinlik Yönetimi</b> sekmesinden açık / kapalı / tarihli yapılabilir. Etkinliği kendi HTML oyununla (dosya veya kod) ya da Drive bağlantısıyla ekleyebilirsin.</p>
           <div class="satir">
             <div><label>Etkinlik adı</label><input id="oeAd" placeholder="örn. Algoritma Macerası"></div>
             <div><label>Konu &amp; Tema</label><input id="oeKonu" placeholder="örn. Algoritma — Uzay Teması"></div>
           </div>
-          <label style="margin-top:14px">Sınıf seviyesi (birden çok seçebilirsin — 2–7 = IPT)</label>
-          <div class="seviye-cips" id="oeSeviyeler"></div>
+          <label style="margin-top:14px">Kullanılacağı yerler — bir veya birden fazla seçebilirsin</label>
+          <div id="oeSeviyeler"></div>
           <div class="hata" id="oeHata"></div>
 
           <label style="margin-top:16px">İçerik kaynağı</label>
@@ -273,12 +422,12 @@
               <input type="file" id="oeDosya" accept=".html,.htm,text/html" style="display:none">
             </label>
             <span class="kucuk-not" id="oeDosyaAdi" style="margin-left:8px"></span>
-            <p class="kucuk-not" style="margin-top:6px">Seçtiğin HTML dosyası aynen kaydedilir; öğrenciler pencere içinde oynar (tek dosyalık etkinlik önerilir).</p>
+            <p class="kucuk-not" style="margin-top:6px">Seçtiğin HTML dosyası aynen kaydedilir; onaylanınca öğrenciler pencere içinde oynar (tek dosyalık etkinlik önerilir).</p>
           </div>
           <div id="oeKaynakDrive" class="oe-kaynak" style="display:none">
             <label>Drive klasör / dosya bağlantısı</label>
             <input id="oeDrive" placeholder="https://drive.google.com/...">
-            <p class="kucuk-not">Öğrenciler bağlantıyı yeni sekmede açar. Drive paylaşımını <b>"Bağlantısı olan herkes"</b> yapmayı unutma.</p>
+            <p class="kucuk-not">Onaylanınca öğrenciler bağlantıyı yeni sekmede açar. Drive paylaşımını <b>"Bağlantısı olan herkes"</b> yapmayı unutma.</p>
           </div>
           <div id="oeKaynakKod" class="oe-kaynak" style="display:none">
             <label>HTML kodu</label>
@@ -293,8 +442,8 @@
         </div>
 
         <div class="kart">
-          <h2>🗂️ Kampüsteki Oluşturduğum Etkinlikler</h2>
-          <p class="kucuk-not">Bir etkinliği silersen açık/kapalı ayarı ve tamamlanma kayıtları da silinir.</p>
+          <h2>🗂️ Oluşturduğum Etkinlikler</h2>
+          <p class="kucuk-not">Durumlar: ⏳ yönetici onayı bekleniyor · ✅ yayında (tüm kampüsler) · ❌ reddedildi. Yayındaki etkinlikleri yalnız yönetici silebilir.</p>
           <div id="oeListe"></div>
         </div>
       </div>
@@ -341,6 +490,60 @@
           <div class="sayac"><b id="adOgrenciSayi">0</b><span>👨‍🎓 Öğrenci</span></div>
           <div class="sayac"><b id="adPuanToplam">0</b><span>⭐ Toplam Puan</span></div>
         </div>
+      </div>
+
+      <div class="kart">
+        <h2>⏳ Etkinlik Onayları (öğretmen yüklemeleri)</h2>
+        <p class="kucuk-not">Öğretmenlerin oluşturduğu etkinliklerin dosyası ve bilgileri yalnız burada bekler; öğrencilere <b>onaylanmadan</b> gitmez. <b>✅ Onayla</b> → etkinlik tüm kampüslerin öğrenci listelerine düşer (kampüsler isterse 🎮 Etkinlik Yönetimi'nden kapatır). <b>👩‍🏫 Öğretmen Aracı</b> işaretli etkinlikler öğrencilere görünmez; öğretmenler 🎮 Etkinlik Yönetimi'nden tahtada kullanır.</p>
+        <div style="margin:10px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <label style="margin:0">Durum filtresi</label>
+          <select id="onayFiltre">
+            <option value="">Tümü</option>
+            <option value="bekliyor" selected>⏳ Onay bekleyenler</option>
+            <option value="onaylandi">✅ Onaylananlar</option>
+            <option value="reddedildi">❌ Reddedilenler</option>
+          </select>
+        </div>
+        <div class="hata" id="onayHata"></div>
+        <div class="bilgi" id="onayBilgi"></div>
+        <div id="onayListe" style="margin-top:6px"></div>
+      </div>
+
+      <div class="kart">
+        <h2>🧪 Şema / Bağlantı Kontrolü</h2>
+        <p class="kucuk-not" id="semaNot"></p>
+        <div id="semaSonuc"></div>
+        <div style="margin-top:8px"><button class="btn ikincil kucuk" id="semaYenileBtn">🔄 Şimdi kontrol et</button></div>
+      </div>
+
+      <div class="kart">
+        <h2>💾 Veri Yedeği</h2>
+        <p class="kucuk-not" id="yedekDepoNotu"></p>
+        <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn" id="yedekIndirBtn">📥 Yedek İndir (.json)</button>
+          <button class="btn ikincil" id="yedekKlasorBtn">📁 Günlük Otomatik Yedek Klasörü Seç</button>
+          <button class="btn ikincil" id="yedekYukleBtn">🔄 Yedekten Geri Yükle</button>
+          <input type="file" id="yedekDosya" accept="application/json,.json" style="display:none">
+        </div>
+        <div class="kucuk-not" id="yedekDurum" style="margin-top:8px"></div>
+        <div class="hata" id="yedekHata"></div>
+        <div class="bilgi" id="yedekBilgi"></div>
+      </div>
+
+      <div class="kart">
+        <h2>🔌 Supabase Bağlantısı</h2>
+        <p class="kucuk-not" id="supNot"></p>
+        <div class="satir">
+          <div style="flex:2;min-width:220px"><label>Project URL</label><input id="supUrl" placeholder="https://xxxx.supabase.co"></div>
+          <div style="flex:3;min-width:260px"><label>Anon public key</label><input id="supAnon" placeholder="eyJhbGciOi… (anon)"></div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn yesil" id="supKaydetBtn">💾 Kaydet ve Bağlan</button>
+          <button class="btn kirmizi" id="supTemizleBtn">↩️ Bağlantıyı Kaldır</button>
+        </div>
+        <div class="kucuk-not" style="margin-top:6px">Değerler Supabase → <b>Settings → API</b> sayfasındadır (anon public key, service_role değil). Ayar her cihazda bir kez girilir. Kalıcı yayın için değerler <b>panel.html / index.html</b> içindeki sabitlere de yazılabilir.</div>
+        <div class="hata" id="supHata"></div>
+        <div class="bilgi" id="supBilgi"></div>
       </div>
 
       <div class="kart">
@@ -463,8 +666,10 @@
      Project URL ve anon public key değerlerini aşağıya yapıştır.
      Boş bırakılırsa uygulama demo modunda (bu cihazda) çalışır.
      ============================================================ */
-  var SUPABASE_URL = '';
-  var SUPABASE_ANON = '';
+  /* Supabase bağlantısı: kod sabiti + bu cihazda yönetici panelinden
+     '🔌 Supabase Bağlantısı' kartıyla kaydedilen değer (önceliklidir). */
+  var SUPABASE_URL = localStorage.getItem('bt_supabase_url') || 'https://zvqwhesibqntcnpqoytm.supabase.co';
+  var SUPABASE_ANON = localStorage.getItem('bt_supabase_anon') || 'sb_publishable_hU6il_Kq9_E_57WqaOT8BA_iLtDPpuM';
 
   var DEMO = !(SUPABASE_URL && SUPABASE_ANON);
 
@@ -601,6 +806,223 @@
     });
   }
 
+  /* ---------- Bağlantı durumu (açılışta otomatik kontrol) ---------- */
+  function baglantiDurumGoster() {
+    var pill = $('baglantiDurum');
+    var yenile = $('baglantiYenile');
+    if (DEMO) {
+      $('baglantiSatiri').style.display = 'none';
+      return;
+    }
+    yenile.style.display = '';
+    pill.className = 'baglanti-pill beklemede';
+    pill.textContent = '🔄 Supabase bağlantısı kontrol ediliyor…';
+    pill.title = '';
+    var tablolar = ['campus', 'profil', 'etkinlik_atama', 'tamamlanan', 'ayar', 'ozel_etkinlik'];
+    var sonuc = {};
+    var isler = tablolar.map(function (t) {
+      return sb(t + '?select=id&limit=1').then(function () {
+        sonuc[t] = 'ok';
+      }).catch(function (e) {
+        sonuc[t] = (e && e.message) || String(e);
+      });
+    });
+    isler.push(sb('ozel_etkinlik?select=durum,ogretmen_id,ogretmen_ad,ogretmen_kullanici,red_nedeni,onay_tarihi&limit=1').then(function () {
+      sonuc.kolonlar = 'ok';
+    }).catch(function (e) {
+      sonuc.kolonlar = (e && e.message) || String(e);
+    }));
+    Promise.all(isler).then(function () {
+      var ag = false, yetki = false, eksikTablo = [], kolonHata = null;
+      tablolar.forEach(function (t) {
+        var m = sonuc[t];
+        if (m === 'ok') return;
+        if (/failed to fetch|networkerror|load failed|typeerror|network request/i.test(m)) { ag = true; return; }
+        if (/unauthorized|api key|jwt|denied|\b401\b|\b403\b/i.test(m)) { yetki = true; return; }
+        eksikTablo.push(t);
+      });
+      if (sonuc.kolonlar && sonuc.kolonlar !== 'ok') kolonHata = sonuc.kolonlar;
+      var durum, mesaj;
+      if (ag) {
+        durum = 'hata';
+        mesaj = '🔴 Supabase sunucusuna ulaşılamadı — ağ bağlantısını veya Project URL değerini kontrol edin.';
+      } else if (yetki) {
+        durum = 'hata';
+        mesaj = '🔴 Supabase bağlantısı reddedildi — anon anahtar hatalı olabilir (Settings → API).';
+      } else if (eksikTablo.length) {
+        durum = 'uyari';
+        mesaj = '🟡 Bulut şeması eksik: ' + eksikTablo.join(', ') + ' tabloları bulunamadı. supabase-schema.sql dosyasını SQL Editor\'da çalıştırın.';
+      } else if (kolonHata) {
+        durum = 'uyari';
+        mesaj = '🟡 Şema güncel değil: ozel_etkinlik tablosunda yeni kolonlar (durum, ogretmen_id…) yok. Güncel supabase-schema.sql dosyasını çalıştırın.';
+      } else {
+        durum = 'ok';
+        mesaj = '🟢 Supabase bağlantısı tamam — 6 tablo erişilebilir, çok cihazlı senkron açık.';
+      }
+      pill.className = 'baglanti-pill ' + durum;
+      pill.textContent = mesaj;
+      var ilkHata = kolonHata;
+      tablolar.forEach(function (t) { if (sonuc[t] !== 'ok' && !ilkHata) ilkHata = sonuc[t]; });
+      pill.title = ilkHata || '';
+    });
+  }
+  $('baglantiYenile').addEventListener('click', baglantiDurumGoster);
+  baglantiDurumGoster();
+
+  /* ---------- Yönetici: şema / bağlantı derin kontrolü (eksik tablo & kolon listesi) ---------- */
+  var SEMA_BEKLENEN = {
+    campus: ['id', 'ad', 'olusturma_tarihi'],
+    profil: ['id', 'campus_id', 'kullanici_adi', 'sifre_tuz', 'sifre_hash', 'ad', 'rol', 'avatar', 'puan', 'olusturma_tarihi'],
+    etkinlik_atama: ['campus_id', 'oyun_id', 'aktif', 'acilis', 'kapanis', 'guncelleme_tarihi'],
+    tamamlanan: ['id', 'ogrenci_id', 'campus_id', 'oyun_id', 'puan', 'tarih'],
+    ayar: ['anahtar', 'deger', 'guncelleme_tarihi'],
+    ozel_etkinlik: ['id', 'campus_id', 'ogretmen_id', 'ogretmen_ad', 'ogretmen_kullanici', 'ad', 'konu', 'seviyeler', 'tip', 'icerik', 'durum', 'red_nedeni', 'onay_tarihi', 'olusturma_tarihi']
+  };
+  function semaKolonlariDenetle(tablo, kolonlar) {
+    var kalan = kolonlar.slice();
+    var eksik = [];
+    function dene() {
+      if (!kalan.length) return Promise.resolve(eksik);
+      return sb(tablo + '?select=' + kalan.join(',') + '&limit=1').then(function () {
+        return eksik;
+      }).catch(function (e) {
+        var m = (e && e.message) || '';
+        var mm = m.match(/Could not find the '([^']+)' column of '([^']+)'/i);
+        if (mm && mm[2] === tablo) {
+          eksik.push(mm[1]);
+          kalan = kalan.filter(function (c) { return c !== mm[1]; });
+          return dene();
+        }
+        if (/Could not find the table/i.test(m)) return Promise.resolve(kalan);
+        return Promise.reject(e);
+      });
+    }
+    return dene();
+  }
+  function semaKontrol() {
+    var eksikTablo = [];
+    var eksikKolon = {};
+    var isler = Object.keys(SEMA_BEKLENEN).map(function (t) {
+      return sb(t + '?select=id&limit=1').then(function () {
+        return semaKolonlariDenetle(t, SEMA_BEKLENEN[t]).then(function (eks) {
+          if (eks.length) eksikKolon[t] = eks;
+        });
+      }).catch(function (e) {
+        var m = (e && e.message) || '';
+        if (/Could not find the table/i.test(m)) { eksikTablo.push(t); return; }
+        throw e;
+      });
+    });
+    return Promise.all(isler).then(function () {
+      var tarih = new Date().toISOString();
+      if (eksikTablo.length) return { durum: 'tablo', eksikTablo: eksikTablo, eksikKolon: eksikKolon, tarih: tarih };
+      if (Object.keys(eksikKolon).length) return { durum: 'kolon', eksikTablo: [], eksikKolon: eksikKolon, tarih: tarih };
+      return { durum: 'ok', eksikTablo: [], eksikKolon: {}, tarih: tarih };
+    });
+  }
+  function semaSonucYaz(s) {
+    var kutu = $('semaSonuc');
+    var tarih = s && s.tarih ? '<div class="kucuk-not" style="margin-top:4px">Son kontrol: ' + tarihKisa(s.tarih) + '</div>' : '';
+    if (!s) { kutu.innerHTML = '<div class="bos">Kontrol yapılmadı.</div>'; return; }
+    if (s.durum === 'hata') {
+      var mesaj = s.hataTip === 'ag'
+        ? '🔴 Supabase sunucusuna ulaşılamadı (ağ / Project URL).'
+        : (s.hataTip === 'yetki' ? '🔴 Bağlantı reddedildi — anon anahtar hatalı olabilir.' : ('🔴 Kontrol başarısız: ' + esc(s.hataMesaj || '')));
+      kutu.innerHTML = '<div class="rozet hata">' + mesaj + '</div>' + tarih;
+      return;
+    }
+    if (s.durum === 'ok') {
+      kutu.innerHTML = '<div class="rozet acik">✅ Şema tam: 6 tablo ve uygulamanın gerektirdiği tüm kolonlar hazır.</div>' + tarih;
+      return;
+    }
+    var h = '';
+    if (s.durum === 'tablo' && s.eksikTablo && s.eksikTablo.length) {
+      h += '<div class="rozet kapali">🟡 Şema çalıştırılmamış — eksik tablolar:</div><div style="margin:6px 0 0 6px">' +
+        s.eksikTablo.map(function (t) { return '• <b>' + esc(t) + '</b>'; }).join('<br>') + '</div>';
+    }
+    var kolonSatirlar = [];
+    Object.keys(s.eksikKolon || {}).forEach(function (t) {
+      if (s.eksikKolon[t] && s.eksikKolon[t].length) {
+        kolonSatirlar.push('• <b>' + esc(t) + '</b>: ' + s.eksikKolon[t].map(esc).join(', '));
+      }
+    });
+    if (kolonSatirlar.length) {
+      h += (h ? '<br>' : '') + '<div class="rozet kapali" style="margin-top:6px">🟡 Şema güncel değil — eksik kolonlar:</div>' +
+        '<div style="margin:6px 0 0 6px">' + kolonSatirlar.join('<br>') + '</div>';
+    }
+    h += '<div class="kucuk-not" style="margin-top:8px">Çözüm: <b>supabase-schema.sql</b> dosyasının tamamını kopyalayıp Supabase → SQL Editor → RUN yapın (dosya tekrar çalıştırılmaya uygundur). Ardından bu sayfayı yenileyin.</div>' + tarih;
+    kutu.innerHTML = h;
+  }
+  function semaKontrolCalistir() {
+    $('semaSonuc').innerHTML = '<div class="kucuk-not">🔄 Denetleniyor…</div>';
+    semaKontrol().then(function (sonuc) {
+      localStorage.setItem('bt_sema_kayit', JSON.stringify({ tarih: sonuc.tarih, sonuc: sonuc }));
+      semaSonucYaz(sonuc);
+    }).catch(function (e) {
+      var m = (e && e.message) || String(e);
+      var sonuc = { tarih: new Date().toISOString() };
+      if (/failed to fetch|networkerror|load failed|typeerror/i.test(m)) sonuc.durum = 'hata', sonuc.hataTip = 'ag';
+      else if (/unauthorized|api key|jwt|denied/i.test(m)) sonuc.durum = 'hata', sonuc.hataTip = 'yetki';
+      else { sonuc.durum = 'hata'; sonuc.hataTip = 'diger'; sonuc.hataMesaj = m; }
+      semaSonucYaz(sonuc);
+    });
+  }
+  function semaKontrolGoster() {
+    var not = $('semaNot');
+    if (DEMO) {
+      not.textContent = 'Şema kontrolü, bağlantı kurulduğunda otomatik olarak burada yapılır.';
+      $('semaSonuc').innerHTML = '';
+      $('semaYenileBtn').style.display = 'none';
+      return;
+    }
+    $('semaYenileBtn').style.display = '';
+    not.textContent = 'Supabase şeması (supabase-schema.sql) uygulanmış mı ve bağlantı çalışıyor mu otomatik denetlenir; eksik tablo/kolon varsa aşağıda listelenir.';
+    var kayit = null;
+    try { kayit = JSON.parse(localStorage.getItem('bt_sema_kayit') || 'null'); } catch (e) { kayit = null; }
+    if (kayit && kayit.sonuc && kayit.tarih && (Date.now() - new Date(kayit.tarih).getTime()) < 5 * 60 * 1000) {
+      semaSonucYaz(kayit.sonuc);
+      return;
+    }
+    semaKontrolCalistir();
+  }
+  $('semaYenileBtn').onclick = semaKontrolCalistir;
+
+  /* ---------- Özel etkinlik satırlarını ortak biçime çevir (Supabase + demo + eski kayıtlar) ---------- */
+  function ozelSatir(o) {
+    var ham = (o.seviyeler !== undefined && o.seviyeler !== null) ? o.seviyeler : (o.secim || []);
+    var sv = [];
+    if (typeof ham === 'string') { try { sv = JSON.parse(ham || '[]'); } catch (e) {} }
+    else sv = ham || [];
+    return {
+      id: o.id,
+      campusId: o.campus_id || o.campusId || null,
+      ad: o.ad,
+      konu: o.konu || '',
+      secim: secimNorm(sv),
+      tip: o.tip,
+      icerik: o.icerik || '',
+      tarih: o.olusturma_tarihi || o.tarih || '',
+      durum: o.durum || 'onaylandi',
+      redNedeni: o.red_nedeni || o.redNedeni || '',
+      ogretmenId: o.ogretmen_id || o.ogretmenId || null,
+      ogretmenAd: o.ogretmen_ad || o.ogretmenAd || '',
+      ogretmenKullanici: o.ogretmen_kullanici || o.ogretmenKullanici || ''
+    };
+  }
+  function ozelSiralama(a, b) { return (b.tarih || '').localeCompare(a.tarih || ''); }
+  /* Onaylı/onaysız özel etkinlik silinirken atama ve tamamlanma kayıtlarını (tüm kampüslerde) temizle */
+  function ozelKalintiTemizle(id) {
+    var oyunId = 'ozel:' + id;
+    if (DEMO) {
+      dSet(DK.atama, dGet(DK.atama).filter(function (a) { return a.oyun_id !== oyunId; }));
+      dSet(DK.tamamlanan, dGet(DK.tamamlanan).filter(function (t) { return t.oyun_id !== oyunId; }));
+      return Promise.resolve();
+    }
+    return sb('etkinlik_atama?oyun_id=eq.' + encodeURIComponent(oyunId), { method: 'DELETE' }).then(function () {
+      return sb('tamamlanan?oyun_id=eq.' + encodeURIComponent(oyunId), { method: 'DELETE' });
+    });
+  }
+
   /* ============================================================
      SUPABASE ARKA UÇ
      ============================================================ */
@@ -723,24 +1145,55 @@
         return { ogrenciId: t.ogrenci_id, ogrenciAd: pAd[t.ogrenci_id] || '', campusId: t.campus_id, campusAdi: cAd[t.campus_id] || '', oyunId: t.oyun_id, tarih: t.tarih };
       });
     },
-    /* ---------- Öğretmenin oluşturduğu özel etkinlikler ---------- */
-    ozelEtkinlikler: async function (s) {
-      var rs = await sb('ozel_etkinlik?campus_id=eq.' + encodeURIComponent(s.campusId) + '&select=*&order=olusturma_tarihi');
+    /* ---------- Öğretmenin oluşturduğu özel etkinlikler (onay akışı) ----------
+       durum: bekliyor (yönetici onayı) → onaylandi (tüm kampüslerde yayın) | reddedildi */
+    ozelOnaylilar: async function () {
+      var rs = await sb('ozel_etkinlik?durum=eq.onaylandi&select=*&order=olusturma_tarihi');
+      return (rs || []).map(ozelSatir);
+    },
+    ozelEtkinliklerim: async function (s) {
+      var rs = await sb('ozel_etkinlik?ogretmen_id=eq.' + encodeURIComponent(s.id) + '&select=*&order=olusturma_tarihi');
+      return (rs || []).map(ozelSatir);
+    },
+    tumOzelEtkinlikler: async function () {
+      var rs = await sb('ozel_etkinlik?select=*&order=olusturma_tarihi');
+      var cs = await sb('campus?select=id,ad');
+      var kampusAd = {};
+      (cs || []).forEach(function (c) { kampusAd[c.id] = c.ad; });
       return (rs || []).map(function (o) {
-        var sv = [];
-        try { sv = JSON.parse(o.seviyeler || '[]'); } catch (e) {}
-        return { id: o.id, campusId: o.campus_id, ad: o.ad, konu: o.konu || '', seviyeler: sv, tip: o.tip, icerik: o.icerik || '', tarih: o.olusturma_tarihi };
+        var x = ozelSatir(o);
+        x.kampusAdi = kampusAd[o.campus_id] || '';
+        return x;
       });
     },
     ozelEtkinlikEkle: async function (s, veri) {
-      var rs = await sb('ozel_etkinlik', { method: 'POST', body: { campus_id: s.campusId, ad: veri.ad, konu: veri.konu || '', seviyeler: JSON.stringify(veri.seviyeler || []), tip: veri.tip, icerik: veri.icerik || '' } });
+      var rs = await sb('ozel_etkinlik', { method: 'POST', body: {
+        campus_id: s.campusId,
+        ogretmen_id: s.id,
+        ogretmen_ad: s.ad || '',
+        ogretmen_kullanici: s.kullaniciAdi || '',
+        ad: veri.ad,
+        konu: veri.konu || '',
+        seviyeler: JSON.stringify(veri.secim || []),
+        tip: veri.tip,
+        icerik: veri.icerik || '',
+        durum: 'bekliyor'
+      } });
       return rs && rs[0];
     },
+    ozelOnayla: async function (id) {
+      await sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id), { method: 'PATCH', body: { durum: 'onaylandi', onay_tarihi: new Date().toISOString() } });
+    },
+    ozelReddet: async function (id, neden) {
+      await sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id), { method: 'PATCH', body: { durum: 'reddedildi', red_nedeni: neden || '' } });
+    },
     ozelEtkinlikSil: async function (s, id) {
-      var oyunId = 'ozel:' + id;
-      await sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id) + '&campus_id=eq.' + encodeURIComponent(s.campusId), { method: 'DELETE' });
-      await sb('etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&oyun_id=eq.' + encodeURIComponent(oyunId), { method: 'DELETE' });
-      await sb('tamamlanan?campus_id=eq.' + encodeURIComponent(s.campusId) + '&oyun_id=eq.' + encodeURIComponent(oyunId), { method: 'DELETE' });
+      await sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id) + '&ogretmen_id=eq.' + encodeURIComponent(s.id), { method: 'DELETE' });
+      await ozelKalintiTemizle(id);
+    },
+    ozelYoneticiSil: async function (id) {
+      await sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id), { method: 'DELETE' });
+      await ozelKalintiTemizle(id);
     },
     sifreSifirla: async function (s, ogrenciId, yeniSifre) {
       var tuz = tuzUret();
@@ -982,22 +1435,58 @@
         return { ogrenciId: t.ogrenci_id, ogrenciAd: pAd[t.ogrenci_id] || '', campusId: t.campusId, campusAdi: cAd[t.campusId] || '', oyunId: t.oyun_id, tarih: t.tarih };
       });
     },
-    /* ---------- Öğretmenin oluşturduğu özel etkinlikler ---------- */
-    ozelEtkinlikler: async function (s) {
-      return dGet(DK.ozel).filter(function (o) { return o.campusId === s.campusId; });
+    /* ---------- Öğretmenin oluşturduğu özel etkinlikler (onay akışı) ---------- */
+    ozelOnaylilar: async function () {
+      return dGet(DK.ozel).filter(function (o) { return (o.durum || 'onaylandi') === 'onaylandi'; }).map(ozelSatir).sort(ozelSiralama);
+    },
+    ozelEtkinliklerim: async function (s) {
+      return dGet(DK.ozel).filter(function (o) {
+        return o.ogretmenId === s.id || (!o.ogretmenId && o.campusId === s.campusId);
+      }).map(ozelSatir).sort(ozelSiralama);
+    },
+    tumOzelEtkinlikler: async function () {
+      var ks = dGet(DK.campus);
+      var kampusAd = {};
+      ks.forEach(function (c) { kampusAd[c.id] = c.ad; });
+      return dGet(DK.ozel).map(function (o) {
+        var x = ozelSatir(o);
+        x.kampusAdi = kampusAd[o.campusId] || '';
+        return x;
+      }).sort(ozelSiralama);
     },
     ozelEtkinlikEkle: async function (s, veri) {
-      var o = { id: dId(), campusId: s.campusId, ad: veri.ad, konu: veri.konu || '', seviyeler: veri.seviyeler || [], tip: veri.tip, icerik: veri.icerik || '', tarih: new Date().toISOString() };
+      var o = {
+        id: dId(), campusId: s.campusId,
+        ogretmenId: s.id, ogretmenAd: s.ad || '', ogretmenKullanici: s.kullaniciAdi || '',
+        ad: veri.ad, konu: veri.konu || '', secim: (veri.secim || []).slice(),
+        tip: veri.tip, icerik: veri.icerik || '',
+        durum: 'bekliyor', redNedeni: '',
+        tarih: new Date().toISOString()
+      };
       var os = dGet(DK.ozel);
       os.push(o);
       dSet(DK.ozel, os);
       return o;
     },
+    ozelOnayla: async function (id) {
+      var os = dGet(DK.ozel);
+      os.forEach(function (o) { if (o.id === id) o.durum = 'onaylandi'; });
+      dSet(DK.ozel, os);
+    },
+    ozelReddet: async function (id, neden) {
+      var os = dGet(DK.ozel);
+      os.forEach(function (o) { if (o.id === id) { o.durum = 'reddedildi'; o.redNedeni = neden || ''; } });
+      dSet(DK.ozel, os);
+    },
     ozelEtkinlikSil: async function (s, id) {
-      dSet(DK.ozel, dGet(DK.ozel).filter(function (o) { return !(o.id === id && o.campusId === s.campusId); }));
-      var oyunId = 'ozel:' + id;
-      dSet(DK.atama, dGet(DK.atama).filter(function (a) { return !(a.campusId === s.campusId && a.oyun_id === oyunId); }));
-      dSet(DK.tamamlanan, dGet(DK.tamamlanan).filter(function (t) { return !(t.campusId === s.campusId && t.oyun_id === oyunId); }));
+      dSet(DK.ozel, dGet(DK.ozel).filter(function (o) {
+        return !(o.id === id && (o.ogretmenId === s.id || (!o.ogretmenId && o.campusId === s.campusId)));
+      }));
+      ozelKalintiTemizle(id);
+    },
+    ozelYoneticiSil: async function (id) {
+      dSet(DK.ozel, dGet(DK.ozel).filter(function (o) { return o.id !== id; }));
+      ozelKalintiTemizle(id);
     }
   };
 
@@ -1031,30 +1520,61 @@
   var oturum = null;
 
   /* ---------- Özel etkinlik oluşturucu (öğretmen) ---------- */
-  var oe = { seviyeler: [], tip: 'dosya', dosyaMetin: '' };
+  // Kullanım yeri çipleri: "s1".."s7" → N. Sınıf | "i2".."i7" → N IPT | "arac" → Öğretmen Aracı
+  var oe = { secim: [], tip: 'dosya', dosyaMetin: '' };
 
-  function seviyeEtiketi(n) {
-    n = parseInt(n, 10);
-    if (isNaN(n)) return '';
-    return n === 1 ? '1. Sınıf' : n + ' IPT';
+  function secimEtiketi(t) {
+    t = String(t || '');
+    if (t === 'arac') return '👩‍🏫 Öğretmen Aracı';
+    var n = parseInt(t.slice(1), 10);
+    if (isNaN(n) || n < 1 || n > 7) return '';
+    return t[0] === 's' ? n + '. Sınıf' : (t[0] === 'i' ? n + ' IPT' : '');
   }
-  function seviyeEtiketiList(sv) {
-    return (sv || []).map(seviyeEtiketi).filter(Boolean).join(' · ');
+  function tokenNorm(t) {
+    t = String(t || '');
+    if (t === 'arac' || /^[si][1-7]$/.test(t)) return t;
+    // Eski biçim (yalnız sayı): 1 → 1. sınıf, 2..7 → IPT
+    var n = parseInt(t, 10);
+    if (n === 1) return 's1';
+    if (n >= 2 && n <= 7) return 'i' + n;
+    return '';
   }
+  function secimNorm(sv) {
+    return (sv || []).map(tokenNorm).filter(Boolean);
+  }
+  function secimEtiketList(sv) {
+    return secimNorm(sv).map(secimEtiketi).filter(Boolean).join(' · ');
+  }
+  function aracMi(sv) { return (sv || []).indexOf('arac') >= 0; }
   function kaynakEtiketi(tip) { return tip === 'dosya' ? '📄 HTML' : (tip === 'drive' ? '🔗 Drive' : '✂️ Kod'); }
 
-  /* Statik etkinlikler + öğretmenin oluşturduğu özel etkinlikler tek katalogda. */
-  function katalogGetir() {
-    return API.ozelEtkinlikler(oturum).then(function (ozeller) {
+  /* Onay durumu rozetleri (öğretmen listesi + yönetici listesi) */
+  function durumRozeti(o) {
+    if (o.durum === 'onaylandi') return '<span class="rozet acik">✅ Yayında</span>';
+    if (o.durum === 'reddedildi') {
+      return '<span class="rozet kapali">❌ Reddedildi</span>' +
+        (o.redNedeni ? '<div class="kucuk-not" style="color:#b91c1c">Neden: ' + esc(o.redNedeni) + '</div>' : '');
+    }
+    return '<span class="rozet tarih">⏳ Onay bekleniyor</span>';
+  }
+
+  /* Statik etkinlikler + yöneticinin onayladığı özel etkinlikler tek katalogda (tüm kampüsler).
+     tur 'ogrenci' ise Öğretmen Aracı etkinlikler öğrenci listesinden gizlenir. */
+  function katalogGetir(tur) {
+    return API.ozelOnaylilar().then(function (ozeller) {
       var liste = ETKINLIKLER.map(function (e) {
         return { id: e.id, ad: e.ad, url: e.url, aciklama: e.aciklama };
       });
       (ozeller || []).forEach(function (o) {
+        if (tur === 'ogrenci' && aracMi(o.secim)) return;
+        var etiket = secimEtiketList(o.secim);
+        var aciklama = (o.konu || '') + (etiket ? ' · Kullanım: ' + etiket : '');
+        if (tur !== 'ogrenci' && o.ogretmenKullanici) aciklama += ' · 👩‍🏫 @' + o.ogretmenKullanici;
         liste.push({
           id: 'ozel:' + o.id,
           ad: o.ad,
           url: null,
-          aciklama: (o.konu || '') + (o.seviyeler && o.seviyeler.length ? ' · Seviye: ' + seviyeEtiketiList(o.seviyeler) : ''),
+          aciklama: aciklama,
           ozel: o
         });
       });
@@ -1062,24 +1582,41 @@
     });
   }
 
+  function chipYap(etiket, tik) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = etiket;
+    if (oe.secim.indexOf(tik) >= 0) b.classList.add('secili');
+    b.onclick = function () {
+      var idx = oe.secim.indexOf(tik);
+      if (idx >= 0) oe.secim.splice(idx, 1); else oe.secim.push(tik);
+      b.classList.toggle('secili', idx < 0);
+    };
+    return b;
+  }
   function seviyeCipsCiz() {
     var kutu = $('oeSeviyeler');
     kutu.innerHTML = '';
-    for (var n = 1; n <= 7; n++) {
-      (function (n) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.textContent = seviyeEtiketi(n);
-        b.title = n === 1 ? '1. sınıf' : n + '. sınıf / IPT';
-        var sec = function () {
-          var idx = oe.seviyeler.indexOf(String(n));
-          if (idx >= 0) oe.seviyeler.splice(idx, 1); else oe.seviyeler.push(String(n));
-          b.classList.toggle('secili', idx < 0);
-        };
-        b.onclick = sec;
-        kutu.appendChild(b);
-      })(n);
+    function grup(baslik, cips) {
+      var g = document.createElement('div');
+      g.className = 'secim-grup';
+      var ad = document.createElement('div');
+      ad.className = 'secim-grup-ad';
+      ad.textContent = baslik;
+      g.appendChild(ad);
+      var satir = document.createElement('div');
+      satir.className = 'seviye-cips';
+      cips.forEach(function (x) { satir.appendChild(x); });
+      g.appendChild(satir);
+      kutu.appendChild(g);
     }
+    var sinif = [];
+    for (var n = 1; n <= 7; n++) sinif.push(chipYap(n + '. Sınıf', 's' + n));
+    grup('📚 Sınıf', sinif);
+    var ipt = [];
+    for (var m = 2; m <= 7; m++) ipt.push(chipYap(m + ' IPT', 'i' + m));
+    grup('🗂️ IPT', ipt);
+    grup('👩‍🏫 Kullanım', [chipYap('Öğretmen Aracı (öğrenciler görmez, tahtada uygulanır)', 'arac')]);
   }
 
   function oeKaynakGoster(tip) {
@@ -1113,16 +1650,18 @@
   }
 
   function ozelListeCiz() {
-    API.ozelEtkinlikler(oturum).then(function (ozeller) {
+    API.ozelEtkinliklerim(oturum).then(function (ozeller) {
       var kutu = $('oeListe');
-      if (!ozeller.length) { kutu.innerHTML = '<div class="bos">Henüz özel etkinlik oluşturmadın. Üstteki formla ekle.</div>'; return; }
-      var h = '<table><tr><th>Etkinlik</th><th>Konu &amp; Tema</th><th>Seviye</th><th>Kaynak</th><th>İşlem</th></tr>';
+      if (!ozeller.length) { kutu.innerHTML = '<div class="bos">Henüz etkinlik oluşturmadın. Üstteki formla ekle.</div>'; return; }
+      var h = '<table><tr><th>Etkinlik</th><th>Konu &amp; Tema</th><th>Kullanım yeri</th><th>Kaynak</th><th>İşlem</th></tr>';
       ozeller.forEach(function (o) {
-        h += '<tr class="satir"><td><b>' + esc(o.ad) + '</b></td><td>' + esc(o.konu || '') + '</td>' +
-          '<td>' + esc(seviyeEtiketiList(o.seviyeler)) + '</td>' +
+        h += '<tr class="satir"><td><b>' + esc(o.ad) + '</b><br>' + durumRozeti(o) + '</td>' +
+          '<td>' + esc(o.konu || '') + '</td>' +
+          '<td>' + esc(secimEtiketList(o.secim) || '—') + '</td>' +
           '<td><span class="tip-rozet">' + kaynakEtiketi(o.tip) + '</span></td>' +
-          '<td><button class="btn ikincil kucuk" data-oe-goster="' + esc(o.id) + '">👁 Görüntüle</button> ' +
-          '<button class="btn kirmizi kucuk" data-oe-sil="' + esc(o.id) + '">🗑 Sil</button></td></tr>';
+          '<td><button class="btn ikincil kucuk" data-oe-goster="' + esc(o.id) + '">👁 Görüntüle</button>' +
+          (o.durum === 'onaylandi' ? '' : ' <button class="btn kirmizi kucuk" data-oe-sil="' + esc(o.id) + '">🗑 Sil</button>') +
+          '</td></tr>';
       });
       h += '</table>';
       kutu.innerHTML = h;
@@ -1137,7 +1676,7 @@
         b.onclick = function () {
           var id = b.getAttribute('data-oe-sil');
           var o = ozeller.filter(function (x) { return x.id === id; })[0];
-          if (!confirm('“' + (o ? o.ad : '') + '” adlı etkinliği silmek istediğine emin misin?')) return;
+          if (!confirm('“' + (o ? o.ad : '') + '” adlı etkinliği silmek istediğine emin misin? Yalnız sana ait kayıt silinir.')) return;
           API.ozelEtkinlikSil(oturum, id).then(function () {
             bilgiGoster($('oeBilgi'), '🗑 Etkinlik silindi.');
             ozelListeCiz();
@@ -1149,7 +1688,7 @@
   }
 
   function oeFormuTemizle() {
-    oe.seviyeler = [];
+    oe.secim = [];
     oe.dosyaMetin = '';
     $('oeAd').value = ''; $('oeKonu').value = ''; $('oeKod').value = ''; $('oeDrive').value = '';
     $('oeDosya').value = ''; $('oeDosyaAdi').textContent = '';
@@ -1190,57 +1729,70 @@
   function etkinlikYonetiminiCiz() {
     API.atamaListesi(oturum).then(function (atamalar) {
       API.ogrenciListesi(oturum).then(function (ogrenciler) {
-        katalogGetir().then(function (katalog) {
+        katalogGetir('ogretmen').then(function (katalog) {
           var byId = {};
           atamalar.forEach(function (a) { byId[a.oyun_id] = a; });
           var kutu = $('etkinlikListe');
           var h = '';
           katalog.forEach(function (e) {
-          var a = byId[e.id] || null;
-          var secim = !a ? 'acik' : (!a.aktif ? 'kapali' : ((a.acilis || a.kapanis) ? 'tarihli' : 'acik'));
-          var tamamlayan = ogrenciler.filter(function (o) { return o.tamamlanan > 0; }).length;
-          var d = durumHesapla(a);
-          h += '<div class="etkinlik">' +
-            '<div class="ad">' + esc(e.ad) + ' <span class="rozet ' + d.sinif + '">' + esc(d.etiket) + '</span></div>' +
-            '<div class="aciklama">' + esc(e.aciklama) + '</div>' +
-            '<div class="alan">' +
-            '<select data-secim="' + e.id + '">' +
-            '<option value="acik"' + (secim === 'acik' ? ' selected' : '') + '>Açık (herkes oynayabilir)</option>' +
-            '<option value="kapali"' + (secim === 'kapali' ? ' selected' : '') + '>Kapalı</option>' +
-            '<option value="tarihli"' + (secim === 'tarihli' ? ' selected' : '') + '>Tarihli (tarihlerde açık)</option>' +
-            '</select>' +
-            '<button class="btn kucuk" data-kaydet="' + e.id + '">Kaydet</button>' +
-            '</div>' +
-            '<div class="tarihler' + (secim === 'tarihli' ? ' goster' : '') + '" data-tarihler="' + e.id + '">' +
-            '<div><label style="margin-top:0">Açılış tarihi</label><input type="datetime-local" data-acilis="' + e.id + '" value="' + (a && a.acilis ? dtYerel(a.acilis) : '') + '"></div>' +
-            '<div><label style="margin-top:0">Kapanış tarihi (boş = kapanmaz)</label><input type="datetime-local" data-kapanis="' + e.id + '" value="' + (a && a.kapanis ? dtYerel(a.kapanis) : '') + '"></div>' +
-            '</div>' +
-            '<div class="kucuk-not">Kampüste ' + tamamlayan + '/' + ogrenciler.length + ' öğrenci bu etkinliği tamamladı.</div>' +
-            '</div>';
-        });
-        kutu.innerHTML = h;
-        Array.prototype.forEach.call(kutu.querySelectorAll('[data-secim]'), function (s) {
-          s.onchange = function () {
-            var tar = kutu.querySelector('[data-tarihler="' + s.getAttribute('data-secim') + '"]');
-            if (tar) tar.classList.toggle('goster', s.value === 'tarihli');
-          };
-        });
-        Array.prototype.forEach.call(kutu.querySelectorAll('[data-kaydet]'), function (b) {
-          b.onclick = function () {
-            var id = b.getAttribute('data-kaydet');
-            var secim = kutu.querySelector('[data-secim="' + id + '"]').value;
-            var a1 = kutu.querySelector('[data-acilis="' + id + '"]').value;
-            var a2 = kutu.querySelector('[data-kapanis="' + id + '"]').value;
-            var a = secimdenAtama(secim, a1, a2);
-            if (secim === 'tarihli' && (!a.acilis)) { alert('Açılış tarihi girmelisin.'); return; }
-            if (a.acilis && a.kapanis && new Date(a.kapanis) <= new Date(a.acilis)) { alert('Kapanış, açılıştan sonra olmalı.'); return; }
-            API.atamaKaydet(oturum, id, a.aktif, a.acilis, a.kapanis).then(function () {
-              bilgiGoster($('oBilgi'), '✅ Etkinlik ayarı kaydedildi.');
-              etkinlikYonetiminiCiz();
-              setTimeout(function () { bilgiGoster($('oBilgi'), ''); }, 2500);
-            }).catch(function (e) { alert('Hata: ' + e.message); });
-          };
-        });
+            var a = byId[e.id] || null;
+            var secim = !a ? 'acik' : (!a.aktif ? 'kapali' : ((a.acilis || a.kapanis) ? 'tarihli' : 'acik'));
+            var tamamlayan = ogrenciler.filter(function (o) { return o.tamamlanan > 0; }).length;
+            var d = durumHesapla(a);
+            var arac = !!(e.ozel && aracMi(e.ozel.secim));
+            h += '<div class="etkinlik">' +
+              '<div class="ad">' + esc(e.ad) + ' ' +
+              (arac ? '<span class="rozet ogretmen">👩‍🏫 Öğretmen Aracı</span>' : '<span class="rozet ' + d.sinif + '">' + esc(d.etiket) + '</span>') +
+              '</div>' +
+              '<div class="aciklama">' + esc(e.aciklama) + '</div>' +
+              (e.ozel ? '<div class="alan"><button class="btn ikincil kucuk" data-yonet-oynat="' + esc(e.id) + '">👁 Tahtada Aç</button></div>' : '') +
+              (arac
+                ? '<div class="kucuk-not">Öğrenci listelerinde görünmez — ders sırasında tahtada kullan.</div>'
+                : '<div class="alan">' +
+                  '<select data-secim="' + e.id + '">' +
+                  '<option value="acik"' + (secim === 'acik' ? ' selected' : '') + '>Açık (herkes oynayabilir)</option>' +
+                  '<option value="kapali"' + (secim === 'kapali' ? ' selected' : '') + '>Kapalı</option>' +
+                  '<option value="tarihli"' + (secim === 'tarihli' ? ' selected' : '') + '>Tarihli (tarihlerde açık)</option>' +
+                  '</select>' +
+                  '<button class="btn kucuk" data-kaydet="' + e.id + '">Kaydet</button>' +
+                  '</div>' +
+                  '<div class="tarihler' + (secim === 'tarihli' ? ' goster' : '') + '" data-tarihler="' + e.id + '">' +
+                  '<div><label style="margin-top:0">Açılış tarihi</label><input type="datetime-local" data-acilis="' + e.id + '" value="' + (a && a.acilis ? dtYerel(a.acilis) : '') + '"></div>' +
+                  '<div><label style="margin-top:0">Kapanış tarihi (boş = kapanmaz)</label><input type="datetime-local" data-kapanis="' + e.id + '" value="' + (a && a.kapanis ? dtYerel(a.kapanis) : '') + '"></div>' +
+                  '</div>' +
+                  '<div class="kucuk-not">Kampüste ' + tamamlayan + '/' + ogrenciler.length + ' öğrenci bu etkinliği tamamladı.</div>') +
+              '</div>';
+          });
+          kutu.innerHTML = h;
+          Array.prototype.forEach.call(kutu.querySelectorAll('[data-secim]'), function (s) {
+            s.onchange = function () {
+              var tar = kutu.querySelector('[data-tarihler="' + s.getAttribute('data-secim') + '"]');
+              if (tar) tar.classList.toggle('goster', s.value === 'tarihli');
+            };
+          });
+          Array.prototype.forEach.call(kutu.querySelectorAll('[data-kaydet]'), function (b) {
+            b.onclick = function () {
+              var id = b.getAttribute('data-kaydet');
+              var secim = kutu.querySelector('[data-secim="' + id + '"]').value;
+              var a1 = kutu.querySelector('[data-acilis="' + id + '"]').value;
+              var a2 = kutu.querySelector('[data-kapanis="' + id + '"]').value;
+              var a = secimdenAtama(secim, a1, a2);
+              if (secim === 'tarihli' && (!a.acilis)) { alert('Açılış tarihi girmelisin.'); return; }
+              if (a.acilis && a.kapanis && new Date(a.kapanis) <= new Date(a.acilis)) { alert('Kapanış, açılıştan sonra olmalı.'); return; }
+              API.atamaKaydet(oturum, id, a.aktif, a.acilis, a.kapanis).then(function () {
+                bilgiGoster($('oBilgi'), '✅ Etkinlik ayarı kaydedildi.');
+                etkinlikYonetiminiCiz();
+                setTimeout(function () { bilgiGoster($('oBilgi'), ''); }, 2500);
+              }).catch(function (e) { alert('Hata: ' + e.message); });
+            };
+          });
+          Array.prototype.forEach.call(kutu.querySelectorAll('[data-yonet-oynat]'), function (b) {
+            b.onclick = function () {
+              var id = b.getAttribute('data-yonet-oynat');
+              var kayit = katalog.filter(function (x) { return x.id === id; })[0];
+              if (kayit && kayit.ozel) ozelOynatAc(kayit.ozel.ad, kayit.ozel.icerik, kayit.ozel.tip);
+            };
+          });
         });
       });
     }).catch(function (e) { $('etkinlikListe').innerHTML = '<div class="hata" style="display:block">' + esc(e.message) + '</div>'; });
@@ -1286,7 +1838,7 @@
 
   function ogrenciEtkinlikleriCiz() {
     ogrenciVerileri().then(function (v) {
-      katalogGetir().then(function (katalog) {
+      katalogGetir('ogrenci').then(function (katalog) {
         var byId = {};
         v.atamalar.forEach(function (a) { byId[a.oyun_id] = a; });
         var tamam = {};
@@ -1362,7 +1914,481 @@
   function adminYukle() {
     $('ustOrta').innerHTML = '<div class="kampus">🛡️ Sistem Yönetimi</div><div class="kullanici">🛡️ ' + esc(oturum.ad) + ' · @' + esc(oturum.kullaniciAdi) + '</div>';
     kampuslariCiz(); // kampüs + öğretmen + öğrenci listelerini birlikte tazeler
+    etkinlikOnayCiz();
+    yedekDepoNotuYaz();
+    yedekDurumCiz();
+    gunlukYedekKontrol();
+    supBaglantiGoster();
+    semaKontrolGoster();
   }
+
+  /* ---------- Yönetici: öğretmen etkinliği onayları ---------- */
+  function etkinlikOnayCiz() {
+    API.tumOzelEtkinlikler().then(function (ozeller) {
+      var kutu = $('onayListe');
+      hataGoster($('onayHata'), '');
+      bilgiGoster($('onayBilgi'), '');
+      if (!ozeller.length) { kutu.innerHTML = '<div class="bos">Henüz öğretmen etkinliği yok.</div>'; return; }
+      ozeller.sort(function (a, b) {
+        var ka = a.durum === 'bekliyor' ? 0 : 1, kb = b.durum === 'bekliyor' ? 0 : 1;
+        if (ka !== kb) return ka - kb;
+        return (b.tarih || '').localeCompare(a.tarih || '');
+      });
+      var filtre = $('onayFiltre').value;
+      var g = filtre ? ozeller.filter(function (o) { return o.durum === filtre; }) : ozeller;
+      if (!g.length) { kutu.innerHTML = '<div class="bos">Bu filtreyle kayıt yok.</div>'; return; }
+      var h = '<table><tr><th>Etkinlik</th><th>Konu &amp; Tema</th><th>Kullanım yeri</th><th>Yükleyen</th><th>Kaynak</th><th>Yükleme</th><th>İşlem</th></tr>';
+      g.forEach(function (o) {
+        var arac = aracMi(o.secim);
+        h += '<tr class="satir"><td><b>' + esc(o.ad) + '</b>' + (arac ? ' <span class="rozet ogretmen">👩‍🏫 Araç</span>' : '') + '<br>' + durumRozeti(o) + '</td>' +
+          '<td>' + esc(o.konu || '') + '</td>' +
+          '<td>' + esc(secimEtiketList(o.secim) || '—') + '</td>' +
+          '<td>👩‍🏫 ' + esc(o.ogretmenAd || '—') + (o.ogretmenKullanici ? ' <span class="kucuk-not">@' + esc(o.ogretmenKullanici) + '</span>' : '') +
+          '<div class="kucuk-not">🏫 ' + esc(o.kampusAdi || '—') + '</div></td>' +
+          '<td><span class="tip-rozet">' + kaynakEtiketi(o.tip) + '</span></td>' +
+          '<td class="kucuk-not">' + esc(tarihKisa(o.tarih)) + '</td>' +
+          '<td style="white-space:nowrap">' +
+          '<button class="btn ikincil kucuk" data-onay-goster="' + esc(o.id) + '">👁 Görüntüle</button> ' +
+          (o.durum === 'bekliyor'
+            ? '<button class="btn yesil kucuk" data-onayla="' + esc(o.id) + '">✅ Onayla</button> ' +
+              '<button class="btn kirmizi kucuk" data-reddet="' + esc(o.id) + '">❌ Reddet</button>'
+            : '<button class="btn kirmizi kucuk" data-onay-sil="' + esc(o.id) + '">🗑 Sil</button>') +
+          '</td></tr>';
+      });
+      h += '</table>';
+      kutu.innerHTML = h;
+      Array.prototype.forEach.call(kutu.querySelectorAll('[data-onay-goster]'), function (b) {
+        b.onclick = function () {
+          var o = ozeller.filter(function (x) { return x.id === b.getAttribute('data-onay-goster'); })[0];
+          if (o) ozelOynatAc(o.ad, o.icerik, o.tip);
+        };
+      });
+      Array.prototype.forEach.call(kutu.querySelectorAll('[data-onayla]'), function (b) {
+        b.onclick = function () {
+          var id = b.getAttribute('data-onayla');
+          var o = ozeller.filter(function (x) { return x.id === id; })[0];
+          if (!confirm('“' + (o ? o.ad : '') + '” adlı etkinliği onaylayıp tüm kampüslerde yayınlamak istiyor musun?')) return;
+          API.ozelOnayla(id).then(function () {
+            bilgiGoster($('onayBilgi'), '✅ Onaylandı ve tüm kampüslerde yayınlandı.');
+            etkinlikOnayCiz();
+            setTimeout(function () { bilgiGoster($('onayBilgi'), ''); }, 3500);
+          }).catch(function (e) { hataGoster($('onayHata'), e.message); });
+        };
+      });
+      Array.prototype.forEach.call(kutu.querySelectorAll('[data-reddet]'), function (b) {
+        b.onclick = function () {
+          var id = b.getAttribute('data-reddet');
+          var o = ozeller.filter(function (x) { return x.id === id; })[0];
+          var neden = prompt('“' + (o ? o.ad : '') + '” reddediliyor. Öğretmene gösterilecek nedeni yaz (boş bırakılabilir):', '');
+          if (neden === null) return;
+          API.ozelReddet(id, neden.trim()).then(function () {
+            bilgiGoster($('onayBilgi'), '❌ Etkinlik reddedildi — öğretmen nedeni görür.');
+            etkinlikOnayCiz();
+            setTimeout(function () { bilgiGoster($('onayBilgi'), ''); }, 3500);
+          }).catch(function (e) { hataGoster($('onayHata'), e.message); });
+        };
+      });
+      Array.prototype.forEach.call(kutu.querySelectorAll('[data-onay-sil]'), function (b) {
+        b.onclick = function () {
+          var id = b.getAttribute('data-onay-sil');
+          var o = ozeller.filter(function (x) { return x.id === id; })[0];
+          if (!confirm('“' + (o ? o.ad : '') + '” kaydını silmek istediğine emin misin? Atama ve tamamlanma kayıtları da silinir.')) return;
+          API.ozelYoneticiSil(id).then(function () {
+            bilgiGoster($('onayBilgi'), '🗑 Etkinlik silindi.');
+            etkinlikOnayCiz();
+            setTimeout(function () { bilgiGoster($('onayBilgi'), ''); }, 3500);
+          }).catch(function (e) { hataGoster($('onayHata'), e.message); });
+        };
+      });
+    }).catch(function (e) { hataGoster($('onayHata'), e.message); });
+  }
+  $('onayFiltre').addEventListener('change', function () { etkinlikOnayCiz(); });
+
+  /* ---------- Yönetici: veri yedekleme (manuel + günlük yerel klasör) ---------- */
+  function tarihEtiketi(dt) {
+    function p(n) { return ('0' + n).slice(-2); }
+    return dt.getFullYear() + '-' + p(dt.getMonth() + 1) + '-' + p(dt.getDate());
+  }
+  function tarihSaatEtiketi(dt) {
+    function p(n) { return ('0' + n).slice(-2); }
+    return tarihEtiketi(dt) + '_' + p(dt.getHours()) + p(dt.getMinutes());
+  }
+
+  /* Yedeğe girecek tüm veriyi topla: demo = localStorage, supabase = tabloların ham kayıtları */
+  function yedekVerileriniTopla() {
+    var tablolar = ['campus', 'profil', 'etkinlik_atama', 'tamamlanan', 'ayar', 'ozel_etkinlik'];
+    if (DEMO) {
+      var veri = {
+        campus: dGet(DK.campus),
+        profil: dGet(DK.profil),
+        etkinlik_atama: dGet(DK.atama),
+        tamamlanan: dGet(DK.tamamlanan),
+        ozel_etkinlik: dGet(DK.ozel),
+        ayar: []
+      };
+      try {
+        var yk = JSON.parse(localStorage.getItem('bt_admin_sifre') || 'null');
+        if (yk && yk.tuz && yk.hash) veri.ayar.push({ anahtar: 'admin_sifre', deger: JSON.stringify(yk) });
+      } catch (e) {}
+      return Promise.resolve(veri);
+    }
+    var isler = tablolar.map(function (t) {
+      return sb(t + '?select=*').catch(function () { return []; });
+    });
+    return Promise.all(isler).then(function (sonuclar) {
+      var veri = {};
+      tablolar.forEach(function (t, i) { veri[t] = sonuclar[i] || []; });
+      return veri;
+    });
+  }
+  function yedekZarf(veri) {
+    return {
+      uygulama: 'bilfen-bilisim-panel', surum: 1,
+      kaynak: DEMO ? 'demo' : 'supabase',
+      olusturulma_tarihi: new Date().toISOString(),
+      veri: veri
+    };
+  }
+
+  function yedekDepoNotuYaz() {
+    $('yedekDepoNotu').textContent = DEMO
+      ? 'Yedek dosyası tüm kampüs, öğretmen/öğrenci, etkinlik ve şifre kayıtlarını içerir; başka cihazlara da aktarılabilir.'
+      : 'Veriler Supabase bulutunda tutuluyor. Yedek, tüm tabloların ham kayıtlarını (kampüs, profil, atama, tamamlanan, ayar, özel etkinlik) içerir.';
+  }
+
+  function yedekIndir() {
+    $('yedekIndirBtn').disabled = true;
+    hataGoster($('yedekHata'), '');
+    yedekVerileriniTopla().then(function (veri) {
+      var zarf = yedekZarf(veri);
+      var blob = new Blob([JSON.stringify(zarf, null, 1)], { type: 'application/json' });
+      var ad = 'bilfen-yedek-' + tarihSaatEtiketi(new Date()) + '.json';
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = ad;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+      bilgiGoster($('yedekBilgi'), '📥 Yedek indirildi: ' + ad);
+      yedekZamaniniKaydet();
+      yedekUyarisiniGoster();
+      setTimeout(function () { bilgiGoster($('yedekBilgi'), ''); }, 5000);
+    }).catch(function (e) {
+      hataGoster($('yedekHata'), e.message);
+    }).finally(function () { $('yedekIndirBtn').disabled = false; });
+  }
+
+  /* --- IndexedDB: seçilen klasör tutamacı --- */
+  function idbAc() {
+    return new Promise(function (res, rej) {
+      if (!window.indexedDB) { rej(new Error('IndexedDB desteklenmiyor')); return; }
+      var r = indexedDB.open('bt_yedek_db', 1);
+      r.onupgradeneeded = function () {
+        if (!r.result.objectStoreNames.contains('klasor')) r.result.createObjectStore('klasor', { keyPath: 'id' });
+      };
+      r.onsuccess = function () { res(r.result); };
+      r.onerror = function () { rej(r.error); };
+    });
+  }
+  function klasorOku() {
+    if (!window.indexedDB) return Promise.resolve(null);
+    return idbAc().then(function (db) {
+      return new Promise(function (res) {
+        try {
+          var g = db.transaction('klasor', 'readonly').objectStore('klasor').get('ana');
+          g.onsuccess = function () { res(g.result || null); };
+          g.onerror = function () { res(null); };
+        } catch (e) { res(null); }
+      });
+    }).catch(function () { return null; });
+  }
+  function klasorKaydet(handle) {
+    return idbAc().then(function (db) {
+      return new Promise(function (res, rej) {
+        var tx = db.transaction('klasor', 'readwrite');
+        tx.objectStore('klasor').put({ id: 'ana', handle: handle, ad: handle.name, secimTarihi: new Date().toISOString() });
+        tx.oncomplete = function () { res(); };
+        tx.onerror = function () { rej(tx.error || new Error('Klasör kaydedilemedi')); };
+      });
+    });
+  }
+  function dosyaYaz(hd, ad, metin) {
+    return hd.getFileHandle(ad, { create: true }).then(function (fh) {
+      return fh.createWritable().then(function (w) {
+        return w.write(metin).then(function () { return w.close(); });
+      });
+    });
+  }
+
+  function gunlukYedekKontrol() {
+    var bugun = tarihEtiketi(new Date());
+    var son = localStorage.getItem('bt_yedek_son_tarih') || '';
+    if (son === bugun) { yedekDurumCiz(); return; }
+    klasorOku().then(function (kayit) {
+      if (!kayit || !kayit.handle) { yedekDurumCiz(); return; }
+      yedekVerileriniTopla().then(function (veri) {
+        kayit.handle.requestPermission({ mode: 'readwrite' }).then(function (durum) {
+          if (durum !== 'granted') { yedekDurumCiz(); return; }
+          var dosyaAdi = 'bilfen-yedek-' + bugun + '.json';
+          return dosyaYaz(kayit.handle, dosyaAdi, JSON.stringify(yedekZarf(veri), null, 1)).then(function () {
+            localStorage.setItem('bt_yedek_son_tarih', bugun);
+            yedekZamaniniKaydet();
+            yedekUyarisiniGoster();
+            bilgiGoster($('yedekBilgi'), '✅ Günlük yedek yazıldı: ' + dosyaAdi);
+            yedekDurumCiz();
+            setTimeout(function () { bilgiGoster($('yedekBilgi'), ''); }, 6000);
+          });
+        }).catch(function (e) { hataGoster($('yedekHata'), e.message); });
+      }).catch(function (e) { hataGoster($('yedekHata'), e.message); });
+    });
+  }
+
+  function yedekDurumCiz() {
+    klasorOku().then(function (kayit) {
+      var son = localStorage.getItem('bt_yedek_son_tarih') || '';
+      var h = kayit && kayit.ad
+        ? '📁 Günlük yedek klasörü: ' + kayit.ad + (son ? ' · son yedek: ' + son : ' · henüz yazılmadı')
+        : '📁 Günlük otomatik yedek klasörü seçilmedi — bunun için "Günlük Otomatik Yedek Klasörü Seç"e basın (Chrome/Edge). Yedek İndir her tarayıcıda çalışır.';
+      $('yedekDurum').textContent = h;
+    });
+  }
+
+  /* --- Geri yükleme --- */
+  function yeniUuid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (ch) {
+      var r = Math.random() * 16 | 0;
+      var v = ch === 'x' ? r : ((r & 0x3) | 0x8);
+      return v.toString(16);
+    });
+  }
+  /* Demo (localStorage) yedeğini Supabase satır biçimine çevir.
+     Supabase uuid tipinde olduğu için tüm kimlikler yeniden üretilir ve
+     campus/profil/ozel başvuruları + 'ozel:' oyun bağlantıları eşlenir. */
+  function demoVeridenSupabase(veri) {
+    var simdi = new Date().toISOString();
+    var kampusId = {}, profilId = {}, ozelId = {};
+    var campus = (veri.campus || []).filter(function (c) { return c && c.id && c.ad; }).map(function (c) {
+      var y = yeniUuid();
+      kampusId[c.id] = y;
+      return { id: y, ad: c.ad, olusturma_tarihi: c.olusturma_tarihi || simdi };
+    });
+    var profil = (veri.profil || []).filter(function (p) { return p && p.id && p.kullaniciAdi; }).map(function (p) {
+      var y = yeniUuid();
+      profilId[p.id] = y;
+      return {
+        id: y,
+        campus_id: kampusId[p.campusId] || null,
+        kullanici_adi: p.kullaniciAdi,
+        sifre_tuz: p.tuz || p.sifre_tuz || '',
+        sifre_hash: p.hash || p.sifre_hash || '',
+        ad: p.ad,
+        rol: (p.rol === 'ogretmen' || p.rol === 'ogrenci') ? p.rol : 'ogrenci',
+        avatar: p.avatar || '🐣',
+        puan: p.puan || 0,
+        olusturma_tarihi: p.olusturma_tarihi || simdi
+      };
+    });
+    var ozel = (veri.ozel_etkinlik || []).filter(function (o) { return o && o.id; }).map(function (o) {
+      var y = yeniUuid();
+      ozelId[o.id] = y;
+      var ham = (o.seviyeler !== undefined && o.seviyeler !== null) ? o.seviyeler : (o.secim || []);
+      var sv = [];
+      if (typeof ham === 'string') { try { sv = JSON.parse(ham || '[]'); } catch (e) {} } else sv = ham || [];
+      return {
+        id: y,
+        campus_id: kampusId[o.campusId] || null,
+        ogretmen_id: profilId[o.ogretmenId] || null,
+        ogretmen_ad: o.ogretmenAd || o.ogretmen_ad || '',
+        ogretmen_kullanici: o.ogretmenKullanici || o.ogretmen_kullanici || '',
+        ad: o.ad || '',
+        konu: o.konu || '',
+        seviyeler: JSON.stringify(secimNorm(sv)),
+        tip: (o.tip === 'dosya' || o.tip === 'drive' || o.tip === 'kod') ? o.tip : 'kod',
+        icerik: o.icerik || '',
+        durum: o.durum || 'onaylandi',
+        red_nedeni: o.redNedeni || o.red_nedeni || '',
+        onay_tarihi: o.onay_tarihi || null,
+        olusturma_tarihi: o.tarih || o.olusturma_tarihi || simdi
+      };
+    });
+    function oyunIdCevir(id) {
+      if (typeof id === 'string' && id.indexOf('ozel:') === 0) {
+        var eski = id.slice(5);
+        return ozelId[eski] ? 'ozel:' + ozelId[eski] : id;
+      }
+      return id;
+    }
+    var atama = (veri.etkinlik_atama || []).filter(function (a) { return a && a.campusId; }).map(function (a) {
+      return {
+        campus_id: kampusId[a.campusId] || null,
+        oyun_id: oyunIdCevir(a.oyun_id),
+        aktif: a.aktif !== false,
+        acilis: a.acilis || null,
+        kapanis: a.kapanis || null,
+        guncelleme_tarihi: a.guncelleme_tarihi || simdi
+      };
+    });
+    var tamam = (veri.tamamlanan || []).filter(function (t) { return t && t.ogrenci_id; }).map(function (t) {
+      return {
+        id: yeniUuid(),
+        ogrenci_id: profilId[t.ogrenci_id] || null,
+        campus_id: kampusId[t.campusId] || null,
+        oyun_id: oyunIdCevir(t.oyun_id),
+        puan: t.puan || 10,
+        tarih: t.tarih || simdi
+      };
+    });
+    var ayar = (veri.ayar || []).filter(function (r) { return r && r.anahtar; }).map(function (r) {
+      return { anahtar: r.anahtar, deger: r.deger, guncelleme_tarihi: r.guncelleme_tarihi || simdi };
+    });
+    return { campus: campus, profil: profil, ayar: ayar, etkinlik_atama: atama, tamamlanan: tamam, ozel_etkinlik: ozel };
+  }
+  function demoGeriYukle(zarf) {
+    var veri = (zarf && zarf.veri) || {};
+    dSet(DK.campus, veri.campus || []);
+    dSet(DK.profil, veri.profil || []);
+    dSet(DK.atama, veri.etkinlik_atama || []);
+    dSet(DK.tamamlanan, veri.tamamlanan || []);
+    dSet(DK.ozel, veri.ozel_etkinlik || []);
+    (veri.ayar || []).forEach(function (r) {
+      if (r.anahtar === 'admin_sifre') localStorage.setItem('bt_admin_sifre', r.deger);
+    });
+    return Promise.resolve();
+  }
+  function supabaseGeriYukle(zarf) {
+    var veri = (zarf && zarf.veri) || {};
+    // Demo (tarayıcı) yedeği buluta aktarılırken satırlar Supabase biçimine çevrilir
+    if (zarf && zarf.kaynak === 'demo') veri = demoVeridenSupabase(veri);
+    var sil = ['tamamlanan', 'etkinlik_atama', 'ozel_etkinlik', 'profil', 'ayar', 'campus'];
+    var ekle = ['campus', 'profil', 'ayar', 'etkinlik_atama', 'tamamlanan', 'ozel_etkinlik'];
+    var isler = sil.map(function (t) { return sb(t, { method: 'DELETE' }); });
+    return Promise.all(isler).then(function () {
+      var ekleme = [];
+      ekle.forEach(function (t) {
+        var satirlar = veri[t] || [];
+        if (satirlar.length) ekleme.push(sb(t, { method: 'POST', body: satirlar }));
+      });
+      return Promise.all(ekleme);
+    });
+  }
+  function yedekYukle() {
+    var dosya = $('yedekDosya').files && $('yedekDosya').files[0];
+    if (!dosya) return;
+    var oku = new FileReader();
+    oku.onload = function () {
+      var zarf;
+      try { zarf = JSON.parse(String(oku.result || '')); } catch (e) { hataGoster($('yedekHata'), 'Dosya geçersiz JSON.'); return; }
+      if (!zarf || !zarf.veri || zarf.uygulama !== 'bilfen-bilisim-panel') {
+        hataGoster($('yedekHata'), 'Bu bir Bilfen panel yedeği değil.');
+        $('yedekDosya').value = '';
+        return;
+      }
+      var mesaj = DEMO
+        ? 'Demo veriler silinip yedekteki kayıtlar yüklenecek. Bu işlem geri alınamaz. Devam edilsin mi?'
+        : (zarf.kaynak === 'demo'
+          ? 'Bu bir tarayıcı (demo) yedeği: buluttaki tablolar boşaltılıp kayıtlar (yeni kimliklerle) buraya aktarılacak. Devam edilsin mi?'
+          : 'Buluttaki tüm veriler silinip yedekteki kayıtlar yüklenecek. Bu işlem geri alınamaz. Devam edilsin mi?');
+      if (!confirm(mesaj)) {
+        $('yedekDosya').value = '';
+        return;
+      }
+      $('yedekYukleBtn').disabled = true;
+      var islem = DEMO ? demoGeriYukle(zarf) : supabaseGeriYukle(zarf);
+      islem.then(function () {
+        localStorage.removeItem('bt_oturum');
+        localStorage.removeItem('bt_yedek_son_tarih');
+        bilgiGoster($('yedekBilgi'), '✅ Yedekten geri yüklendi. Sayfa yenileniyor…');
+        setTimeout(function () { location.reload(); }, 800);
+      }).catch(function (e) {
+        hataGoster($('yedekHata'), e.message);
+        $('yedekDosya').value = '';
+      }).finally(function () { $('yedekYukleBtn').disabled = false; });
+    };
+    oku.onerror = function () { hataGoster($('yedekHata'), 'Dosya okunamadı.'); };
+    oku.readAsText(dosya);
+  }
+
+  $('yedekIndirBtn').onclick = yedekIndir;
+  $('yedekKlasorBtn').onclick = function () {
+    if (!window.showDirectoryPicker) {
+      alert('Bu tarayıcı klasör seçmeyi desteklemiyor. "📥 Yedek İndir" düğmesini kullanın.');
+      return;
+    }
+    window.showDirectoryPicker({ mode: 'readwrite' }).then(function (hd) {
+      return klasorKaydet(hd).then(function () {
+        localStorage.removeItem('bt_yedek_son_tarih');
+        bilgiGoster($('yedekBilgi'), '📁 Klasör seçildi: ' + hd.name + ' — her gün bu klasöre otomatik yedek yazılır.');
+        gunlukYedekKontrol();
+      });
+    }).catch(function (e) {
+      if (!e || e.name !== 'AbortError') hataGoster($('yedekHata'), (e && e.message) || 'Klasör seçilemedi.');
+    });
+  };
+  $('yedekYukleBtn').onclick = function () { $('yedekDosya').click(); };
+  $('yedekDosya').addEventListener('change', yedekYukle);
+
+  /* Son bulut yedeği zamanını işaretle (manuel indirme + günlük klasör yazımı) */
+  function yedekZamaniniKaydet() {
+    try { localStorage.setItem('bt_son_bulut_yedek', new Date().toISOString()); } catch (e) {}
+  }
+  /* Bulut bağlantılı her panel açılışında: son yedek 24 saatten eskiyse hatırlat */
+  function yedekUyarisiniGoster() {
+    var satir = $('yedekUyari');
+    if (DEMO) { satir.style.display = 'none'; return; }
+    try { if (sessionStorage.getItem('bt_yedek_uyari_gizle') === '1') { satir.style.display = 'none'; return; } } catch (e) {}
+    var son = '';
+    try { son = localStorage.getItem('bt_son_bulut_yedek') || ''; } catch (e) {}
+    var eski = true;
+    if (son) { try { eski = (Date.now() - new Date(son).getTime()) > 24 * 3600 * 1000; } catch (e) {} }
+    if (!eski) { satir.style.display = 'none'; return; }
+    $('yedekUyariMetin').textContent = '⏰ Son bulut yedeği ' +
+      (son ? '24 saatten eski (' + tarihKisa(son) + ')' : 'hiç alınmamış') +
+      ' — verilerin yedeğini almayı unutma.';
+    satir.style.display = '';
+  }
+  $('yedekUyariAl').onclick = function () {
+    yedekIndir(); // başarıda yedekZamaniniKaydet() çalışır ve uyarı kapanır
+  };
+  $('yedekUyariKapat').onclick = function () {
+    try { sessionStorage.setItem('bt_yedek_uyari_gizle', '1'); } catch (e) {}
+    $('yedekUyari').style.display = 'none';
+  };
+  yedekUyarisiniGoster();
+
+  /* ---------- Yönetici: Supabase bağlantı ayarları (bu cihazda kayıtlı) ---------- */
+  function supBaglantiGoster() {
+    var u = localStorage.getItem('bt_supabase_url') || '';
+    var a = localStorage.getItem('bt_supabase_anon') || '';
+    var not = $('supNot');
+    if (u && a) {
+      not.textContent = 'Şu an Supabase modu aktif (değerler bu cihaza kayıtlı). Bağlantıyı üstteki durum rozetinden izle.';
+    } else if (DEMO) {
+      not.textContent = 'URL + anon key girip kaydedersen çok cihazlı senkron açılır.';
+    } else {
+      not.textContent = 'Kod sabitlerindeki (panel.html / index.html) bağlantı kullanılıyor.';
+    }
+    $('supUrl').value = u;
+    $('supAnon').value = a;
+  }
+  $('supKaydetBtn').onclick = function () {
+    var u = $('supUrl').value.trim();
+    var a = $('supAnon').value.trim();
+    hataGoster($('supHata'), '');
+    bilgiGoster($('supBilgi'), '');
+    if (!/^https?:\/\/.+\..+/.test(u)) { hataGoster($('supHata'), 'Project URL geçerli değil (örn. https://xxxx.supabase.co).'); return; }
+    if (a.length < 20) { hataGoster($('supHata'), 'Anon public key çok kısa görünüyor — Supabase → Settings → API → anon public.'); return; }
+    localStorage.setItem('bt_supabase_url', u);
+    localStorage.setItem('bt_supabase_anon', a);
+    bilgiGoster($('supBilgi'), '✅ Kaydedildi. Supabase moduna geçiliyor, sayfa yenileniyor…');
+    setTimeout(function () { location.reload(); }, 700);
+  };
+  $('supTemizleBtn').onclick = function () {
+    if (!confirm('Bu cihazdaki Supabase bağlantı ayarları kaldırılsın mı?')) return;
+    localStorage.removeItem('bt_supabase_url');
+    localStorage.removeItem('bt_supabase_anon');
+    location.reload();
+  };
 
   function kampusSecenekleri(kampüsler, seciliId) {
     var h = '';
@@ -1784,6 +2810,7 @@
     oturumTemizle();
     oturum = null;
     $('cikisBtn').style.display = 'none';
+    $('ustOrta').innerHTML = ''; // oturum rozetlerini temizle → giriş ekranı sade kalsın
     gosterEkran('giris');
   }
 
@@ -2033,8 +3060,10 @@
   };
 
   function hepsineUygula(acik) {
-    return katalogGetir().then(function (katalog) {
-      var isler = katalog.map(function (e) { return API.atamaKaydet(oturum, e.id, acik, null, null); });
+    return katalogGetir('ogretmen').then(function (katalog) {
+      // Öğretmen araçları öğrencilere görünmediği için atama kaydı gerektirmez
+      var hedefler = katalog.filter(function (e) { return !(e.ozel && aracMi(e.ozel.secim)); });
+      var isler = hedefler.map(function (e) { return API.atamaKaydet(oturum, e.id, acik, null, null); });
       return Promise.all(isler);
     });
   }
@@ -2069,24 +3098,24 @@
     var konu = $('oeKonu').value.trim();
     if (!ad) { hataGoster($('oeHata'), 'Etkinlik adı girin.'); return; }
     if (!konu) { hataGoster($('oeHata'), 'Konu & Tema yazın.'); return; }
-    if (!oe.seviyeler.length) { hataGoster($('oeHata'), 'En az bir sınıf seviyesi seçin.'); return; }
+    if (!oe.secim.length) { hataGoster($('oeHata'), 'En az bir kullanım yeri seçin: Sınıf, IPT ve/veya Öğretmen Aracı.'); return; }
     var icerik = oeIcerik();
     if (!String(icerik || '').trim()) { hataGoster($('oeHata'), 'İçerik boş: dosya seçin, bağlantı girin ya da kod yapıştırın.'); return; }
     if (oe.tip === 'drive' && !/^https?:\/\//i.test(icerik)) { hataGoster($('oeHata'), 'Drive bağlantısı http(s) ile başlamalı.'); return; }
     hataGoster($('oeHata'), '');
     $('oeKaydetBtn').disabled = true;
-    API.ozelEtkinlikEkle(oturum, { ad: ad, konu: konu, seviyeler: oe.seviyeler.slice(), tip: oe.tip, icerik: icerik }).then(function () {
+    API.ozelEtkinlikEkle(oturum, { ad: ad, konu: konu, secim: oe.secim.slice(), tip: oe.tip, icerik: icerik }).then(function () {
       oeFormuTemizle();
-      bilgiGoster($('oeBilgi'), '✅ Etkinlik kaydedildi: ' + ad + ' — öğrencilerin "Etkinliklerim" listesinde görünür.');
+      bilgiGoster($('oeBilgi'), '📨 Etkinlik yönetici onayına gönderildi: ' + ad + ' — dosya ve bilgiler yalnız yöneticiye ulaştı. Onaylanınca tüm kampüslerdeki öğrencilerin listelerinde görünür.');
       ozelListeCiz();
-      setTimeout(function () { bilgiGoster($('oeBilgi'), ''); }, 4500);
+      setTimeout(function () { bilgiGoster($('oeBilgi'), ''); }, 6000);
     }).catch(function (e) {
       hataGoster($('oeHata'), e.message);
     }).finally(function () { $('oeKaydetBtn').disabled = false; });
   };
   $('oeOnizleBtn').onclick = function () {
     var icerik = oeIcerik();
-    if (oe.tip === 'drive') { alert('Drive bağlantısı önizlenemez; kaydedince öğrenciler yeni sekmede açar.'); return; }
+    if (oe.tip === 'drive') { alert('Drive bağlantısı önizlenemez; onaylanınca öğrenciler yeni sekmede açar.'); return; }
     if (!String(icerik || '').trim()) { hataGoster($('oeHata'), 'Önce HTML içeriği girin (dosya seçin ya da kod yapıştırın).'); return; }
     ozelOynatAc(($('oeAd').value.trim() || 'Önizleme'), icerik, 'kod');
   };
@@ -2101,7 +3130,6 @@
   };
 
   /* ---------- Başlangıç ---------- */
-  if (DEMO) $('demoBanner').style.display = '';
   var s = oturumOku();
   if (s && s.kullaniciAdi) {
     oturum = s;

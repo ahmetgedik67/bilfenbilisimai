@@ -30,20 +30,31 @@ create table if not exists profil (
   olusturma_tarihi timestamptz not null default now()
 );
 
--- ---------- Öğretmenin oluşturduğu özel etkinlikler (kampüs bazlı) ----------
+-- ---------- Öğretmenin oluşturduğu özel etkinlikler (onay akışı) ----------
+-- Akış: öğretmen yükler → durum 'bekliyor' (yalnız yönetici görür) → yönetici onaylar
+-- → durum 'onaylandi' (tüm kampüslerdeki öğrencilerin listelerine düşer) veya reddeder.
 -- tip: 'dosya' (HTML dosyası yüklendi) | 'kod' (kopyala-yapıştır) | 'drive' (bağlantı)
--- seviyeler: JSON dizi, ör. ["2","5"] → 2 IPT ve 5 IPT; ["1"] → 1. Sınıf
+-- seviyeler: JSON dizi, ör. ["s3","i5"] → 3. Sınıf + 5 IPT; ["s1","s4"] → 1. ve 4. sınıf;
+--            ["i2","i7"] → 2 IPT ve 7 IPT; ["arac"] → Öğretmen Aracı (öğrencilere görünmez).
+--            Eski sayı biçimi (["1"], ["3"]) uygulama tarafında çözülür: 1 → s1, 2..7 → i2..i7.
 create table if not exists ozel_etkinlik (
   id uuid primary key default gen_random_uuid(),
   campus_id uuid references campus(id) on delete cascade,
+  ogretmen_id uuid references profil(id) on delete set null,
+  ogretmen_ad text not null default '',
+  ogretmen_kullanici text not null default '',
   ad text not null,
   konu text not null default '',
   seviyeler text not null default '[]',
   tip text not null check (tip in ('dosya','drive','kod')),
   icerik text not null default '',
+  durum text not null default 'bekliyor' check (durum in ('bekliyor','onaylandi','reddedildi')),
+  red_nedeni text not null default '',
+  onay_tarihi timestamptz,
   olusturma_tarihi timestamptz not null default now()
 );
 create index if not exists ozel_etkinlik_campus_idx on ozel_etkinlik (campus_id);
+create index if not exists ozel_etkinlik_durum_idx on ozel_etkinlik (durum);
 
 -- ---------- Etkinlik atamaları (kampüs bazlı, öğretmen kontrolünde) ----------
 create table if not exists etkinlik_atama (
@@ -101,8 +112,21 @@ create policy "tamamlanan_public_all" on tamamlanan for all to anon using (true)
 create policy "ayar_public_all" on ayar for all to anon using (true) with check (true);
 create policy "ozel_etkinlik_public_all" on ozel_etkinlik for all to anon using (true) with check (true);
 
--- Not: Şemayı daha önce çalıştırdıysan yukarıdaki 'ayar' tablosu ve politikası için
--- aşağıdaki üç komutu da ayrıca çalıştırman yeterlidir (idempotent):
---   create table if not exists ayar (anahtar text primary key, deger text not null, guncelleme_tarihi timestamptz not null default now());
---   alter table ayar enable row level security;
---   create policy "ayar_public_all" on ayar for all to anon using (true) with check (true);
+-- ============================================================
+-- GÜNCELLEME: Şemayı daha önce çalıştırdıysan bu bölümü de çalıştır.
+-- Komutlar idempotenttir; her çalıştırmada güvenle yeniden RUN edilebilir.
+-- Not: durum default'u 'onaylandi' YALNIZCA eski (onay akışı öncesi) kayıtların
+-- yayında kalması içindir; yeni yüklemeler uygulama tarafından 'bekliyor' yazılır.
+-- ============================================================
+alter table ozel_etkinlik add column if not exists ogretmen_id uuid references profil(id) on delete set null;
+alter table ozel_etkinlik add column if not exists ogretmen_ad text not null default '';
+alter table ozel_etkinlik add column if not exists ogretmen_kullanici text not null default '';
+alter table ozel_etkinlik add column if not exists durum text not null default 'onaylandi';
+alter table ozel_etkinlik add column if not exists red_nedeni text not null default '';
+alter table ozel_etkinlik add column if not exists onay_tarihi timestamptz;
+create index if not exists ozel_etkinlik_durum_idx on ozel_etkinlik (durum);
+
+-- 'ayar' tablosu ve politikası (eski kurulumlar için eksikse tamamlar):
+create table if not exists ayar (anahtar text primary key, deger text not null, guncelleme_tarihi timestamptz not null default now());
+alter table ayar enable row level security;
+create policy if not exists "ayar_public_all" on ayar for all to anon using (true) with check (true);
