@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bilfen Bilişim AI – Panel</title>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -2034,13 +2034,11 @@
           var id = b.getAttribute('data-onayla');
           var o = ozeller.filter(function (x) { return x.id === id; })[0];
           if (!confirm('“' + (o ? o.ad : '') + '” adlı etkinliği onaylayıp tüm kampüslerde yayınlamak istiyor musun?')) return;
-          /* Görsel yoksa otomatik oluştur */
-          var gorselSözü = (o && o.gorsel) ? Promise.resolve(o.gorsel) : (o && o.icerik && o.tip !== 'drive' ? gorselOlustur(o.icerik) : Promise.resolve(''));
-          gorselSözü.then(function (gorsel) {
-            var islemler = [API.ozelOnayla(id)];
-            if (gorsel && o && !o.gorsel) islemler.push(sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id), { method: 'PATCH', body: { gorsel: gorsel } }));
-            return Promise.all(islemler);
-          }).then(function () {
+          /* Görsel yoksa anlık SVG oluştur */
+          var gorsel = (o && o.gorsel) ? o.gorsel : (o && o.tip !== 'drive' ? gorselOlustur(o.ad, o.tip, o.konu) : '');
+          var islemler = [API.ozelOnayla(id)];
+          if (gorsel && o && !o.gorsel) islemler.push(sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id), { method: 'PATCH', body: { gorsel: gorsel } }));
+          Promise.all(islemler).then(function () {
             bilgiGoster($('onayBilgi'), '✅ Onaylandı ve tüm kampüslerde yayınlandı.');
             etkinlikOnayCiz();
             setTimeout(function () { bilgiGoster($('onayBilgi'), ''); }, 3500);
@@ -2080,7 +2078,6 @@
   $('topluGorselBtn').onclick = async function () {
     var btn = $('topluGorselBtn');
     btn.disabled = true; btn.textContent = '⏳ Oluşturuluyor…';
-    if (typeof html2canvas === 'undefined') { bilgiGoster($('onayBilgi'), '⚠️ html2canvas yüklenemedi, sayfayı yenileyin.'); btn.disabled = false; btn.textContent = '📸 Tüm Görselleri Oluştur'; return; }
     var tumOzeller = await API.tumOzelEtkinlikler();
     var gorselsiz = tumOzeller.filter(function (o) { return !o.gorsel && o.tip !== 'drive'; });
     if (!gorselsiz.length) { btn.disabled = false; btn.textContent = '📸 Tüm Görselleri Oluştur'; bilgiGoster($('onayBilgi'), '✅ Tüm etkinliklerin görseli mevcut.'); setTimeout(function () { bilgiGoster($('onayBilgi'), ''); }, 3000); return; }
@@ -2089,11 +2086,9 @@
       var o = gorselsiz[i];
       btn.textContent = '⏳ ' + (i + 1) + '/' + gorselsiz.length + ' — ' + o.ad;
       try {
-        var gorsel = await gorselOlustur(o.icerik);
-        if (gorsel) {
-          await sb('ozel_etkinlik?id=eq.' + encodeURIComponent(o.id), { method: 'PATCH', body: { gorsel: gorsel } });
-          tamamlanan++;
-        }
+        var gorsel = gorselOlustur(o.ad, o.tip, o.konu);
+        await sb('ozel_etkinlik?id=eq.' + encodeURIComponent(o.id), { method: 'PATCH', body: { gorsel: gorsel } });
+        tamamlanan++;
       } catch (e) { /* atla */ }
     }
     btn.disabled = false; btn.textContent = '📸 Tüm Görselleri Oluştur';
@@ -3204,45 +3199,37 @@
     };
     oku.readAsDataURL(dosya);
   };
-  /* --- html2canvas ile görsel oluşturma yardımcı fonksiyonu --- */
-  function gorselOlustur(html) {
-    return new Promise(function (resolve) {
-      if (!html || typeof html2canvas === 'undefined') { resolve(''); return; }
-      try {
-        var gizliFrame = document.createElement('iframe');
-        gizliFrame.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;height:500px;border:none;z-index:-1';
-        gizliFrame.srcdoc = htmlSarmala(html);
-        document.body.appendChild(gizliFrame);
-        gizliFrame.onload = function () {
-          setTimeout(function () {
-            html2canvas(gizliFrame.contentDocument.body, { width: 800, height: 500, useCORS: true, allowTaint: true, scale: 1 }).then(function (canvas) {
-              resolve(canvas.toDataURL('image/jpeg', 0.7));
-            }).catch(function () { resolve(''); });
-            try { document.body.removeChild(gizliFrame); } catch (e) {}
-          }, 2000);
-        };
-        gizliFrame.onerror = function () { try { document.body.removeChild(gizliFrame); } catch (e) {} resolve(''); };
-      } catch (e) { resolve(''); }
-    });
+  /* --- SVG tabanlı görsel oluşturma (anlık, iframe gerektirmez) --- */
+  function gorselOlustur(ad, tip, konu) {
+    var ikonlar = { kod: '\u2702', dosya: '\uD83D\uDCC4', drive: '\uD83D\uDD17' };
+    var renkler = { kod: ['#6366f1','#8b5cf6'], dosya: ['#0ea5e9','#22d3ee'], drive: ['#10b981','#34d399'] };
+    var ikon = ikonlar[tip] || '\u2702';
+    var r = renkler[tip] || renkler.kod;
+    var kisaAd = (ad || 'Etkinlik').substring(0, 30);
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250">' +
+      '<defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '<stop offset="0%" stop-color="' + r[0] + '"/>' +
+      '<stop offset="100%" stop-color="' + r[1] + '"/>' +
+      '</linearGradient></defs>' +
+      '<rect width="400" height="250" rx="16" fill="url(#g)"/>' +
+      '<text x="200" y="95" text-anchor="middle" font-size="48">' + ikon + '</text>' +
+      '<text x="200" y="150" text-anchor="middle" font-size="22" font-weight="bold" fill="white" font-family="system-ui,sans-serif">' +
+      kisaAd.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</text>' +
+      '<text x="200" y="185" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.8)" font-family="system-ui,sans-serif">' +
+      (konu || '').substring(0,40).replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</text>' +
+      '<rect x="140" y="205" width="120" height="30" rx="15" fill="rgba(255,255,255,0.25)"/>' +
+      '<text x="200" y="226" text-anchor="middle" font-size="13" fill="white" font-family="system-ui,sans-serif">\u25B6 Oyna</text>' +
+      '</svg>';
+    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
   }
-  /* --- Manuel screenshot butonu --- */
+  /* --- Manuel görsel butonu --- */
   $('oeOtoGorsel').onclick = function () {
-    var icerik = oeIcerik();
-    if (!String(icerik || '').trim()) { hataGoster($('oeHata'), 'Önce HTML içeriği girin.'); return; }
-    if (oe.tip === 'drive') { hataGoster($('oeHata'), 'Drive bağlantısı için screenshot alınamaz.'); return; }
-    var btn = $('oeOtoGorsel');
-    btn.disabled = true; btn.textContent = '⏳ Alınıyor…';
-    gorselOlustur(icerik).then(function (dataUrl) {
-      if (dataUrl) {
-        oe.gorsel = dataUrl;
-        $('oeGorselOnizle').src = dataUrl;
-        $('oeGorselOnizle').style.display = '';
-        $('oeGorselDurum').textContent = '✅ Görsel oluşturuldu';
-      } else {
-        $('oeGorselDurum').textContent = '⚠️ Oluşturulamadı';
-      }
-      btn.disabled = false; btn.textContent = '📸 Oluştur';
-    });
+    var ad = $('oeAd').value.trim() || 'Etkinlik';
+    var konu = $('oeKonu').value.trim();
+    oe.gorsel = gorselOlustur(ad, oe.tip, konu);
+    $('oeGorselOnizle').src = oe.gorsel;
+    $('oeGorselOnizle').style.display = '';
+    $('oeGorselDurum').textContent = '✅ Görsel oluşturuldu';
   };
   /* --- Kaydet (otomatik görsel oluşturarak) --- */
   $('oeKaydetBtn').onclick = function () {
@@ -3256,11 +3243,9 @@
     if (oe.tip === 'drive' && !/^https?:\/\//i.test(icerik)) { hataGoster($('oeHata'), 'Drive bağlantısı http(s) ile başlamalı.'); return; }
     hataGoster($('oeHata'), '');
     $('oeKaydetBtn').disabled = true;
-    /* Otomatik görsel: eğer öğretmen manuel yüklemediyse html2canvas ile oluştur */
-    var gorselSözü = oe.gorsel ? Promise.resolve(oe.gorsel) : gorselOlustur(icerik);
-    gorselSözü.then(function (gorsel) {
-      return API.ozelEtkinlikEkle(oturum, { ad: ad, konu: konu, secim: oe.secim.slice(), tip: oe.tip, icerik: icerik, gorsel: gorsel || '' });
-    }).then(function () {
+    /* Otomatik görsel: manuel seçilmediyse anlık SVG oluştur */
+    if (!oe.gorsel) oe.gorsel = gorselOlustur(ad, oe.tip, konu);
+    API.ozelEtkinlikEkle(oturum, { ad: ad, konu: konu, secim: oe.secim.slice(), tip: oe.tip, icerik: icerik, gorsel: oe.gorsel }).then(function () {
       oeFormuTemizle();
       bilgiGoster($('oeBilgi'), '📨 Etkinlik yönetici onayına gönderildi: ' + ad);
       ozelListeCiz();
