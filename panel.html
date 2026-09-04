@@ -1635,11 +1635,18 @@
     return $('oeDrive').value.trim();
   }
 
+  /** Kod veya dosya icerigini gerekliyse tam bir HTML belgesine sarar. */
+  function htmlSarmala(kod) {
+    if (!kod) return '';
+    var k = kod.trim();
+    if (/<!doctype\s+html>/i.test(k) || /<html[\s>]/i.test(k)) return k;
+    return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>' + k + '</body></html>';
+  }
   function ozelOynatAc(ad, icerik, tip) {
     if (tip === 'drive') { window.open(icerik, '_blank'); return; }
     $('oeOynatAd').textContent = ad;
     var cerceve = $('oeOynatCerceve');
-    cerceve.srcdoc = icerik || '';
+    cerceve.srcdoc = htmlSarmala(icerik);
     $('oeOynat').classList.add('acik');
     document.body.style.overflow = 'hidden';
   }

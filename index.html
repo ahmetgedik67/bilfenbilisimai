@@ -1057,14 +1057,33 @@
   }
 
   /* ---------- Oynatma penceresi ---------- */
+  /** Kod veya dosya icerigini gerekliyse tam bir HTML belgesine sarar. */
+  function htmlSarmala(kod) {
+    if (!kod) return '';
+    var k = kod.trim();
+    if (/<!doctype\s+html>/i.test(k) || /<html[\s>]/i.test(k)) return k;
+    return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>' + k + '</body></html>';
+  }
   function oynat(oyun) {
     /* Öğretmen araçları giriş/atama kapısına takılmaz: herkese her zaman açıktır. */
     etkinlikAcikMi(oyun.id, !!oyun.ogretmen).then(function (sonuc) {
       if (!sonuc.ok) { alert(sonuc.msg); return; }
       $('oyunAdi').textContent = oyun.ad;
-      $('yeniSekme').href = oyun.url;
       const cerceve = $('oyunCerceve');
-      cerceve.src = oyun.url;
+      if (oyun.ozel && (oyun.ozelTip === 'kod' || oyun.ozelTip === 'dosya') && oyun.ozelIcerik) {
+        /* Kod/dosya etkinlikleri: srcdoc ile tam HTML olarak ac (url null) */
+        $('yeniSekme').href = '';
+        cerceve.removeAttribute('src');
+        cerceve.srcdoc = htmlSarmala(oyun.ozelIcerik);
+      } else if (oyun.ozel && oyun.ozelTip === 'drive' && oyun.ozelIcerik) {
+        /* Drive baglantisi: yeni sekmede ac */
+        window.open(oyun.ozelIcerik, '_blank');
+        return;
+      } else {
+        /* Dahili oyunlar: src ile ac */
+        $('yeniSekme').href = oyun.url;
+        cerceve.src = oyun.url;
+      }
       $('pencere').classList.add('acik');
       document.body.style.overflow = 'hidden';
     });
@@ -1072,6 +1091,7 @@
   function kapat() {
     $('pencere').classList.remove('acik');
     $('oyunCerceve').src = 'about:blank';
+    $('oyunCerceve').srcdoc = '';
     document.body.style.overflow = '';
   }
   $('pencereKapat').onclick = kapat;
