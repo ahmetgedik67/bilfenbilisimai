@@ -1101,7 +1101,10 @@
       const cerceve = $('oyunCerceve');
       if (oyun.ozel && (oyun.ozelTip === 'kod' || oyun.ozelTip === 'dosya') && oyun.ozelIcerik) {
         /* Kod/dosya etkinlikleri: srcdoc ile tam HTML olarak ac (url null) */
-        $('yeniSekme').href = '';
+        var _blob = new Blob([htmlSarmala(oyun.ozelIcerik)], { type: 'text/html' });
+        var _blobUrl = URL.createObjectURL(_blob);
+        $('yeniSekme').href = _blobUrl;
+        $('yeniSekme').target = '_blank';
         cerceve.removeAttribute('src');
         cerceve.srcdoc = htmlSarmala(oyun.ozelIcerik);
       } else if (oyun.ozel && oyun.ozelTip === 'drive' && oyun.ozelIcerik) {
@@ -1121,6 +1124,7 @@
     $('pencere').classList.remove('acik');
     $('oyunCerceve').src = 'about:blank';
     $('oyunCerceve').srcdoc = '';
+    $('yeniSekme').href = '#';
     document.body.style.overflow = '';
   }
   $('pencereKapat').onclick = kapat;
