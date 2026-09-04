@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bilfen Bilişim AI — Öğretmen Kullanım Kılavuzu</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  :root {
+    --primary: #6366f1;
+    --primary-light: #818cf8;
+    --primary-bg: #eef2ff;
+    --success: #10b981;
+    --success-bg: #ecfdf5;
+    --warning: #f59e0b;
+    --warning-bg: #fffbeb;
+    --danger: #ef4444;
+    --danger-bg: #fef2f2;
+    --info: #3b82f6;
+    --info-bg: #eff6ff;
+    --text: #1e293b;
+    --text-secondary: #64748b;
+    --border: #e2e8f0;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  @media print {
+    body { background: white; font-size: 12px; }
+    .page-break { page-break-before: always; }
+    .no-print { display: none !important; }
+    .cover { min-height: auto; padding: 40px 20px !important; }
+    .toc { page-break-after: always; }
+    section { page-break-inside: avoid; }
+  }
+
+  /* Cover */
+  .cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+    color: white;
+    text-align: center;
+    padding: 40px;
+    border-radius: 0;
+  }
+  .cover-icon { font-size: 80px; margin-bottom: 20px; }
+  .cover h1 { font-size: 42px; font-weight: 900; margin-bottom: 8px; letter-spacing: -1px; }
+  .cover h2 { font-size: 22px; font-weight: 500; opacity: 0.9; margin-bottom: 30px; }
+  .cover .subtitle {
+    font-size: 16px; opacity: 0.8; max-width: 600px; line-height: 1.8;
+    background: rgba(255,255,255,0.15); border-radius: 16px; padding: 20px 30px;
+    backdrop-filter: blur(10px);
+  }
+  .cover .version {
+    margin-top: 30px; font-size: 13px; opacity: 0.6;
+  }
+
+  /* TOC */
+  .toc {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+  .toc h2 {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 30px;
+    color: var(--primary);
+  }
+  .toc-list {
+    list-style: none;
+    counter-reset: toc-counter;
+  }
+  .toc-list li {
+    counter-increment: toc-counter;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 16px;
+    font-weight: 500;
+  }
+  .toc-list li::before {
+    content: counter(toc-counter);
+    background: var(--primary);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .toc-emoji { font-size: 20px; flex-shrink: 0; }
+
+  /* Content */
+  .content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px;
+  }
+
+  section {
+    margin-bottom: 50px;
+  }
+
+  section > h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 3px solid var(--primary);
+    padding-bottom: 12px;
+  }
+  section > h2 .num {
+    background: var(--primary);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 24px 0 10px;
+  }
+
+  h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 16px 0 6px;
+    color: var(--text-secondary);
+  }
+
+  p { margin-bottom: 12px; }
+
+  /* Step boxes */
+  .steps {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0;
+  }
+  .step {
+    display: flex;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    background: var(--primary);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-text { flex: 1; }
+  .step-text strong { color: var(--primary); }
+
+  /* Callout boxes */
+  .callout {
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .callout-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .callout-info { background: var(--info-bg); border-left: 4px solid var(--info); }
+  .callout-success { background: var(--success-bg); border-left: 4px solid var(--success); }
+  .callout-warning { background: var(--warning-bg); border-left: 4px solid var(--warning); }
+  .callout-danger { background: var(--danger-bg); border-left: 4px solid var(--danger); }
+  .callout-title { font-weight: 700; margin-bottom: 4px; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  th {
+    background: var(--primary);
+    color: white;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f1f5f9; }
+
+  /* Code blocks */
+  code {
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    color: var(--danger);
+  }
+  pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 16px 20px;
+    border-radius: 12px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  pre code { background: none; color: inherit; padding: 0; }
+
+  /* Feature cards */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .feature-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .feature-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .feature-card .icon { font-size: 36px; margin-bottom: 8px; }
+  .feature-card h4 { font-size: 15px; font-weight: 700; color: var(--text); margin: 0 0 6px; }
+  .feature-card p { font-size: 13px; color: var(--text-secondary); margin: 0; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-blue { background: #dbeafe; color: #1d4ed8; }
+  .badge-green { background: #d1fae5; color: #065f46; }
+  .badge-yellow { background: #fef3c7; color: #92400e; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .badge-purple { background: #ede9fe; color: #5b21b6; }
+
+  /* Login box mockup */
+  .mockup {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 30px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .mockup-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+  .mockup-field {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 8px auto;
+    max-width: 300px;
+    text-align: left;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .mockup-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 30px;
+    font-size: 15px;
+    font-weight: 700;
+    margin-top: 12px;
+    cursor: pointer;
+  }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+    padding: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .flow-item {
+    background: var(--primary-bg);
+    border: 2px solid var(--primary-light);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: 13px;
+    text-align: center;
+    min-width: 100px;
+  }
+  .flow-arrow { font-size: 20px; color: var(--primary); }
+
+  /* Print button */
+  .print-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 28px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .print-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(99,102,241,0.5); }
+
+  /* Screen image placeholders */
+  .screen-placeholder {
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    border: 2px dashed var(--primary-light);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    margin: 12px 0;
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  ul, ol { padding-left: 24px; margin: 8px 0 12px; }
+  li { margin-bottom: 6px; }
+
+  .highlight { background: #fef08a; padding: 1px 4px; border-radius: 4px; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .content { padding: 20px; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .cover h1 { font-size: 28px; }
+    section > h2 { font-size: 20px; }
+    .flow { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== KAPAK ==================== -->
+<div class="cover">
+  <div class="cover-icon">🤖</div>
+  <h1>BİLFEN BİLİŞİM AI</h1>
+  <h2>Öğretmen Kullanım Kılavuzu</h2>
+  <div class="subtitle">
+    Bu kılavuz, Bilfen Bilişim AI platformunu öğretmenlerin nasıl kullanacağını adım adım anlatır.<br>
+    Öğrenci ekleme, etkinlik oluşturma, takip ve yedekleme dahil her şey bu belgede.
+  </div>
+  <div class="version">📅 Eylül 2026 · Versiyon 2.0 · Supabase Bulut Bağlantılı</div>
+</div>
+
+<!-- ==================== İÇİNDEKİLER ==================== -->
+<div class="toc page-break">
+  <h2>📋 İçindekiler</h2>
+  <ul class="toc-list">
+    <li><span class="toc-emoji">👋</span> Sisteme Genel Bakış ve Hoş Geldiniz</li>
+    <li><span class="toc-emoji">🔐</span> Sisteme Giriş Yapma</li>
+    <li><span class="toc-emoji">🌐</span> Öğrenci Portalı (Ana Sayfa)</li>
+    <li><span class="toc-emoji">👩‍🏫</span> Öğretmen Paneli — Genel Görünüm</li>
+    <li><span class="toc-emoji">👨‍🎓</span> Öğrenci Ekleme (Tek Tek ve Toplu CSV)</li>
+    <li><span class="toc-emoji">✍️</span> Etkinlik Oluşturma (Kod, Dosya, Drive)</li>
+    <li><span class="toc-emoji">🎮</span> Etkinlik Yönetimi ve Yayına Alma</li>
+    <li><span class="toc-emoji">✅</span> Yönetici Onay Akışı</li>
+    <li><span class="toc-emoji">📊</span> Öğrenci Takibi ve Raporlama</li>
+    <li><span class="toc-emoji">💾</span> Veri Yedeği ve Geri Yükleme</li>
+    <li><span class="toc-emoji">❓</span> Sıkça Sorulan Sorular (SSS)</li>
+  </ul>
+</div>
+
+<!-- ==================== İÇERİK ==================== -->
+<div class="content">
+
+<!-- ==================== BÖLÜM 1 ==================== -->
+<section>
+  <h2><span class="num">1</span> 👋 Sisteme Genel Bakış</h2>
+
+  <p><strong>Bilfen Bilişim AI</strong>, bilişim teknolojileri ve yazılım dersi için hazırlanmış bir etkinlik platformudur. Öğretmenler etkinlik oluşturur, yönetici onaylardan sonra etkinlikler öğrencilerin listesine düşer.</p>
+
+  <h3>🏗️ Platformun Temel Özellikleri</h3>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="icon">☁️</div>
+      <h4>Bulut Tabanlı</h4>
+      <p>Veriler Supabase bulutunda saklanır. Her cihazdan erişim.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">✍️</div>
+      <h4>Etkinlik Oluşturma</h4>
+      <p>Kod yapıştırın, HTML dosyası yükleyin veya Google Drive bağlantısı paylaşın.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">✅</div>
+      <h4>Onay Akışı</h4>
+      <p>Etkinlikler yönetici onayından sonra yayınlanır.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📊</div>
+      <h4>Takip ve Rapor</h4>
+      <p>Hangi öğrenci hangi etkinliği tamamladı — anlık görün.</p>
+    </div>
+  </div>
+
+  <h3>👥 Kullanıcı Rollerı</h3>
+  <table>
+    <tr>
+      <th>Rol</th>
+      <th>Görevi</th>
+      <th>Giriş</th>
+    </tr>
+    <tr>
+      <td><span class="badge badge-red">🛡️ Yönetici</span></td>
+      <td>Kampüs/öğretmen/öğrenci ekleme, etkinlik onayı, tam yetki</td>
+      <td><code>@admin</code> + yönetici şifresi</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-blue">👩‍🏫 Öğretmen</span></td>
+      <td>Öğrenci ekleme, etkinlik oluşturma, kendi kampüsünü yönetme</td>
+      <td>Kendi kullanıcı adı + şifresi</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-green">👨‍🎓 Öğrenci</span></td>
+      <td>Etkinlikleri görme ve oynama</td>
+      <td>Kendi kullanıcı adı + şifresi</td>
+    </tr>
+  </table>
+
+  <div class="callout callout-info">
+    <span class="callout-icon">💡</span>
+    <div>
+      <div class="callout-title">Bilgi</div>
+      <p style="margin:0">Platform internet bağlantısı olmadan da çalışır (çevrimdışı). Ancak veriler cihazlarda farklı kalır. Tüm cihazların senkronize olması için Supabase bağlantısı önerilir.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== BÖLÜM 2 ==================== -->
+<section class="page-break">
+  <h2><span class="num">2</span> 🔐 Sisteme Giriş Yapma</h2>
+
+  <h3>Adım 1: Adrese gidin</h3>
+  <p>Tarayıcınızın adres çubuğuna şu adresi yazın:</p>
+  <pre><code>https://ahmetgedik67.github.io/bilfenbilisimai/panel.html</code></pre>
+
+  <h3>Adım 2: Giriş bilgilerinizi girin</h3>
+  <div class="mockup">
+    <div class="mockup-label">🔐 Giriş Yap</div>
+    <div class="mockup-field">👤 Kullanıcı adı: <strong>@Ahmet</strong></div>
+    <div class="mockup-field">🔒 Şifre: <strong>••••</strong></div>
+    <div class="mockup-btn">Giriş Yap</div>
+    <p style="margin-top:12px;font-size:13px;color:#64748b">
+      🛡️ Sistem yöneticisi: <code>@admin</code> kullanıcı adıyla giriş yapabilir.
+    </p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>Kullanıcı adı</strong> alanına size verilen kullanıcı adınızı yazın (örn. <code>@Ahmet</code>)</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>Şifre</strong> alanına şifrenizi yazın</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text"><strong>Giriş Yap</strong> butonuna tıklayın</div>
+    </div>
+  </div>
+
+  <div class="callout callout-success">
+    <span class="callout-icon">✅</span>
+    <div>
+      <div class="callout-title">Başarılı Giriş</div>
+      <p style="margin:0">Giriş yaptıktan sonra üstte <strong style="color:#10b981">🟢 Supabase bağlantısı tamam</strong> yazısını görmelisiniz. Bu, verilerinizin bulutta güvende olduğu anlamına gelir.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-warning">
+    <span class="callout-icon">⚠️</span>
+    <div>
+      <div class="callout-title">Şifremi Unuttum</div>
+      <p style="margin:0">Şifrenizi bilmiyorsanız yöneticinize (<code>@admin</code>) başvurun. Yönetici panelinden şifrenizi sıfırlayabilir.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== BÖLÜM 3 ==================== -->
+<section class="page-break">
+  <h2><span class="num">3</span> 🌐 Öğrenci Portalı (Ana Sayfa)</h2>
+
+  <p>Öğrenci portalı, öğrencilerin etkinlikleri gördüğü ve oynadığı sayfadır. Adres:</p>
+  <pre><code>https://ahmetgedik67.github.io/bilfenbilisimai/index.html</code></pre>
+
+  <h3>📐 Sayfa Düzeni</h3>
+
+  <div class="mockup">
+    <div class="mockup-label">BİLFEN BİLİŞİM AI</div>
+    <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:12px 0">
+      <span class="badge badge-blue">1</span>
+      <span class="badge badge-blue">2</span>
+      <span class="badge badge-blue">3</span>
+      <span class="badge badge-blue">4</span>
+      <span class="badge badge-blue">5</span>
+      <span class="badge badge-blue">6</span>
+      <span class="badge badge-blue">7</span>
+      <span class="badge badge-purple">🗂️ IPT</span>
+      <span class="badge badge-purple">👩‍🏫 Öğretmen</span>
+    </div>
+    <div style="border:2px dashed #c7d2fe;border-radius:12px;padding:20px;margin:8px 0;background:white">
+      <div style="font-size:24px;margin-bottom:8px">🎯 <strong>2. Sınıf — Bilişim Etkinlikleri</strong></div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;text-align:left">
+        <strong>Yıldız Avcısı</strong> <span class="badge badge-yellow">2 IPT</span><br>
+        <span style="color:#64748b;font-size:13px">Eğlenceli Mouse Kullanma Etkinliği</span><br>
+        <span class="badge badge-green">▶ Oyna</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>🔢 Sınıf Numaraları (1-7)</h3>
+  <p>Üstteki <strong>1, 2, 3, 4, 5, 6, 7</strong> butonlarına tıklayarak o sınıfa ait etkinlikleri görebilirsiniz.</p>
+
+  <h3>🗂️ IPT Kategorisi</h3>
+  <p><strong>IPT</strong> açılır menüsüne tıklayarak <strong>2 IPT'den 7 IPT'ye</strong> kadar olan kategorilerdeki etkinlikleri filtreleyebilirsiniz.</p>
+
+  <h3>👩‍🏫 Öğretmen Bölümü</h3>
+  <p><strong>Öğretmen</strong> butonuna tıklayarak öğretmenlerin tahtada kullandığı araçları (örn. Çarkıfelek) görebilirsiniz.</p>
+
+  <h3>▶ Oyna</h3>
+  <p>Her etkinlik kartında bir <strong>▶ Oyna</strong> butonu vardır. Tıklandığında etkinlik tam ekran olarak açılır.</p>
+
+  <div class="callout callout-info">
+    <span class="callout-icon">💡</span>
+    <div>
+      <div class="callout-title">Öğrenci Girişi</div>
+      <p style="margin:0">Öğrenciler portala giriş yapabilir. Giriş yaptıktan sonra adları, puanları ve tamamladıkları etkinlikler üstte görünür. Profil rozetleri ve "Etkinliklerim" listesi de giriş sonrası görünür.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== BÖLÜM 4 ==================== -->
+<section class="page-break">
+  <h2><span class="num">4</span> 👩‍🏫 Öğretmen Paneli</h2>
+
+  <p>Öğretmen olarak giriş yaptıktan sonra aşağıdaki sekmeleri görürsünüz:</p>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="icon">👨‍🎓</div>
+      <h4>Öğrencilerim</h4>
+      <p>Kampüsünüzdeki öğrencileri görüntüleme ve yeni öğrenci ekleme</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🎮</div>
+      <h4>Etkinlik Yönetimi</h4>
+      <p>Hangi etkinlikler aktif, hangileri kapalı — kontrol paneli</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">✍️</div>
+      <h4>Etkinlik Oluştur</h4>
+      <p>Yeni özel etkinlik oluştur (kod, dosya veya drive)</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📊</div>
+      <h4>Kampüs Raporu</h4>
+      <p>Öğrenci tamamlama istatistikleri</p>
+    </div>
+  </div>
+
+  <h3>📊 Sayfanın Üst Kısmı — Durum Çubuğu</h3>
+  <div class="callout callout-success">
+    <span class="callout-icon">🟢</span>
+    <div>
+      <div class="callout-title">Bağlantı Durumu</div>
+      <p style="margin:0"><strong>🟢 Supabase bağlantısı tamam — 6 tablo erişilebilir, çok cihazlı senkron açık.</strong><br>
+      Bu yazı görünüyorsa her şey yolunda. Verileriniz bulutta güvende.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== BÖLÜM 5 ==================== -->
+<section class="page-break">
+  <h2><span class="num">5</span> 👨‍🎓 Öğrenci Ekleme</h2>
+
+  <p>İki şekilde öğrenci ekleyebilirsiniz: <strong>tek tek</strong> veya <strong>toplu CSV dosyası ile</strong>.</p>
+
+  <!-- Tek tek -->
+  <h3>📝 Yöntem 1: Tek Tek Öğrenci Ekleme</h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">Öğretmen panelinde <strong>👨‍🎓 Öğrencilerim</strong> sekmesine tıklayın</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>➕ Öğrenci Ekle</strong> formunu doldurun:</div>
+    </div>
+  </div>
+
+  <table>
+    <tr>
+      <th>Alan</th>
+      <th>Açıklama</th>
+      <th>Örnek</th>
+    </tr>
+    <tr>
+      <td><strong>Adı soyadı</strong></td>
+      <td>Öğrencinin tam adı</td>
+      <td><code>Ali Yılmaz</code></td>
+    </tr>
+    <tr>
+      <td><strong>Kullanıcı adı</strong></td>
+      <td>Giriş yaparken kullanılacak benzersiz ad</td>
+      <td><code>@ali.yilmaz</code></td>
+    </tr>
+    <tr>
+      <td><strong>Şifre</strong></td>
+      <td>Öğrencinin giriş şifresi</td>
+      <td><code>1234</code></td>
+    </tr>
+  </table>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text"><strong>Öğrenciyi Ekle</strong> butonuna tıklayın</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text">Öğrenci listesinde göründüğünü doğrulayın ✅</div>
+    </div>
+  </div>
+
+  <div class="callout callout-warning">
+    <span class="callout-icon">⚠️</span>
+    <div>
+      <div class="callout-title">Önemli</div>
+      <p style="margin:0">Kullanıcı adı <strong>benzersiz</strong> olmalıdır. Başka bir öğrencinin kullanıcı adıyla aynı olamaz. Kullanıcı adının başına <code>@</code> işareti koymanız önerilir.</p>
+    </div>
+  </div>
+
+  <!-- Toplu ekleme -->
+  <h3>📄 Yöntem 2: Toplu Öğrenci Ekleme (CSV)</h3>
+
+  <p>Çok sayıda öğrenciyi aynı anda eklemek için CSV dosyası kullanabilirsiniz.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>📥 Örnek CSV İndir</strong> butonuna tıklayarak şablonu indirin</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">Açılan Excel/Notepad dosyasını doldurun. Format:</div>
+    </div>
+  </div>
+
+  <pre><code>Ad;Kullanıcı adı;Şifre
+Ali Yılmaz;@ali.yilmaz;1234
+Ayşe Demir;@ayse.demir;5678
+Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
+
+  <div class="callout callout-info">
+    <span class="callout-icon">💡</span>
+    <div>
+      <div class="callout-title">CSV Formatı Hakkında</div>
+      <p style="margin:0">
+        • Ayraç olarak <strong>noktalı virgül (;)</strong> veya <strong>virgül (,)</strong> kullanabilirsiniz<br>
+        • <strong>Başlık satırı</strong> isteğeobağıdır (ilk satır "Ad;Kullanıcı adı;Şifre" olabilir)<br>
+        • Boş satırlar otomatik atlanır
+      </p>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text"><strong>📂 CSV Dosyası Seç</strong> butonuna tıklayın ve dosyayı seçin</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text">"<strong>Şifresi boş satırlara otomatik şifre üret</strong>" seçeneğini işaretleyebilirsiniz (opsiyonel)</div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-text">Ekleme sonuçlarını kontrol edin — başarılı ve başarısız sayıları gösterilir</div>
+    </div>
+  </div>
+
+  <h3>🔑 Öğrenci Şifrelerini Sıfırlama</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">Öğrenci listesinde ilgili satırda <strong>🔑</strong> butonuna tıklayın</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">Yeni şifreyi girin ve onaylayın</div>
+    </div>
+  </div>
+
+  <h3>🗑️ Öğrenci Silme</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">İlgili satırda <strong>🗑</strong> butonuna tıklayın</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">Onay penceresinde <strong>Evet</strong> diyerek silmeyi onaylayın</div>
+    </div>
+  </div>
+
+  <div class="callout callout-danger">
+    <span class="callout-icon">🚨</span>
+    <div>
+      <div class="callout-title">Dikkat!</div>
+      <p style="margin:0">Öğrenci silindiğinde <strong>tamamlanan etkinlikleri de silinir</strong>. Bu işlem geri alınamaz. Silmeden önce veri yedeği almanız önerilir.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== BÖLÜM 6 ==================== -->
+<section class="page-break">
+  <h2><span class="num">6</span> ✍️ Etkinlik Oluşturma</h2>
+
+  <p>Öğretmenler kendi etkinliklerini oluşturabilir. 3 farklı kaynak desteği vardır:</p>
+
+  <table>
+    <tr>
+      <th>Kaynak Tipi</th>
+      <th>Açıklama</th>
+      <th>Kim Kullanır</th>
+    </tr>
+    <tr>
+      <td><span class="badge badge-purple">✂️ Kod</span></td>
+      <td>HTML/CSS/JS kodunu doğrudan yapıştırın</td>
+      <td>Web geliştirme bilen öğretmenler</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-blue">📄 HTML Dosyası</span></td>
+      <td> Hazır HTML dosyası bilgisayardan yüklenir</td>
+      <td>Önceden hazırlanmış etkinlikler</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-green">🔗 Drive</span></td>
+      <td>Google Drive veya başka bir bağlantı</td>
+      <td>Çevrimdışı olmayan etkinlikler</td>
+    </tr>
+  </table>
+
+  <h3>✍️ Adım Adım Etkinlik Oluşturma</h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>✍️ Etkinlik Oluştur</strong> sekmesine tıklayın</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>Etkinlik adı</strong> girin (örn. "Yıldız Avcısı")</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text"><strong>Konu & Tema</strong> girin (örn. "Mouse Kullanma ve Dikkat")</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text"><strong>Kullanım yeri</strong> seçin — en az bir tane seçmelisiniz:
+        <br>• <span class="badge badge-blue">1-7. Sınıf</span> — İlgili sınıfta görünür
+        <br>• <span class="badge badge-purple">2-7 IPT</span> — İlgili IPT kategorisinde görünür
+        <br>• <span class="badge badge-green">👩‍🏫 Öğretmen Aracı</span> — Yalnız öğretmen tahtasında kullanır
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-text"><strong>Kaynak tipi</strong> seçin:
+        <br>• <strong>✏️ Kod</strong> → HTML kodunu yapıştırın
+        <br>• <strong>📄 Dosya</strong> → "Dosya Seç" ile HTML dosyası yükleyin
+        <br>• <strong>🔗 Drive</strong> → Google Drive bağlantısı yapıştırın
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-text"><strong>👁 Önizle</strong> butonuyla nasıl göründüğünü kontrol edin (opsiyonel)</div>
+    </div>
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-text"><strong>💾 Etkinliği Kaydet</strong> butonuna tıklayın</div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-item">👩‍🏫 Öğretmen<br>Kaydeder</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item">⏳ Yönetici<br>Onayı Bekler</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item">✅ Yönetici<br>Onaylar</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item">🌐 Tüm<br>Öğrencilere<br>Düşer</div>
+  </div>
+
+  <div class="callout callout-warning">
+    <span class="callout-icon">⚠️</span>
+    <div>
+      <div class="callout-title">Onay Akışı</div>
+      <p style="margin:0">Etkinliği kaydettiğinizde <strong>yoneticinin onayına gider</strong>. Onaylanmadan öğrenciler etkinliği göremez. Onay durumunu "🗂️ Oluşturduğum Etkinlikler" sekmesinden takip edebilirsiniz.</p>
+    </div>
+  </div>
+
+  <h3>✂️ Kod Tipi Etkinlik İçin İpuçları</h3>
+  <div class="callout callout-success">
+    <span class="callout-icon">💡</span>
+    <div>
+      <div class="callout-title">Nasıl Kod Yapıştırılır?</div>
+      <p style="margin:0">
+        Tam bir HTML sayfası yapıştırabilirsiniz (<code>&lt;!DOCTYPE html&gt;</code> ile başlayan).<br>
+        Ya da sadece HTML gövdesini yapıştırabilirsiniz — sistem otomatik olarak tam bir HTML belgesine saracaktır.<br><br>
+        <strong>Örnek minimum kod:</strong>
+      </p>
+      <pre><code>&lt;h1&gt;Merhaba Dünya!&lt;/h1&gt;
+&lt;p style="color:blue"&gt;Bu benim etkinliğim.&lt;/p&gt;</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== BÖLÜM 7 ==================== -->
+<section class="page-break">
+  <h2><span class="num">7</span> 🎮 Etkinlik Yönetimi</h2>
+
+  <p><strong>🎮 Etkinlik Yönetimi</strong> sekmesi, mevcut tüm etkinlikleri看到ür ve quản.</p>
+
+  <h3>📂 Etkinlik Kategorileri</h3>
+  <table>
+    <tr>
+      <th>Sekme</th>
+      <th>Ne Görürsünüz</th>
+      <th>Ne Yapabilirsiniz</th>
+    </tr>
+    <tr>
+      <td><strong>📋 Tüm Etkinlikler</strong></td>
+      <td>Sistemdeki tüm etkinlikler</td>
+      <td>Görüntüleme, arama</td>
+    </tr>
+    <tr>
+      <td><strong>✅ Aktif Etkinlikler</strong></td>
+      <td>Öğrencilere açık olanlar</td>
+      <td>Kapatma (devre dışı bırakma)</td>
+    </tr>
+    <tr>
+      <td><strong>🗂️ Oluşturduğum Etkinlikler</strong></td>
+      <td>Sizin oluşturduğunuz özel etkinlikler</td>
+      <td>Düzenleme, silme, durum takibi</td>
+    </tr>
+    <tr>
+      <td><strong>⏳ Bekleyenler</strong></td>
+      <td>Yönetici onayı bekleyenler</td>
+      <td>Durum takibi</td>
+    </tr>
+  </table>
+
+  <h3>🔒 Etkinliği Kapatma / Açma</h3>
+  <p>Onaylanmış bir etkinliği ihtiyacınız olmadığında kapatabilirsiniz:</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>🎮 Etkinlik Yönetimi</strong> sekmesine gidin</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>✅ Aktif Etkinlikler</strong> alt sekmesine tıklayın</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">Kapatmak istediğiniz etkinliğin yanındaki <strong>🔴 Kapat</strong> butonuna tıklayın</div>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <span class="callout-icon">💡</span>
+    <div>
+      <div class="callout-title">Kapatma Ne Demek?</div>
+      <p style="margin:0">Etkinliği kapattığınızda <strong>öğrenciler o etkinliği göremez</strong>, ancak etkinlik silinmez. İhtiyacınız olduğunda tekrar açabilirsiniz.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== BÖLÜM 8 ==================== -->
+<section class="page-break">
+  <h2><span class="num">8</span> ✅ Yönetici Onay Akışı</h2>
+
+  <p>Öğretmenlerin oluşturduğu özel etkinlikler <strong>yoneticinin onayına gider</strong>. Onaylanmadan öğrenciler etkinlikleri göremez.</p>
+
+  <div class="flow">
+    <div class="flow-item">👩‍🏫 Öğretmen<br>Yükler</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item" style="border-color:#f59e0b;background:#fffbeb">⏳ Durum:<br><strong>bekliyor</strong></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item">🛡️ Yönetici<br>Görür</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item" style="border-color:#10b981;background:#ecfdf5">✅ Durum:<br><strong>onaylandı</strong></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-item">🌐 Yayınlanır</div>
+  </div>
+
+  <h3>🛡️ Yönetici Panelinde Onay</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text"><code>@admin</code> ile giriş yapın</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>⏳ Etkinlik Onayları</strong> bölümünü bulun (ana sayfada üstte)</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text"><strong>Durum filtresi</strong>'ni "<strong>⏳ Onay bekleyenler</strong>" olarak ayarlayın</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text">Bekleyen etkinlikleri göreceksiniz — yükleme bilgileri, seviye, içerik tipi</div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-text"><strong>👁 Görüntüle</strong> ile etkinliği kontrol edin</div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-text"><strong>✅ Onayla</strong> ile yayınlameya veya <strong>❌ Reddet</strong> ile geri gönderin</div>
+    </div>
+  </div>
+
+  <h3>📥 Dosya İndirme</h3>
+  <p>Yönetici, onaylanmış veya bekleyen her etkinliğin yüklediği dosyayı <strong>📥 İndir</strong> butonuyla bilgisayarına indirebilir.</p>
+
+  <table>
+    <tr>
+      <th>Durum</th>
+      <th>Anlamı</th>
+    </tr>
+    <tr>
+      <td><span class="badge badge-yellow">⏳ Onay bekleniyor</span></td>
+      <td>Öğretmen yükledi, yönetici henüz görmedi veya karar vermedi</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-green">✅ Onaylandı</span></td>
+      <td>Yayında — tüm öğrenciler görebilir</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-red">❌ Reddedildi</span></td>
+      <td>Yönetici uygun bulmadı — öğretmen düzeltebilir veya yeniden yükleyebilir</td>
+    </tr>
+  </table>
+</section>
+
+<!-- ==================== BÖLÜM 9 ==================== -->
+<section class="page-break">
+  <h2><span class="num">9</span> 📊 Öğrenci Takibi</h2>
+
+  <h3>👨‍🎓 Kampüsümdeki Öğrenciler</h3>
+  <p>Öğretmen panelinde <strong>👨‍🎓 Öğrencilerim</strong> sekmesinde kampüsünüzdeki tüm öğrencileri看到ürsünüz.</p>
+
+  <table>
+    <tr>
+      <th>Sütun</th>
+      <th>Anlamı</th>
+    </tr>
+    <tr>
+      <td><strong>Ad</strong></td>
+      <td>Öğrencinin tam adı</td>
+    </tr>
+    <tr>
+      <td><strong>Kullanıcı adı</strong></td>
+      <td>Giriş için kullanılan ad (örn. @ali.yilmaz)</td>
+    </tr>
+    <tr>
+      <td><strong>⭐ Puan</strong></td>
+      <td>Toplam kazanılan puan</td>
+    </tr>
+    <tr>
+      <td><strong>✅ Etkinlik</strong></td>
+      <td>Tamamlanan etkinlik sayısı</td>
+    </tr>
+    <tr>
+      <td><strong>İşlem</strong></td>
+      <td>✏️ Düzenle · 🔑 Şifre Sıfırla · 🗑 Sil</td>
+    </tr>
+  </table>
+
+  <h3>📊 Kampüs Raporu</h3>
+  <p><strong>📊 Kampüs Raporu</strong> bölümünde tüm kampüslerdeki etkinlik tamamlama istatistiklerini görebilirsiniz.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>Kampüs</strong> filtresinden hangi kampüsü görmek istediğinizi seçin</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>Dönem</strong> filtresinden zaman aralığını seçin (Son 7 gün, Son 30 gün, Tüm zamanlar)</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text"><strong>🔄 Yenile</strong> butonuna tıklayın</div>
+    </div>
+  </div>
+
+  <div class="callout callout-success">
+    <span class="callout-icon">📈</span>
+    <div>
+      <div class="callout-title">Rapor Bilgileri</div>
+      <p style="margin:0">
+        Rapor şunları gösterir:<br>
+        • <strong>Toplam tamamlanma</strong> sayısı<br>
+        • <strong>Öğrenci</strong> sayısı (en az bir etkinlik tamamlayan)<br>
+        • <strong>Kampüs</strong> sayısı<br>
+        • Etkinlik bazında detaylı breakdown
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== BÖLÜM 10 ==================== -->
+<section class="page-break">
+  <h2><span class="num">10</span> 💾 Veri Yedeği</h2>
+
+  <p>Verileriniz Supabase bulutunda saklanır. Ancak ekstra güvence için periyodik yedek almanız önerilir.</p>
+
+  <h3>📥 Manuel Yedek Alma</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">Yönetici panelinde <strong>💾 Veri Yedeği</strong> bölümüne gidin</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>📥 Yedek İndir (.json)</strong> butonuna tıklayın</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">JSON dosyası otomatik indirilir — güvenli bir yere kaydedin</div>
+    </div>
+  </div>
+
+  <p>Yedek şunları içerir: Kampüsler, Profiller (öğretmen/öğrenci), Atamalar, Tamamlanan etkinlikler, Şifre kayıtları, Özel etkinlikler.</p>
+
+  <h3>📁 Otomatik Yedek (Chrome/Edge)</h3>
+  <p>Chrome veya Edge tarayıcısıyla her gün otomatik yedek alabilirsiniz:</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>📁 Günlük Otomatik Yedek Klasörü Seç</strong> butonuna tıklayın</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">Bilgisayarınızda bir klasör seçin (örn. "Bilfen Yedekler")</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">Her gün belirli saatte otomatik olarak o klasöre yedek alınır</div>
+    </div>
+  </div>
+
+  <h3>🔄 Yedekten Geri Yükleme</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>🔄 Yedekten Geri Yükle</strong> butonuna tıklayın</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">Daha önce indirdiğiniz <code>.json</code> dosyasını seçin</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">Onaylayın — verileriniz geri yüklenir</div>
+    </div>
+  </div>
+
+  <div class="callout callout-danger">
+    <span class="callout-icon">🚨</span>
+    <div>
+      <div class="callout-title">Dikkat</div>
+      <p style="margin:0">Geri yükleme, mevcut verilerin <strong>üzerine yazar</strong>. Önce yeni bir yedek almanız önerilir.</p>
+    </div>
+  </div>
+
+  <h3>⏰ Yedek Uyarısı</h3>
+  <p>Son yedeğiniz 24 saatten eskiyse, panel açılışında bir uyarı görürsünüz. Bu uyarıya tıklayarak hemen yedek alabilirsiniz.</p>
+</section>
+
+<!-- ==================== BÖLÜM 11 ==================== -->
+<section class="page-break">
+  <h2><span class="num">11</span> ❓ Sıkça Sorulan Sorular</h2>
+
+  <h3>❓ Öğrenci şifremi unuttum — ne yapmalıyım?</h3>
+  <div class="callout callout-info">
+    <span class="callout-icon">💡</span>
+    <div>
+      <p style="margin:0">Öğretmen veya yönetici panelinden <strong>🔑</strong> butonuna tıklayarak öğrencinin şifresini sıfırlayabilirsiniz. Yeni şifre belirleyip öğrenciye iletebilirsiniz.</p>
+    </div>
+  </div>
+
+  <h3>❓ Etkinlik oluşturmuştum ama öğrencilerde görünmüyor</h3>
+  <div class="callout callout-warning">
+    <span class="callout-icon">⚠️</span>
+    <div>
+      <p style="margin:0">Muhtemelen etkinlik <strong>yoneticinin onayını bekliyor</strong>. "🗂️ Oluşturduğum Etkinlikler" sekmesinde durumunu kontrol edin. "⏳ Onay bekleniyor" yazıyorsa, yöneticinize bildirin.</p>
+    </div>
+  </div>
+
+  <h3>❓ Bir etkinliği birkaç sınıfta yayınlamak istiyorum</h3>
+  <div class="callout callout-success">
+    <span class="callout-icon">✅</span>
+    <div>
+      <p style="margin:0">Etkinlik oluştururken <strong>Kullanım Yeri</strong> bölümünde birden fazla seviye seçebilirsiniz! Örneğin hem "2. Sınıf" hem "3 IPT" seçebilirsiniz. Etkinlik her iki kategoride de görünür.</p>
+    </div>
+  </div>
+
+  <h3>❓ "Öğretmen Aracı" ne demek?</h3>
+  <div class="callout callout-info">
+    <span class="callout-icon">💡</span>
+    <div>
+      <p style="margin:0"><strong>👩‍🏫 Öğretmen Aracı</strong> olarak işaretlenen etkinlikler <strong>öğrencilere görünmez</strong>. Yalnız öğretmenler tarafından kullanılır (tahtada proeksiyon ile). Örnek: Çarkıfelek, sayaç araçları.</p>
+    </div>
+  </div>
+
+  <h3>❓ Farklı bir cihazdan giriş yaptığımda verilerim görünmüyor</h3>
+  <div class="callout callout-success">
+    <span class="callout-icon">☁️</span>
+    <div>
+      <p style="margin:0">Supabase bağlantısı aktifse tüm cihazlardan aynı verilere erişirsiniz. Bağlantı durumunu kontrol edin: üstte <strong style="color:#10b981">🟢 Supabase bağlantısı tamam</strong> yazısı görünmeli. Görünmüyorsa "🔌 Supabase Bağlantısı" bölümünden değerleri girin.</p>
+    </div>
+  </div>
+
+  <h3>❓ Kod olarak yapıştırdığım etkinlik açılmıyor</h3>
+  <div class="callout callout-info">
+    <span class="callout-icon">💡</span>
+    <div>
+      <p style="margin:0">
+        Sistem, yapıştırdığınız kodu otomatik olarak tam bir HTML belgesine sarar. Ancak şunlara dikkat edin:<br>
+        • Kod <strong>geçerli HTML</strong> olmalı (etiketler kapatılmış olmalı)<br>
+        • <code>&lt;script&gt;</code> etiketinde hata varsa tarayıcı konsolunu kontrol edin<br>
+        • Tarayıcı developer tools'u (F12) ile hataları görebilirsiniz
+      </p>
+    </div>
+  </div>
+
+  <h3>❓ Yönetici şifremi nasıl değiştiririm?</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text"><code>@admin</code> ile giriş yapın</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>🔑 Yönetici Şifresini Değiştir</strong> bölümüne gidin</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">Mevcut şifrenizi ve yeni şifrenizi girin</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text"><strong>Şifreyi Güncelle</strong> butonuna tıklayın</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== BÖLÜM 12 ==================== -->
+<section class="page-break">
+  <h2><span class="num">12</span> 📞 Destek ve İletişim</h2>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="icon">🌐</div>
+      <h4>Portal</h4>
+      <p>ahmetgedik67.github.io/bilfenbilisimai</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🛡️</div>
+      <h4>Yönetici Paneli</h4>
+      <p>.../bilfenbilisimai/panel.html</p>
+    </div>
+  </div>
+
+  <div class="callout callout-success">
+    <span class="callout-icon">🎓</span>
+    <div>
+      <div class="callout-title">Bilfen Bilişim Zümresi</div>
+      <p style="margin:0">
+        Bu platform Bilfen Bilişim Teknolojileri ve Yazılım dersi için hazırlanmıştır.<br>
+        Etkinlikler saf HTML + CSS + JavaScript ile hazırlanır — internet gerekmez, tarayıcıda çalışır.
+      </p>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:40px;padding:30px;background:var(--primary-bg);border-radius:16px">
+    <p style="font-size:20px;font-weight:700;color:var(--primary);margin:0">
+      🤖 Bilfen Bilişim AI
+    </p>
+    <p style="color:var(--text-secondary);margin:8px 0 0">
+      Robi ile Kodla & Keşfet! 🚀
+    </p>
+  </div>
+</section>
+
+</div>
+
+<!-- Print button -->
+<button class="print-btn no-print" onclick="window.print()">
+  🖨️ PDF olarak kaydet
+</button>
+
+</body>
+</html>
