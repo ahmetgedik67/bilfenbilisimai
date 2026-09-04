@@ -3262,7 +3262,7 @@
       try {
         if (typeof html2canvas === 'undefined') { resolve(null); return; }
         var kutu = document.createElement('div');
-        kutu.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;height:500px;overflow:hidden;background:white;z-index:-1;opacity:0.01';
+        kutu.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;height:500px;overflow:hidden;background:white;z-index:-9999;pointer-events:none';
         kutu.innerHTML = htmlSarmala(html);
         document.body.appendChild(kutu);
         var timeout = setTimeout(function () {
@@ -3270,7 +3270,7 @@
           resolve(null);
         }, 5000);
         setTimeout(function () {
-          html2canvas(kutu, { width: 800, height: 500, scale: 0.5, useCORS: true, allowTaint: true, backgroundColor: '#ffffff' }).then(function (canvas) {
+          html2canvas(kutu, { width: 800, height: 500, scale: 1, useCORS: true, allowTaint: true, backgroundColor: '#ffffff' }).then(function (canvas) {
             clearTimeout(timeout);
             try { kutu.remove(); } catch(e) {}
             resolve(canvas.toDataURL('image/jpeg', 0.7));
