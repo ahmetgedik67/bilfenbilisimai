@@ -640,6 +640,15 @@
     .gok-nesne.n5, .gok-nesne.n6 { display: none; }
     .kartlar { grid-template-columns: 1fr; }
   }
+  /* --- Liderlik Tablosu --- */
+  .liderlik-kutu { max-width: 1180px; margin: 0 auto 20px; padding: 0 18px; }
+  .liderlik-baslik { font-size: 15px; font-weight: 900; color: #1e1b4b; margin-bottom: 8px; }
+  .liderlik-satir { display: flex; align-items: center; gap: 10px; padding: 6px 12px; border-radius: 10px; margin-bottom: 4px; background: linear-gradient(135deg, #f0f9ff, #ede9fe); font-size: 14px; font-weight: 600; }
+  .liderlik-satir.ben { background: linear-gradient(135deg, #fef9c3, #fde68a); border: 2px solid #f59e0b; }
+  .liderlik-sira { width: 28px; text-align: center; font-size: 16px; }
+  .liderlik-av { font-size: 22px; }
+  .liderlik-ad { flex: 1; color: #1e1b4b; }
+  .liderlik-puan { font-size: 13px; color: #6366f1; font-weight: 800; }
 </style>
 </head>
 <body>
@@ -1331,12 +1340,30 @@
         '</a><button class="os-cikis" id="cikisSertBtn">Çıkış</button></div>';
       sert.innerHTML = h;
       var baslik = document.querySelector('header');
-      if (baslik) baslik.insertAdjacentElement('afterend', sert);
-      var cik = document.getElementById('cikisSertBtn');
+      if (baslik) baslik.insertAdjacentElement('afterend', sert);      var cik = document.getElementById('cikisSertBtn');
       if (cik) cik.onclick = function () {
         localStorage.removeItem('bt_oturum');
         oturumArayuzu();
       };
+
+      /* --- Liderlik Tablosu (öğrenci girişinde göster) --- */
+      if (v.rol === 'ogrenci') {
+        sbGet('profil?rol=eq.ogrenci&campus_id=eq.' + encodeURIComponent(s.campusId || '') + '&select=ad,puan,avatar&order=puan.desc&limit=10').then(function (satirlar) {
+          if (!satirlar || satirlar.length < 2) return;
+          var kutu = document.createElement('div');
+          kutu.className = 'liderlik-kutu';
+          var medal = ['🥇','🥈','🥉'];
+          var satirH = '<div class="liderlik-baslik">🏆 Sıralama — ' + escS(s.kampusAdi || 'Kampüs') + '</div>';
+          satirlar.forEach(function (p, i) {
+            var rnk = i < 3 ? medal[i] : (i + 1);
+            var ben = p.ad === s.ad ? ' ben' : '';
+            satirH += '<div class="liderlik-satir' + ben + '"><span class="liderlik-sira">' + rnk + '</span><span class="liderlik-av" title="' + escS(p.ad) + '">' + (p.avatar || '🐣') + '</span><span class="liderlik-ad">' + escS(ilkAd(p.ad)) + '</span><span class="liderlik-puan">⭐ ' + (p.puan || 0) + '</span></div>';
+          });
+          kutu.innerHTML = satirH;
+          document.querySelector('main').insertAdjacentElement('beforebegin', kutu);
+        }).catch(function () {});
+      }
+
     });
   }
   oturumArayuzu();
