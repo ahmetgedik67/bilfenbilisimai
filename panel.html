@@ -3200,11 +3200,25 @@
     oku.readAsDataURL(dosya);
   };
   /* --- SVG tabanlı görsel oluşturma (anlık, iframe gerektirmez) --- */
+  /* İsimden benzersiz renk üretici */
+  function _hashRenk(str) {
+    var h = 0; for (var i = 0; i < (str||'').length; i++) h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+    var palettes = [
+      ['#6366f1','#8b5cf6'], ['#ec4899','#f472b6'], ['#f59e0b','#fbbf24'],
+      ['#10b981','#34d399'], ['#ef4444','#f87171'], ['#8b5cf6','#c084fc'],
+      ['#0ea5e9','#38bdf8'], ['#f97316','#fb923c'], ['#14b8a6','#2dd4bf'],
+      ['#e11d48','#fb7185'], ['#7c3aed','#a78bfa'], ['#059669','#6ee7b7']
+    ];
+    return palettes[Math.abs(h) % palettes.length];
+  }
+  function _hashIkon(str) {
+    var ikonlar = ['\u2702','\uD83D\uDD2C','\uD83D\uDE80','\uD83D\uDD2E','\u2B50','\uD83C\uDFAE','\uD83D\uDCBB','\uD83C\uDF1F','\uD83D\uDCD6','\uD83C\uDFB5','\uD83D\uDD35','\uD83D\uDEE0','\uD83D\uDCDA','\u26A1','\uD83C\uDF08','\uD83D\uDCAB'];
+    var h = 0; for (var i = 0; i < (str||'').length; i++) h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+    return ikonlar[Math.abs(h) % ikonlar.length];
+  }
   function gorselOlustur(ad, tip, konu) {
-    var ikonlar = { kod: '\u2702', dosya: '\uD83D\uDCC4', drive: '\uD83D\uDD17' };
-    var renkler = { kod: ['#6366f1','#8b5cf6'], dosya: ['#0ea5e9','#22d3ee'], drive: ['#10b981','#34d399'] };
-    var ikon = ikonlar[tip] || '\u2702';
-    var r = renkler[tip] || renkler.kod;
+    var r = _hashRenk(ad + tip);
+    var ikon = _hashIkon(ad);
     var kisaAd = (ad || 'Etkinlik').substring(0, 30);
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250">' +
       '<defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">' +

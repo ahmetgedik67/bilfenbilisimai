@@ -778,18 +778,20 @@
   }
   var OZEL_ETKINLIKLER = [];
   /** Tip ve başlığa göre renk üret */
-  function ozelRenkUret(tip) {
-    var renkler = { kod: ['#6366f1','#818cf8'], dosya: ['#0ea5e9','#38bdf8'], drive: ['#10b981','#34d399'] };
-    return renkler[tip] || ['#8b5cf6','#a78bfa'];
+  function _ozelHash(str) {
+    var h = 0; for (var i = 0; i < (str||'').length; i++) h = ((h << 5) - h + str.charCodeAt(i)) | 0; return Math.abs(h);
   }
-  /** Tip ikonu */
-  function ozelIkon(tip) {
-    return { kod: '✂️', dosya: '📄', drive: '🔗' }[tip] || '📝';
-  }
-  /** Başlık ve tipten dinamik SVG önizleme üret */
   function ozelOnizlemeSvg(ad, tip, konu) {
-    var renkler = ozelRenkUret(tip);
-    var ikon = ozelIkon(tip);
+    var palettes = [
+      ['#6366f1','#8b5cf6'],['#ec4899','#f472b6'],['#f59e0b','#fbbf24'],
+      ['#10b981','#34d399'],['#ef4444','#f87171'],['#8b5cf6','#c084fc'],
+      ['#0ea5e9','#38bdf8'],['#f97316','#fb923c'],['#14b8a6','#2dd4bf'],
+      ['#e11d48','#fb7185'],['#7c3aed','#a78bfa'],['#059669','#6ee7b7']
+    ];
+    var ikonlar = ['\u2702','\uD83D\uDD2C','\uD83D\uDE80','\uD83D\uDD2E','\u2B50','\uD83C\uDFAE','\uD83D\uDCBB','\uD83C\uDF1F','\uD83D\uDCD6','\uD83C\uDFB5','\uD83D\uDD35','\uD83D\uDEE0','\uD83D\uDCDA','\u26A1','\uD83C\uDF08','\uD83D\uDCAB'];
+    var h = _ozelHash(ad + tip);
+    var renkler = palettes[h % palettes.length];
+    var ikon = ikonlar[h % ikonlar.length];
     var baslik = (ad || 'Etkinlik').substring(0, 30);
     var alt = konu ? konu.substring(0, 40) : (tip === 'kod' ? 'Kod Etkinliği' : tip === 'dosya' ? 'HTML Dosyası' : 'Drive Bağlantısı');
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">'
@@ -802,7 +804,7 @@
       + '<text x="200" y="175" text-anchor="middle" font-size="22" font-weight="bold" fill="white" font-family="sans-serif">' + baslik.replace(/</g,'&lt;') + '</text>'
       + '<text x="200" y="210" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.8)" font-family="sans-serif">' + alt.replace(/</g,'&lt;') + '</text>'
       + '<rect x="130" y="240" width="140" height="32" rx="16" fill="rgba(255,255,255,0.25)"/>'
-      + '<text x="200" y="262" text-anchor="middle" font-size="13" fill="white" font-family="sans-serif" font-weight="bold">▶ Oyna</text>'
+      + '<text x="200" y="262" text-anchor="middle" font-size="13" fill="white" font-family="sans-serif" font-weight="bold">\u25B6 Oyna</text>'
       + '</svg>';
     return 'data:image/svg+xml,' + encodeURIComponent(svg);
   }
