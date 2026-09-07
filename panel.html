@@ -270,6 +270,36 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   }
+
+  /* --- Etkinlik Yönetimi sekmeleri --- */
+  .seviye-sekmeler { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 10px; }
+  .sev-sekme { padding: 6px 14px; border-radius: 20px; border: 2px solid #e2e8f0; background: #f8fafc; font-size: 13px; font-weight: 700; cursor: pointer; transition: .2s; user-select: none; }
+  .sev-sekme:hover { border-color: #818cf8; background: #eef2ff; }
+  .sev-sekme.secili { background: #6366f1; color: #fff; border-color: #6366f1; }
+  .sev-sekme .sayi { display: inline-block; background: rgba(0,0,0,.12); border-radius: 10px; padding: 1px 7px; font-size: 11px; margin-left: 4px; }
+  .sev-sekme.secili .sayi { background: rgba(255,255,255,.25); }
+  .etk-ozet { display: flex; gap: 16px; flex-wrap: wrap; padding: 10px 14px; background: #f1f5f9; border-radius: 12px; margin-bottom: 12px; font-size: 13px; font-weight: 600; }
+  .etk-ozet span { display: flex; align-items: center; gap: 4px; }
+  .etk-toplu { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .etk-toplu .btn { font-size: 12px; padding: 5px 12px; }
+  .etkinlik-yg { border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 10px; background: #fff; transition: .2s; }
+  .etkinlik-yg:hover { box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  .etkinlik-yg .etk-baslik { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .etkinlik-yg .etk-ad { font-weight: 800; font-size: 15px; }
+  .etkinlik-yg .etk-seviyeler { display: flex; gap: 4px; flex-wrap: wrap; }
+  .etkinlik-yg .etk-sev-chip { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+  .etk-sev-chip.sinif { background: #dbeafe; color: #1e40af; }
+  .etk-sev-chip.ipt { background: #f3e8ff; color: #7c3aed; }
+  .etk-sev-chip.arac { background: #fef3c7; color: #92400e; }
+  .etkinlik-yg .etk-satir { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .etkinlik-yg select { padding: 5px 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 600; }
+  .etkinlik-yg .tarihler { display: none; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .etkinlik-yg .tarihler.goster { display: flex; }
+  .etkinlik-yg .tarihler label { font-size: 12px; margin-top: 0; }
+  .etkinlik-yg .tarihler input { padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12px; }
+  .etk-kucuk-not { font-size: 12px; color: #64748b; margin-top: 6px; }
+  .etk-kaydet-btn { padding: 5px 14px; border-radius: 8px; border: none; background: #6366f1; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .etk-kaydet-btn:hover { background: #4f46e5; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -409,11 +439,22 @@
       <div id="etkinlikSekme" style="display:none">
         <div class="kart">
           <h2>🎮 Etkinlikleri Yönet</h2>
-          <p class="kucuk-not">Atamalar kampüs genelinde geçerlidir: tek kayıtla bütün öğrencilerine uygulanır. "Açık" seçilirse herkes oynayabilir; "Tarihli" seçersen belirttiğin tarihlerde açılır.</p>
-          <div style="margin:12px 0">
-            <button class="btn ikincil kucuk" id="hepsiniAcBtn">✔ Tümünü Aç</button>
-            <button class="btn kirmizi kucuk" id="hepsiniKapatBtn">✖ Tümünü Kapat</button>
+          <p class="kucuk-not">Hangi sınıfa, IPT'ye veya öğretmen aracına hangi etkinlik ne zaman açık olacak? Seviye sekmesine tıklayarak filtrele; toplu aç/kapat veya tarihli ayarla.</p>
+
+          <!-- Seviye sekmeleri -->
+          <div class="seviye-sekmeler" id="seviyeSekmeler"></div>
+
+          <!-- Özet bant -->
+          <div class="etk-ozet" id="etkOzet"></div>
+
+          <!-- Toplu işlem butonları -->
+          <div class="etk-toplu" id="etkToplu">
+            <button class="btn yesil kucuk" id="hepsiniAcBtn">✔ Seçili Seviyedekileri Aç</button>
+            <button class="btn kirmizi kucuk" id="hepsiniKapatBtn">✖ Seçili Seviyedekileri Kapat</button>
+            <button class="btn ikincil kucuk" id="tumuAcBtn">✔ Tümünü Aç (Tüm Seviyeler)</button>
+            <button class="btn kirmizi kucuk" id="tumuKapatBtn">✖ Tümünü Kapat (Tüm Seviyeler)</button>
           </div>
+
           <div id="etkinlikListe"></div>
         </div>
       </div>
@@ -1934,50 +1975,133 @@
     }).catch(function (e) { $('ogrenciListe').innerHTML = '<div class="hata" style="display:block">' + esc(e.message) + '</div>'; });
   }
 
+  /* Seviye listesi ve seçili seviye */
+  var SEVIYELER = [];
+  for (var sn = 1; sn <= 7; sn++) SEVIYELER.push({ kod: 's' + sn, ad: sn + '. Sınıf', tur: 'sinif' });
+  for (var in_ = 2; in_ <= 7; in_++) SEVIYELER.push({ kod: 'i' + in_, ad: in_ + ' IPT', tur: 'ipt' });
+  var aktifSeviye = 'hepsi'; // 'hepsi' veya 's1','i2' vb.
+
+  function seviyeSecCiz() {
+    var kutu = $('seviyeSekmeler');
+    var h = '<button class="sev-sekme' + (aktifSeviye === 'hepsi' ? ' secili' : '') + '" data-sev="hepsi">📋 Tümü</button>';
+    SEVIYELER.forEach(function (sv) {
+      h += '<button class="sev-sekme' + (aktifSeviye === sv.kod ? ' secili' : '') + '" data-sev="' + sv.kod + '">' +
+        esc(sv.ad) + '<span class="sayi" data-sayi="' + sv.kod + '">0</span></button>';
+    });
+    kutu.innerHTML = h;
+    Array.prototype.forEach.call(kutu.querySelectorAll('[data-sev]'), function (b) {
+      b.onclick = function () {
+        aktifSeviye = b.getAttribute('data-sev');
+        etkinlikYonetiminiCiz();
+      };
+    });
+  }
+
   function etkinlikYonetiminiCiz() {
     API.atamaListesi(oturum).then(function (atamalar) {
       API.ogrenciListesi(oturum).then(function (ogrenciler) {
         katalogGetir('ogretmen').then(function (katalog) {
           var byId = {};
           atamalar.forEach(function (a) { byId[a.etkinlik_id] = a; });
+
+          /* Seviye sekmelerini çiz */
+          seviyeSecCiz();
+
+          /* Her seviye için etkinlik sayısını hesapla ve yaz */
+          var sevSayi = {};
+          katalog.forEach(function (e) {
+            var secim = secimNorm(e.ozel ? e.ozel.secim : []);
+            secim.forEach(function (s) { sevSayi[s] = (sevSayi[s] || 0) + 1; });
+          });
+          SEVIYELER.forEach(function (sv) {
+            var el = document.querySelector('[data-sayi="' + sv.kod + '"]');
+            if (el) el.textContent = sevSayi[sv.kod] || 0;
+          });
+
+          /* Filtrele */
+          var filtreli = katalog.filter(function (e) {
+            if (aktifSeviye === 'hepsi') return true;
+            if (e.ozel && aracMi(e.ozel.secim)) return false;
+            var secim = secimNorm(e.ozel ? e.ozel.secim : []);
+            return secim.indexOf(aktifSeviye) >= 0;
+          });
+
+          /* Özet */
+          var acikSay = 0, kapaliSay = 0, tarihliSay = 0, aracSay = 0;
+          filtreli.forEach(function (e) {
+            var a = byId[e.id] || null;
+            var arac = !!(e.ozel && aracMi(e.ozel.secim));
+            if (arac) { aracSay++; return; }
+            var secim = !a ? 'acik' : (!a.aktif ? 'kapali' : ((a.acilis || a.kapanis) ? 'tarihli' : 'acik'));
+            if (secim === 'acik') acikSay++; else if (secim === 'kapali') kapaliSay++; else tarihliSay++;
+          });
+          var tamamlayan = ogrenciler.filter(function (o) { return o.tamamlanan > 0; }).length;
+          var ozetKutu = $('etkOzet');
+          if (ozetKutu) {
+            ozetKutu.innerHTML =
+              '<span>📊 <b>' + filtreli.length + '</b> etkinlik</span>' +
+              '<span style="color:#16a34a">✔ <b>' + acikSay + '</b> açık</span>' +
+              '<span style="color:#dc2626">✖ <b>' + kapaliSay + '</b> kapalı</span>' +
+              '<span style="color:#f59e0b">📅 <b>' + tarihliSay + '</b> tarihli</span>' +
+              (aracSay ? '<span style="color:#7c3aed">👩‍🏫 <b>' + aracSay + '</b> araç</span>' : '') +
+              '<span>👨‍🎓 <b>' + tamamlayan + '</b>/' + ogrenciler.length + ' tamamlandı</span>';
+          }
+
+          /* Toplu butonları */
           var kutu = $('etkinlikListe');
           var h = '';
-          katalog.forEach(function (e) {
+          if (!filtreli.length) {
+            h = '<div style="padding:20px;text-align:center;color:#94a3b8;font-weight:600">Bu seviyede etkinlik yok.</div>';
+          }
+          filtreli.forEach(function (e) {
             var a = byId[e.id] || null;
             var secim = !a ? 'acik' : (!a.aktif ? 'kapali' : ((a.acilis || a.kapanis) ? 'tarihli' : 'acik'));
-            var tamamlayan = ogrenciler.filter(function (o) { return o.tamamlanan > 0; }).length;
             var d = durumHesapla(a);
             var arac = !!(e.ozel && aracMi(e.ozel.secim));
-            h += '<div class="etkinlik">' +
-              '<div class="ad">' + esc(e.ad) + ' ' +
-              (arac ? '<span class="rozet ogretmen">👩‍🏫 Öğretmen Aracı</span>' : '<span class="rozet ' + d.sinif + '">' + esc(d.etiket) + '</span>') +
+            var sevChips = '';
+            if (e.ozel && e.ozel.secim) {
+              secimNorm(e.ozel.secim).forEach(function (s) {
+                var sv = SEVIYELER.filter(function (x) { return x.kod === s; })[0];
+                if (sv) sevChips += '<span class="etk-sev-chip ' + sv.tur + '">' + esc(sv.ad) + '</span>';
+              });
+              if (arac) sevChips += '<span class="etk-sev-chip arac">👩‍🏫 Öğretmen Aracı</span>';
+            }
+            h += '<div class="etkinlik-yg" data-etk-id="' + esc(e.id) + '">' +
+              '<div class="etk-baslik">' +
+              '<span class="etk-ad">' + esc(e.ad) + '</span>' +
+              '<span class="rozet ' + d.sinif + '">' + esc(d.etiket) + '</span>' +
+              (e.ozel ? '<button class="btn ikincil kucuk" data-yonet-oynat="' + esc(e.id) + '" style="margin-left:auto">👁 Tahtada Aç</button>' : '') +
               '</div>' +
-              '<div class="aciklama">' + esc(e.aciklama) + '</div>' +
-              (e.ozel ? '<div class="alan"><button class="btn ikincil kucuk" data-yonet-oynat="' + esc(e.id) + '">👁 Tahtada Aç</button></div>' : '') +
+              (sevChips ? '<div class="etk-seviyeler">' + sevChips + '</div>' : '') +
+              (e.aciklama ? '<div class="etk-kucuk-not">' + esc(e.aciklama) + '</div>' : '') +
               (arac
-                ? '<div class="kucuk-not">Öğrenci listelerinde görünmez — ders sırasında tahtada kullan.</div>'
-                : '<div class="alan">' +
+                ? '<div class="etk-kucuk-not">Öğrenci listelerinde görünmez — ders sırasında tahtada kullan.</div>'
+                : '<div class="etk-satir" style="margin-top:8px">' +
                   '<select data-secim="' + e.id + '">' +
-                  '<option value="acik"' + (secim === 'acik' ? ' selected' : '') + '>Açık (herkes oynayabilir)</option>' +
-                  '<option value="kapali"' + (secim === 'kapali' ? ' selected' : '') + '>Kapalı</option>' +
-                  '<option value="tarihli"' + (secim === 'tarihli' ? ' selected' : '') + '>Tarihli (tarihlerde açık)</option>' +
+                  '<option value="acik"' + (secim === 'acik' ? ' selected' : '') + '>✔ Açık</option>' +
+                  '<option value="kapali"' + (secim === 'kapali' ? ' selected' : '') + '>✖ Kapalı</option>' +
+                  '<option value="tarihli"' + (secim === 'tarihli' ? ' selected' : '') + '>📅 Tarihli</option>' +
                   '</select>' +
-                  '<button class="btn kucuk" data-kaydet="' + e.id + '">Kaydet</button>' +
+                  '<button class="etk-kaydet-btn" data-kaydet="' + e.id + '">💾 Kaydet</button>' +
+                  '<span class="etk-kucuk-not">' + tamamlayan + '/' + ogrenciler.length + ' tamamlandı</span>' +
                   '</div>' +
                   '<div class="tarihler' + (secim === 'tarihli' ? ' goster' : '') + '" data-tarihler="' + e.id + '">' +
-                  '<div><label style="margin-top:0">Açılış tarihi</label><input type="datetime-local" data-acilis="' + e.id + '" value="' + (a && a.acilis ? dtYerel(a.acilis) : '') + '"></div>' +
-                  '<div><label style="margin-top:0">Kapanış tarihi (boş = kapanmaz)</label><input type="datetime-local" data-kapanis="' + e.id + '" value="' + (a && a.kapanis ? dtYerel(a.kapanis) : '') + '"></div>' +
-                  '</div>' +
-                  '<div class="kucuk-not">Kampüste ' + tamamlayan + '/' + ogrenciler.length + ' öğrenci bu etkinliği tamamladı.</div>') +
+                  '<div><label style="margin-top:0">📅 Açılış</label><input type="datetime-local" data-acilis="' + e.id + '" value="' + (a && a.acilis ? dtYerel(a.acilis) : '') + '"></div>' +
+                  '<div><label style="margin-top:0">📅 Kapanış</label><input type="datetime-local" data-kapanis="' + e.id + '" value="' + (a && a.kapanis ? dtYerel(a.kapanis) : '') + '"></div>' +
+                  '</div>') +
               '</div>';
           });
           kutu.innerHTML = h;
+
+          /* Seçim → tarih göster/gizle */
           Array.prototype.forEach.call(kutu.querySelectorAll('[data-secim]'), function (s) {
             s.onchange = function () {
               var tar = kutu.querySelector('[data-tarihler="' + s.getAttribute('data-secim') + '"]');
               if (tar) tar.classList.toggle('goster', s.value === 'tarihli');
             };
           });
+
+          /* Kaydet */
           Array.prototype.forEach.call(kutu.querySelectorAll('[data-kaydet]'), function (b) {
             b.onclick = function () {
               var id = b.getAttribute('data-kaydet');
@@ -1987,13 +2111,15 @@
               var a = secimdenAtama(secim, a1, a2);
               if (secim === 'tarihli' && (!a.acilis)) { alert('Açılış tarihi girmelisin.'); return; }
               if (a.acilis && a.kapanis && new Date(a.kapanis) <= new Date(a.acilis)) { alert('Kapanış, açılıştan sonra olmalı.'); return; }
+              b.textContent = '⏳'; b.disabled = true;
               API.atamaKaydet(oturum, id, a.aktif, a.acilis, a.kapanis).then(function () {
-                bilgiGoster($('oBilgi'), '✅ Etkinlik ayarı kaydedildi.');
-                etkinlikYonetiminiCiz();
+                bilgiGoster($('oBilgi'), '✅ Kaydedildi.'); etkinlikYonetiminiCiz();
                 setTimeout(function () { bilgiGoster($('oBilgi'), ''); }, 2500);
-              }).catch(function (e) { alert('Hata: ' + e.message); });
+              }).catch(function (e) { alert('Hata: ' + e.message); b.textContent = '💾 Kaydet'; b.disabled = false; });
             };
           });
+
+          /* Tahtada aç */
           Array.prototype.forEach.call(kutu.querySelectorAll('[data-yonet-oynat]'), function (b) {
             b.onclick = function () {
               var id = b.getAttribute('data-yonet-oynat');
@@ -3342,21 +3468,45 @@
     ozelListeCiz();
   };
 
-  function hepsineUygula(acik) {
+  function hepsineUygula(acik, seviyeFiltresi) {
     return katalogGetir('ogretmen').then(function (katalog) {
-      // Öğretmen araçları öğrencilere görünmediği için atama kaydı gerektirmez
-      var hedefler = katalog.filter(function (e) { return !(e.ozel && aracMi(e.ozel.secim)); });
+      var hedefler = katalog.filter(function (e) {
+        if (e.ozel && aracMi(e.ozel.secim)) return false;
+        if (seviyeFiltresi && seviyeFiltresi !== 'hepsi') {
+          var sv = secimNorm(e.ozel ? e.ozel.secim : []);
+          return sv.indexOf(seviyeFiltresi) >= 0;
+        }
+        return true;
+      });
       var isler = hedefler.map(function (e) { return API.atamaKaydet(oturum, e.id, acik, null, null); });
       return Promise.all(isler);
     });
   }
+  /* Seçili seviyedekileri aç/kapat */
   $('hepsiniAcBtn').onclick = function () {
-    if (!confirm('Bütün etkinlikleri (özel etkinlikler dahil) açık yap (tarih ayarları silinir)?')) return;
-    hepsineUygula(true).then(function () { etkinlikYonetiminiCiz(); }).catch(function (e) { alert('Hata: ' + e.message); });
+    var sev = aktifSeviye;
+    var msg = sev === 'hepsi' ? 'Bütün etkinlikleri açık yap (tarih ayarları silinir)?'
+      : 'Bu seviyedeki (' + sev + ') etkinlikleri açık yap?';
+    if (!confirm(msg)) return;
+    hepsineUygula(true, sev).then(function () { etkinlikYonetiminiCiz(); }).catch(function (e) { alert('Hata: ' + e.message); });
   };
   $('hepsiniKapatBtn').onclick = function () {
-    if (!confirm('Bütün etkinlikleri kapat? Öğrenciler oynayamaz.')) return;
-    hepsineUygula(false).then(function () { etkinlikYonetiminiCiz(); }).catch(function (e) { alert('Hata: ' + e.message); });
+    var sev = aktifSeviye;
+    var msg = sev === 'hepsi' ? 'Bütün etkinlikleri kapat?'
+      : 'Bu seviyedeki (' + sev + ') etkinlikleri kapat?';
+    if (!confirm(msg)) return;
+    hepsineUygula(false, sev).then(function () { etkinlikYonetiminiCiz(); }).catch(function (e) { alert('Hata: ' + e.message); });
+  };
+  /* Tümünü aç/kapat (tüm seviyeler) */
+  if ($('tumuAcBtn')) {
+    $('tumuAcBtn').onclick = function () {
+      if (!confirm('TÜM seviyelerdeki bütün etkinlikleri açık yap (tarih ayarları silinir)?')) return;
+      hepsineUygula(true, 'hepsi').then(function () { etkinlikYonetiminiCiz(); }).catch(function (e) { alert('Hata: ' + e.message); });
+    };
+    $('tumuKapatBtn').onclick = function () {
+      if (!confirm('TÜM seviyelerdeki bütün etkinlikleri kapat?')) return;
+      hepsineUygula(false, 'hepsi').then(function () { etkinlikYonetiminiCiz(); }).catch(function (e) { alert('Hata: ' + e.message); });
+    };
   };
 
   /* ---------- Özel etkinlik oluşturucu olayları ---------- */
