@@ -1016,8 +1016,8 @@
   var SEMA_BEKLENEN = {
     campus: ['id', 'ad', 'olusturma_tarihi'],
     profil: ['id', 'campus_id', 'kullanici_adi', 'sifre_tuz', 'sifre_hash', 'ad', 'rol', 'avatar', 'puan', 'olusturma_tarihi'],
-    etkinlik_atama: ['campus_id', 'etkinlik_id', 'aktif', 'acilis', 'kapanis', 'guncelleme_tarihi'],
-    tamamlanan: ['id', 'ogrenci_id', 'campus_id', 'etkinlik_id', 'puan', 'tarih'],
+    etkinlik_atama: ['campus_id', 'oyun_id', 'aktif', 'acilis', 'kapanis', 'guncelleme_tarihi'],
+    tamamlanan: ['id', 'ogrenci_id', 'campus_id', 'oyun_id', 'puan', 'tarih'],
     ayar: ['anahtar', 'deger', 'guncelleme_tarihi'],
     ozel_etkinlik: ['id', 'campus_id', 'ogretmen_id', 'ogretmen_ad', 'ogretmen_kullanici', 'ad', 'konu', 'seviyeler', 'tip', 'icerik', 'durum', 'red_nedeni', 'onay_tarihi', 'olusturma_tarihi', 'gorsel']
   };
@@ -1177,8 +1177,8 @@
       dSet(DK.tamamlanan, dGet(DK.tamamlanan).filter(function (t) { return t.etkinlik_id !== etkinlikId; }));
       return Promise.resolve();
     }
-    return sb('etkinlik_atama?etkinlik_id=eq.' + encodeURIComponent(etkinlikId), { method: 'DELETE' }).then(function () {
-      return sb('tamamlanan?etkinlik_id=eq.' + encodeURIComponent(etkinlikId), { method: 'DELETE' });
+    return sb('etkinlik_atama?oyun_id=eq.' + encodeURIComponent(etkinlikId), { method: 'DELETE' }).then(function () {
+      return sb('tamamlanan?oyun_id=eq.' + encodeURIComponent(etkinlikId), { method: 'DELETE' });
     });
   }
 
@@ -1292,8 +1292,8 @@
     /* ---------- Yönetici: rapor ---------- */
     raporVerileri: async function (campusId) {
       var q = campusId
-        ? 'tamamlanan?campus_id=eq.' + encodeURIComponent(campusId) + '&select=ogrenci_id,campus_id,etkinlik_id,tarih&order=tarih'
-        : 'tamamlanan?select=ogrenci_id,campus_id,etkinlik_id,tarih&order=tarih';
+        ? 'tamamlanan?campus_id=eq.' + encodeURIComponent(campusId) + '&select=ogrenci_id,campus_id,oyun_id%20as%20etkinlik_id,tarih&order=tarih'
+        : 'tamamlanan?select=ogrenci_id,campus_id,oyun_id%20as%20etkinlik_id,tarih&order=tarih';
       var ts = await sb(q);
       var ps = await sb('profil?rol=eq.ogrenci&select=id,ad,campus_id');
       var cs = await sb('campus?select=id,ad');
@@ -1371,7 +1371,7 @@
     },
     ogrenciListesi: async function (s) {
       var ps = await sb('profil?campus_id=eq.' + encodeURIComponent(s.campusId) + '&rol=eq.ogrenci&select=*&order=ad');
-      var ts = await sb('tamamlanan?campus_id=eq.' + encodeURIComponent(s.campusId) + '&select=ogrenci_id,etkinlik_id');
+      var ts = await sb('tamamlanan?campus_id=eq.' + encodeURIComponent(s.campusId) + '&select=ogrenci_id,oyun_id%20as%20etkinlik_id');
       var sayilar = {};
       (ts || []).forEach(function (t) { sayilar[t.ogrenci_id] = (sayilar[t.ogrenci_id] || 0) + 1; });
       return (ps || []).map(function (p) {
@@ -1379,20 +1379,20 @@
       });
     },
     atamaListesi: async function (s) {
-      return (await sb('etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&select=*')) || [];
+      return (await sb('etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&select=*,oyun_id%20as%20etkinlik_id')) || [];
     },
     atamaKaydet: async function (s, etkinlikId, aktif, acilis, kapanis) {
       await sb('etkinlik_atama', {
         method: 'POST',
         prefer: 'resolution=merge-duplicates,return=representation',
-        body: { campus_id: s.campusId, etkinlik_id: etkinlikId, aktif: !!aktif, acilis: acilis, kapanis: kapanis }
+        body: { campus_id: s.campusId, oyun_id: etkinlikId, aktif: !!aktif, acilis: acilis, kapanis: kapanis }
       });
     },
     tamamlananlar: async function (s) {
-      return (await sb('tamamlanan?ogrenci_id=eq.' + encodeURIComponent(s.id) + '&select=etkinlik_id,puan,tarih')) || [];
+      return (await sb('tamamlanan?ogrenci_id=eq.' + encodeURIComponent(s.id) + '&select=oyun_id%20as%20etkinlik_id,puan,tarih')) || [];
     },
     tamamla: async function (s, etkinlikId) {
-      await sb('tamamlanan', { method: 'POST', body: { ogrenci_id: s.id, campus_id: s.campusId, etkinlik_id: etkinlikId, puan: PUAN_BASINA } });
+      await sb('tamamlanan', { method: 'POST', body: { ogrenci_id: s.id, campus_id: s.campusId, oyun_id: etkinlikId, puan: PUAN_BASINA } });
       var ps = await sb('profil?id=eq.' + encodeURIComponent(s.id) + '&select=puan');
       var yeni = (ps[0].puan || 0) + PUAN_BASINA;
       await sb('profil?id=eq.' + encodeURIComponent(s.id), { method: 'PATCH', body: { puan: yeni } });

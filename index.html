@@ -1315,7 +1315,7 @@
         for (var i = 0; i < as.length; i++) if (as[i].campusId === s.campusId && as[i].etkinlik_id === etkinlikId) { a = as[i]; break; }
         return durumKontrol(a);
       }
-      return fetch(CONFIG.url + '/rest/v1/etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&etkinlik_id=eq.' + encodeURIComponent(etkinlikId) + '&select=*', {
+      return fetch(CONFIG.url + '/rest/v1/etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&oyun_id=eq.' + encodeURIComponent(etkinlikId) + '&select=*', {
         headers: { apikey: CONFIG.anon, Authorization: 'Bearer ' + CONFIG.anon }
       }).then(function (r) { return r.json(); }).then(function (rows) {
         return durumKontrol(rows && rows[0]);
