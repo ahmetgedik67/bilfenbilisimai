@@ -1999,7 +1999,7 @@
 
   function etkinlikYonetiminiCiz() {
     API.atamaListesi(oturum).then(function (atamalar) {
-      API.ogrenciListesi(oturum).then(function (ogrenciler) {
+      API.ogrenciListesi(oturum).catch(function () { return []; }).then(function (ogrenciler) {
         katalogGetir('ogretmen').then(function (katalog) {
           var byId = {};
           atamalar.forEach(function (a) { byId[a.etkinlik_id] = a; });
