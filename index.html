@@ -663,7 +663,6 @@
   .liderlik-puan { font-size: 13px; color: #6366f1; font-weight: 800; }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/easy-speech/dist/EasySpeech.iife.js"></script>
 </head>
 <body>
 
@@ -932,6 +931,53 @@
   document.addEventListener('click', e => { if (!e.target.closest('.dd')) menuKapat(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') menuKapat(); });
 
+  /* ---------- canvas-confetti ---------- */
+  function confettiYukle() { if (typeof confetti !== 'undefined') return; }
+  function confettiTamamla() {
+    if (typeof confetti === 'undefined') return;
+    confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 }, colors: ['#6366f1','#ec4899','#f59e0b','#10b981','#ef4444','#3b82f6'] });
+    setTimeout(function () { confetti({ particleCount: 80, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#a855f7','#f97316','#22c55e'] }); }, 250);
+    setTimeout(function () { confetti({ particleCount: 80, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ec4899','#eab308','#06b6d4'] }); }, 400);
+  }
+  function confettiRozet() { if (typeof confetti === 'undefined') return; confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, shapes: ['star'], colors: ['#fbbf24','#f59e0b','#f97316','#ef4444'] }); }
+  function confettiSiralama() { if (typeof confetti === 'undefined') return; confetti({ particleCount: 40, spread: 60, startVelocity: 30, origin: { y: 0.7 }, colors: ['#fbbf24','#c084fc','#38bdf8'] }); }
+  function confettiHosGeldin() { if (typeof confetti === 'undefined') return; confetti({ particleCount: 25, spread: 40, startVelocity: 20, gravity: 0.8, origin: { y: 0.3 }, colors: ['#6366f1','#a78bfa','#c4b5fd'] }); }
+  function confettiPuan() { if (typeof confetti === 'undefined') return; confetti({ particleCount: 35, spread: 50, startVelocity: 25, origin: { y: 0.6 }, shapes: ['circle'], colors: ['#fbbf24','#f59e0b','#eab308'] }); }
+
+  /* ---------- Text-to-Speech (Web Speech API) ---------- */
+  var ttsSynth = window.speechSynthesis || null;
+  var ttsSes = null;
+  var ttsCalisiyor = false;
+  function ttsSesBul() {
+    if (!ttsSynth || ttsSes) return;
+    var sesler = ttsSynth.getVoices();
+    if (!sesler.length) {
+      ttsSynth.onvoiceschanged = function () {
+        var s = ttsSynth.getVoices();
+        ttsSes = s.find(function (v) { return v.lang && v.lang.indexOf('tr') === 0; }) || s[0] || null;
+      };
+    } else {
+      ttsSes = sesler.find(function (v) { return v.lang && v.lang.indexOf('tr') === 0; }) || sesler[0] || null;
+    }
+  }
+  ttsSesBul();
+  function ttsOku(metin, callback) {
+    if (!metin || !ttsSynth) { if (callback) callback(); return; }
+    if (ttsCalisiyor) { ttsSynth.cancel(); ttsCalisiyor = false; if (callback) callback(); return; }
+    ttsSesBul();
+    ttsCalisiyor = true;
+    var u = new SpeechSynthesisUtterance(metin);
+    u.rate = 0.85; u.pitch = 1.0; u.volume = 1.0; u.lang = 'tr-TR';
+    if (ttsSes) u.voice = ttsSes;
+    u.onend = function () { ttsCalisiyor = false; if (callback) callback(); };
+    u.onerror = function () { ttsCalisiyor = false; if (callback) callback(); };
+    ttsSynth.speak(u);
+  }
+  function ttsDurdur() {
+    if (ttsSynth) ttsSynth.cancel();
+    ttsCalisiyor = false;
+  }
+
   /* ---------- Kart ---------- */
   function kartYap(etkinlik, sira) {
     const kart = document.createElement('article');
@@ -1002,7 +1048,7 @@
     dinleBtn.title = 'Etkinlik açıklamasını sesli oku';
     dinleBtn.onclick = e => {
       e.stopPropagation();
-      if (ttsDurum.calisiyor) {
+      if (ttsCalisiyor) {
         ttsDurdur();
         dinleBtn.textContent = '🔊 Dinle';
         dinleBtn.classList.remove('calisiyor');
@@ -1207,7 +1253,7 @@
   var pencereTTSMetin = '';
   if (pencereTTSBtn) {
     pencereTTSBtn.onclick = function () {
-      if (ttsDurum.calisiyor) {
+      if (ttsCalisiyor) {
         ttsDurdur();
         pencereTTSBtn.textContent = '🔊 Dinle';
         pencereTTSBtn.classList.remove('calisiyor');
@@ -1286,79 +1332,6 @@
     { e: '💎', ad: 'Puan Avcısı', aciklama: '100 puan topla', k: function (c, p) { return p >= 100; } },
     { e: '👑', ad: 'Kampüs Şampiyonu', aciklama: '250 puan topla', k: function (c, p) { return p >= 250; } }
   ];
-
-  /* ===== canvas-confetti yardımcı fonksiyonları ===== */
-  var _confettiYuklu = false;
-  function confettiYukle() {
-    if (_confettiYuklu || typeof confetti === 'undefined') return;
-    _confettiYuklu = true;
-  }
-  /** Etkinlik tamamlandığında — büyük kutlama */
-  function confettiTamamla() {
-    if (typeof confetti === 'undefined') return;
-    confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 }, colors: ['#6366f1','#ec4899','#f59e0b','#10b981','#ef4444','#3b82f6'] });
-    setTimeout(function () {
-      confetti({ particleCount: 80, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#a855f7','#f97316','#22c55e'] });
-    }, 250);
-    setTimeout(function () {
-      confetti({ particleCount: 80, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ec4899','#eab308','#06b6d4'] });
-    }, 400);
-  }
-  /** Rozet kazanıldığında — yıldız patlaması */
-  function confettiRozet() {
-    if (typeof confetti === 'undefined') return;
-    confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, shapes: ['star'], colors: ['#fbbf24','#f59e0b','#f97316','#ef4444'] });
-  }
-  /** Liderlik tablosunda ilk 3'e girildiğinde */
-  function confettiSiralama() {
-    if (typeof confetti === 'undefined') return;
-    confetti({ particleCount: 40, spread: 60, startVelocity: 30, origin: { y: 0.7 }, colors: ['#fbbf24','#c084fc','#38bdf8'] });
-  }
-  /** Etkinlik açılırken — hafif hoş geldin */
-  function confettiHosGeldin() {
-    if (typeof confetti === 'undefined') return;
-    confetti({ particleCount: 25, spread: 40, startVelocity: 20, gravity: 0.8, origin: { y: 0.3 }, colors: ['#6366f1','#a78bfa','#c4b5fd'] });
-  }
-  /** Puan kazanıldığında — jeton yağmuru */
-  function confettiPuan() {
-    if (typeof confetti === 'undefined') return;
-    confetti({ particleCount: 35, spread: 50, startVelocity: 25, origin: { y: 0.6 }, shapes: ['circle'], colors: ['#fbbf24','#f59e0b','#eab308'] });
-  }
-
-  /* ===== Text-to-Speech (easy-speech) ===== */
-  var ttsDurum = { calisiyor: false, ses: null };
-  var ttsHazir = false;
-  function ttsBaslat() {
-    if (ttsHazir || typeof EasySpeech === 'undefined') return Promise.resolve();
-    return EasySpeech.init({ batch: 500 }).then(function () {
-      ttsHazir = true;
-      /* Türkçe sesi bul ve tercih et */
-      var sesler = EasySpeech.voices();
-      var trSes = sesler.find(function (s) { return s.lang && s.lang.indexOf('tr') === 0; });
-      if (trSes) ttsDurum.ses = trSes;
-    }).catch(function () {});
-  }
-  function ttsOku(metin, callback) {
-    if (!metin || typeof EasySpeech === 'undefined') { if (callback) callback(); return; }
-    /* Eğer zaten konuşuyorsa durdur */
-    if (ttsDurum.calisiyor) { EasySpeech.cancel(); ttsDurum.calisiyor = false; if (callback) callback(); return; }
-    ttsBaslat().then(function () {
-      ttsDurum.calisiyor = true;
-      var secenek = { text: metin, pitch: 1.0, rate: 0.85, volume: 1.0 };
-      if (ttsDurum.ses) secenek.voice = ttsDurum.ses;
-      EasySpeech.speak(secenek).then(function () {
-        ttsDurum.calisiyor = false;
-        if (callback) callback();
-      }).catch(function () {
-        ttsDurum.calisiyor = false;
-        if (callback) callback();
-      });
-    });
-  }
-  function ttsDurdur() {
-    if (typeof EasySpeech !== 'undefined') EasySpeech.cancel();
-    ttsDurum.calisiyor = false;
-  }
 
   function escS(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
