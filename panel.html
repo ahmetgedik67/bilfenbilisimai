@@ -96,6 +96,10 @@
   .kaynak-btn.secili { border-color: #4f46e5; background: #eef2ff; }
   .oe-kaynak { margin-top: 12px; }
   #oeKod { width: 100%; font-family: ui-monospace, Consolas, 'Courier New', monospace; font-size: 13px; line-height: 1.5; }
+  #oeKodEditor .CodeMirror { border-radius: 8px; font-size: 13px; font-family: 'Fira Code', ui-monospace, Consolas, 'Courier New', monospace; }
+  #oeKodEditor .CodeMirror-gutters { border-radius: 8px 0 0 8px; }
+  #oeKodEditor .CodeMirror-scroll { min-height: 300px; }
+  .cm-button { background: #6366f1 !important; color: white !important; border: none !important; border-radius: 6px !important; padding: 4px 12px !important; font-size: 12px !important; cursor: pointer !important; }
   .tip-rozet { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; background: #e0e7ff; color: #3730a3; }
   /* Özel etkinlik oynatma penceresi */
   .oe-oynat { position: fixed; inset: 0; background: rgba(15,23,42,.85); display: none; align-items: center; justify-content: center; z-index: 99; padding: 16px; }
@@ -269,6 +273,19 @@
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.css">
 </head>
 <body>
 
@@ -441,7 +458,8 @@
               <button type="button" class="btn ikincil kucuk" onclick="sablonYukle('flashcard')">🃏 Flashcard Şablonu</button>
               <button type="button" class="btn ikincil kucuk" onclick="sablonYukle('suruklebirak')">🎯 Sürükle-Bırak Şablonu</button>
             </div>
-            <textarea id="oeKod" rows="9" spellcheck="false" placeholder="<!DOCTYPE html> … etkinliğin tamamını buraya yapıştır"></textarea>
+            <textarea id="oeKod" rows="9" spellcheck="false" placeholder="<!DOCTYPE html> … etkinliğin tamamını buraya yapıştır" style="display:none"></textarea>
+            <div id="oeKodEditor" style="border:1px solid #d1d5db;border-radius:8px;overflow:hidden"></div>
           </div>
 
           <div style="margin-top:14px">
@@ -737,6 +755,46 @@
   function confettiPuan() {
     if (typeof confetti === 'undefined') return;
     confetti({ particleCount: 35, spread: 50, startVelocity: 25, origin: { y: 0.6 }, shapes: ['circle'], colors: ['#fbbf24','#f59e0b','#eab308'] });
+  }
+
+  /* ===== CodeMirror kod editörü ===== */
+  var kodEditor = null;
+  function kodEditorInit() {
+    if (typeof CodeMirror === 'undefined') return;
+    var el = $('oeKodEditor');
+    if (!el) return;
+    kodEditor = CodeMirror(el, {
+      value: $('oeKod').value || '',
+      mode: 'htmlmixed',
+      theme: 'dracula',
+      lineNumbers: true,
+      lineWrapping: true,
+      autoCloseTags: true,
+      autoCloseBrackets: true,
+      foldGutter: true,
+      gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+      tabSize: 2,
+      indentWithTabs: false,
+      matchBrackets: true,
+      styleActiveLine: true,
+      extraKeys: {
+        'Ctrl-S': function () { $('oeKaydetBtn').click(); },
+        'Cmd-S': function () { $('oeKaydetBtn').click(); },
+        'Tab': function (cm) { cm.replaceSelection(cm.getOption('indentWithTabs') ? '\t' : Array(cm.getOption('indentUnit') + 1).join(' ')); }
+      }
+    });
+    kodEditor.setSize(null, 320);
+  }
+  function kodEditorDeger() {
+    return kodEditor ? kodEditor.getValue() : ($('oeKod') ? $('oeKod').value : '');
+  }
+  function kodEditorAyarla(deger) {
+    if (kodEditor) { kodEditor.setValue(deger || ''); kodEditor.clearHistory(); }
+    else if ($('oeKod')) { $('oeKod').value = deger || ''; }
+  }
+  function kodEditorTemizle() {
+    if (kodEditor) { kodEditor.setValue(''); kodEditor.clearHistory(); }
+    else if ($('oeKod')) { $('oeKod').value = ''; }
   }
 
   /* ---------- Sistem yöneticisi ---------- */
@@ -1699,7 +1757,7 @@
 
   function oeIcerik() {
     if (oe.tip === 'dosya') return oe.dosyaMetin;
-    if (oe.tip === 'kod') return $('oeKod').value;
+    if (oe.tip === 'kod') return kodEditorDeger();
     return $('oeDrive').value.trim();
   }
 
@@ -1792,7 +1850,7 @@
           $('oeKonu').value = o.konu || '';
           oe.tip = o.tip || 'dosya';
           oe.secim = (o.secim || []).slice();
-          if (o.tip === 'kod') { $('oeKod').value = o.icerik || ''; oeKaynakGoster('kod'); }
+          if (o.tip === 'kod') { kodEditorAyarla(o.icerik || ''); oeKaynakGoster('kod'); }
           else if (o.tip === 'drive') { $('oeDrive').value = o.icerik || ''; oeKaynakGoster('drive'); }
           else { oe.dosyaMetin = o.icerik || ''; oeKaynakGoster('dosya'); }
           seviyeCipsCiz();
@@ -1816,14 +1874,14 @@
     };
     var kod = sablonlar[tip];
     if (!kod) return;
-    $('oeKod').value = kod;
+    kodEditorAyarla(kod);
     bilgiGoster($('oeHata'), '');
   }
 
   function oeFormuTemizle() {
     oe.secim = []; oe.dosyaMetin = ''; oe.gorsel = ''; oe.duzenleId = null;
     $('oeKaydetBtn').textContent = '\ud83d\udcbe Etkinli\u011fi Kaydet';
-    $('oeAd').value = ''; $('oeKonu').value = ''; $('oeKod').value = ''; $('oeDrive').value = '';
+    $('oeAd').value = ''; $('oeKonu').value = ''; kodEditorTemizle(); $('oeDrive').value = '';
     $('oeDosya').value = ''; $('oeDosyaAdi').textContent = '';
     $('oeGorsel').value = ''; $('oeGorselOnizle').style.display = 'none';
     $('oeGorselDurum').textContent = '';
@@ -3488,6 +3546,8 @@
   } else {
     gosterEkran('giris');
   }
+  /* CodeMirror editörünü başlat */
+  kodEditorInit();
 })();
 </script>
 </body>
