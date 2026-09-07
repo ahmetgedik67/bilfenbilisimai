@@ -303,6 +303,7 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
@@ -799,6 +800,72 @@
   function confettiPuan() {
     if (typeof confetti === 'undefined') return;
     confetti({ particleCount: 35, spread: 50, startVelocity: 25, origin: { y: 0.6 }, shapes: ['circle'], colors: ['#fbbf24','#f59e0b','#eab308'] });
+  }
+
+  /* ===== GSAP Animations ===== */
+  var gsapReady = typeof gsap !== 'undefined';
+  
+  /* Kart giriş animasyonu */
+  function gsapKartGiris() {
+    if (!gsapReady) return;
+    gsap.from('.kart', { 
+      y: 40, 
+      opacity: 0, 
+      duration: 0.6, 
+      stagger: 0.1, 
+      ease: 'back.out(1.7)' 
+    });
+  }
+  
+  /* Tablo satır giriş animasyonu */
+  function gsapSatirGiris() {
+    if (!gsapReady) return;
+    gsap.from('.satir', { 
+      x: -30, 
+      opacity: 0, 
+      duration: 0.4, 
+      stagger: 0.05, 
+      ease: 'power2.out' 
+    });
+  }
+  
+  /* Buton tıklama animasyonu */
+  function gsapButonTikla(btn) {
+    if (!gsapReady || !btn) return;
+    gsap.fromTo(btn, 
+      { scale: 1 }, 
+      { scale: 0.92, duration: 0.1, yoyo: true, repeat: 1, ease: 'power2.inOut' }
+    );
+  }
+  
+  /* Sayfa geçiş animasyonu */
+  function gsapSayfaGecis(yeniSayfa) {
+    if (!gsapReady || !yeniSayfa) return;
+    gsap.fromTo(yeniSayfa, 
+      { opacity: 0, x: 50 }, 
+      { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out' }
+    );
+  }
+  
+  /* Başarı animasyonu */
+  function gsapBasariEfekti() {
+    if (!gsapReady) return;
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(34,197,94,0.2);z-index:9999;pointer-events:none';
+    document.body.appendChild(overlay);
+    gsap.fromTo(overlay, 
+      { opacity: 1 }, 
+      { opacity: 0, duration: 1, ease: 'power2.out', onComplete: function() { overlay.remove(); } }
+    );
+  }
+  
+  /* Hata titreşim animasyonu */
+  function gsapHataTitresim(el) {
+    if (!gsapReady || !el) return;
+    gsap.fromTo(el, 
+      { x: -10 }, 
+      { x: 10, duration: 0.08, repeat: 5, yoyo: true, ease: 'power2.inOut', onComplete: function() { gsap.set(el, { x: 0 }); } }
+    );
   }
 
   /* ===== CodeMirror kod editörü ===== */
@@ -2100,6 +2167,9 @@
               '</div>';
           });
           kutu.innerHTML = h;
+          
+          /* GSAP satır giriş animasyonu */
+          setTimeout(function() { gsapSatirGiris(); }, 100);
 
           /* Seçim → tarih göster/gizle */
           Array.prototype.forEach.call(kutu.querySelectorAll('[data-secim]'), function (s) {
