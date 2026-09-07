@@ -983,6 +983,8 @@
   function semaKolonlariDenetle(tablo, kolonlar) {
     var kalan = kolonlar.slice();
     var eksik = [];
+    /* etkinlik_id / oyun_id eski-yeni eşleme: biri varsa diğeri kabul */
+    var ALIAS_MAP = { 'etkinlik_id': 'oyun_id', 'oyun_id': 'etkinlik_id' };
     function dene() {
       if (!kalan.length) return Promise.resolve(eksik);
       return sb(tablo + '?select=' + kalan.join(',') + '&limit=1').then(function () {
@@ -991,6 +993,19 @@
         var m = (e && e.message) || '';
         var mm = m.match(/Could not find the '([^']+)' column of '([^']+)'/i);
         if (mm && mm[2] === tablo) {
+          /* Alias kontrolü: etkinlik_id eksikse oyun_id var mı bak (veya tersi) */
+          var aliasAd = ALIAS_MAP[mm[1]];
+          if (aliasAd) {
+            return sb(tablo + '?select=' + aliasAd + '&limit=1').then(function () {
+              /* Alias var — bu kolon kabul, devam et */
+              kalan = kalan.filter(function (c) { return c !== mm[1]; });
+              return dene();
+            }).catch(function () {
+              eksik.push(mm[1]);
+              kalan = kalan.filter(function (c) { return c !== mm[1]; });
+              return dene();
+            });
+          }
           eksik.push(mm[1]);
           kalan = kalan.filter(function (c) { return c !== mm[1]; });
           return dene();
