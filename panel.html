@@ -271,8 +271,8 @@
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   }
 </style>
-<script src="https://unpkg.com/modern-screenshot"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
@@ -2235,7 +2235,7 @@
       var o = gorselsiz[i];
       btn.textContent = '⏳ ' + (i + 1) + '/' + gorselsiz.length + ' — ' + o.ad;
       try {
-        /* Önce modern-screenshot ile gerçek screenshot dene */
+        /* Önce html2canvas ile gerçek screenshot dene */
         var gorsel = gorselOlustur(o.ad, o.tip, o.konu);
         if (o.tip !== 'drive' && o.icerik) {
           var realGorsel = await gorselCek(o.icerik);
@@ -3425,11 +3425,11 @@
       '</svg>';
     return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
   }
-  /* --- modern-screenshot ile iframe tabanlı ekran görüntüsü yakalama --- */
+  /* --- html2canvas ile iframe tabanlı ekran görüntüsü yakalama --- */
   function gorselCek(html) {
     return new Promise(function (resolve) {
       try {
-        if (typeof modernScreenshot === 'undefined') { resolve(null); return; }
+        if (typeof html2canvas === 'undefined') { resolve(null); return; }
         var iframe = document.createElement('iframe');
         iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;height:500px;border:none;opacity:0;z-index:-9999;pointer-events:none';
         document.body.appendChild(iframe);
@@ -3442,15 +3442,16 @@
             try {
               var doc = iframe.contentDocument || iframe.contentWindow.document;
               var node = doc.body;
-              modernScreenshot.domToJpeg(node, {
+              html2canvas(node, {
                 width: 800,
                 height: 500,
-                quality: 0.8,
                 scale: 1,
+                useCORS: true,
+                allowTaint: true,
                 backgroundColor: '#ffffff'
-              }).then(function (dataUrl) {
+              }).then(function (canvas) {
                 clearTimeout(timeout);
-                done(dataUrl);
+                done(canvas.toDataURL('image/jpeg', 0.8));
               }).catch(function () { clearTimeout(timeout); done(null); });
             } catch (e) { clearTimeout(timeout); done(null); }
           }, 3000);
@@ -3491,7 +3492,7 @@
     if (oe.tip === 'drive' && !/^https?:\/\//i.test(icerik)) { hataGoster($('oeHata'), 'Drive bağlantısı http(s) ile başlamalı.'); return; }
     hataGoster($('oeHata'), '');
     $('oeKaydetBtn').disabled = true;
-    /* Otomatik görsel: manuel seçilmediyse modern-screenshot dene,SVG fallback */
+    /* Otomatik görsel: manuel seçilmediyse html2canvas dene,SVG fallback */
     var svgGorsel = gorselOlustur(ad, oe.tip, konu);
     if (!oe.gorsel) oe.gorsel = svgGorsel;
     var kaydetFn = function (finalGorsel) {
@@ -3507,7 +3508,7 @@
         ozelListeCiz();
         confettiPuan();
         setTimeout(function () { bilgiGoster($('oeBilgi'), ''); }, 6000);
-        /* Arka planda modern-screenshot ile gerçek screenshot almaya çalış */
+        /* Arka planda html2canvas ile gerçek screenshot almaya çalış */
         if (oe.tip !== 'drive') {
           gorselCek(icerik).then(function (realGorsel) {
             if (realGorsel) {
