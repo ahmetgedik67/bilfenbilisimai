@@ -268,6 +268,7 @@
   }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 
@@ -717,6 +718,26 @@
     { e: '💎', ad: 'Puan Avcısı', aciklama: '100 puan topla', k: function (c, p) { return p >= 100; } },
     { e: '👑', ad: 'Kampüs Şampiyonu', aciklama: '250 puan topla', k: function (c, p) { return p >= 250; } }
   ];
+
+  /* ===== canvas-confetti yardımcı fonksiyonları ===== */
+  function confettiTamamla() {
+    if (typeof confetti === 'undefined') return;
+    confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 }, colors: ['#6366f1','#ec4899','#f59e0b','#10b981','#ef4444','#3b82f6'] });
+    setTimeout(function () {
+      confetti({ particleCount: 80, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#a855f7','#f97316','#22c55e'] });
+    }, 250);
+    setTimeout(function () {
+      confetti({ particleCount: 80, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ec4899','#eab308','#06b6d4'] });
+    }, 400);
+  }
+  function confettiRozet() {
+    if (typeof confetti === 'undefined') return;
+    confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, shapes: ['star'], colors: ['#fbbf24','#f59e0b','#f97316','#ef4444'] });
+  }
+  function confettiPuan() {
+    if (typeof confetti === 'undefined') return;
+    confetti({ particleCount: 35, spread: 50, startVelocity: 25, origin: { y: 0.6 }, shapes: ['circle'], colors: ['#fbbf24','#f59e0b','#eab308'] });
+  }
 
   /* ---------- Sistem yöneticisi ---------- */
   var ADMIN_KULLANICI = 'admin';
@@ -1994,6 +2015,7 @@
               ogrenciProfilCiz();
               rozetleriCiz();
               ogrenciEtkinlikleriCiz();
+              confettiTamamla();
             }).catch(function (e) { alert('Hata: ' + e.message); });
           };
         });
@@ -2109,6 +2131,7 @@
           Promise.all(islemler).then(function () {
             bilgiGoster($('onayBilgi'), '✅ Onaylandı ve tüm kampüslerde yayınlandı.');
             etkinlikOnayCiz();
+            confettiTamamla();
             setTimeout(function () { bilgiGoster($('onayBilgi'), ''); }, 3500);
           }).catch(function (e) { hataGoster($('onayHata'), e.message); });
         };
@@ -3421,6 +3444,7 @@
         $('oeKaydetBtn').textContent = '💾 Etkinliği Kaydet';
         bilgiGoster($('oeBilgi'), duzenleModu ? '✏️ Etkinlik güncellendi: ' + ad + ' — yöneticiye yeniden gönderildi.' : '📨 Etkinlik yönetici onayına gönderildi: ' + ad);
         ozelListeCiz();
+        confettiPuan();
         setTimeout(function () { bilgiGoster($('oeBilgi'), ''); }, 6000);
         /* Arka planda html2canvas ile gerçek screenshot almaya çalış */
         if (oe.tip !== 'drive') {

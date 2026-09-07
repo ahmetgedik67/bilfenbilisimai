@@ -650,6 +650,7 @@
   .liderlik-ad { flex: 1; color: #1e1b4b; }
   .liderlik-puan { font-size: 13px; color: #6366f1; font-weight: 800; }
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 
@@ -1148,6 +1149,7 @@
       }
       $('pencere').classList.add('acik');
       document.body.style.overflow = 'hidden';
+      confettiHosGeldin();
     });
   }
   function kapat() {
@@ -1225,6 +1227,45 @@
     { e: '💎', ad: 'Puan Avcısı', aciklama: '100 puan topla', k: function (c, p) { return p >= 100; } },
     { e: '👑', ad: 'Kampüs Şampiyonu', aciklama: '250 puan topla', k: function (c, p) { return p >= 250; } }
   ];
+
+  /* ===== canvas-confetti yardımcı fonksiyonları ===== */
+  var _confettiYuklu = false;
+  function confettiYukle() {
+    if (_confettiYuklu || typeof confetti === 'undefined') return;
+    _confettiYuklu = true;
+  }
+  /** Etkinlik tamamlandığında — büyük kutlama */
+  function confettiTamamla() {
+    if (typeof confetti === 'undefined') return;
+    confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 }, colors: ['#6366f1','#ec4899','#f59e0b','#10b981','#ef4444','#3b82f6'] });
+    setTimeout(function () {
+      confetti({ particleCount: 80, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#a855f7','#f97316','#22c55e'] });
+    }, 250);
+    setTimeout(function () {
+      confetti({ particleCount: 80, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ec4899','#eab308','#06b6d4'] });
+    }, 400);
+  }
+  /** Rozet kazanıldığında — yıldız patlaması */
+  function confettiRozet() {
+    if (typeof confetti === 'undefined') return;
+    confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, shapes: ['star'], colors: ['#fbbf24','#f59e0b','#f97316','#ef4444'] });
+  }
+  /** Liderlik tablosunda ilk 3'e girildiğinde */
+  function confettiSiralama() {
+    if (typeof confetti === 'undefined') return;
+    confetti({ particleCount: 40, spread: 60, startVelocity: 30, origin: { y: 0.7 }, colors: ['#fbbf24','#c084fc','#38bdf8'] });
+  }
+  /** Etkinlik açılırken — hafif hoş geldin */
+  function confettiHosGeldin() {
+    if (typeof confetti === 'undefined') return;
+    confetti({ particleCount: 25, spread: 40, startVelocity: 20, gravity: 0.8, origin: { y: 0.3 }, colors: ['#6366f1','#a78bfa','#c4b5fd'] });
+  }
+  /** Puan kazanıldığında — jeton yağmuru */
+  function confettiPuan() {
+    if (typeof confetti === 'undefined') return;
+    confetti({ particleCount: 35, spread: 50, startVelocity: 25, origin: { y: 0.6 }, shapes: ['circle'], colors: ['#fbbf24','#f59e0b','#eab308'] });
+  }
+
   function escS(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -1329,6 +1370,14 @@
           '<div class="os-sayac"><b>' + puan + '</b><span>⭐ Puan</span></div>' +
           '<div class="os-sayac"><b>' + c + '</b><span>✅ Etkinlik</span></div>' +
           '<div class="os-rozetler" title="Rozetlerin: renkli = kazandın, gri = henüz kazanılmadı">' + rozetler + '</div></div>';
+        /* Son kazanılan rozetleri kontrol et ve confetti tetikle */
+        try {
+          var eskiRozet = JSON.parse(localStorage.getItem('bt_rozet_son') || '0');
+          if (puan > 0 && (c > eskiRozet.tamamlanan || puan > eskiRozet.puan)) {
+            setTimeout(function () { confettiRozet(); }, 300);
+          }
+          localStorage.setItem('bt_rozet_son', JSON.stringify({ tamamlanan: c, puan: puan }));
+        } catch (e) {}
       } else if (v.rol === 'ogretmen') {
         h += '<div class="os-bilgiler">' +
           (v.ogrenciSayisi !== undefined ? '<div class="os-sayac"><b>' + v.ogrenciSayisi + '</b><span>👨‍🎓 Öğrenci</span></div>' : '') +
@@ -1361,6 +1410,11 @@
           });
           kutu.innerHTML = satirH;
           document.querySelector('main').insertAdjacentElement('beforebegin', kutu);
+          /* İlk 3'te kendisi varsa confetti */
+          var benSiralama = satirlar.findIndex(function (p) { return p.ad === s.ad; });
+          if (benSiralama >= 0 && benSiralama < 3) {
+            setTimeout(function () { confettiSiralama(); }, 600);
+          }
         }).catch(function () {});
       }
 
