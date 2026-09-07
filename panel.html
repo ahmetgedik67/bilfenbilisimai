@@ -1292,8 +1292,8 @@
     /* ---------- Yönetici: rapor ---------- */
     raporVerileri: async function (campusId) {
       var q = campusId
-        ? 'tamamlanan?campus_id=eq.' + encodeURIComponent(campusId) + '&select=ogrenci_id,campus_id,oyun_id%20as%20etkinlik_id,tarih&order=tarih'
-        : 'tamamlanan?select=ogrenci_id,campus_id,oyun_id%20as%20etkinlik_id,tarih&order=tarih';
+        ? 'tamamlanan?campus_id=eq.' + encodeURIComponent(campusId) + '&select=ogrenci_id,campus_id,oyun_id,tarih&order=tarih'
+        : 'tamamlanan?select=ogrenci_id,campus_id,oyun_id,tarih&order=tarih';
       var ts = await sb(q);
       var ps = await sb('profil?rol=eq.ogrenci&select=id,ad,campus_id');
       var cs = await sb('campus?select=id,ad');
@@ -1301,7 +1301,7 @@
       (ps || []).forEach(function (p) { pAd[p.id] = p.ad; });
       (cs || []).forEach(function (c) { cAd[c.id] = c.ad; });
       return (ts || []).map(function (t) {
-        return { ogrenciId: t.ogrenci_id, ogrenciAd: pAd[t.ogrenci_id] || '', campusId: t.campus_id, campusAdi: cAd[t.campus_id] || '', etkinlikId: t.etkinlik_id, tarih: t.tarih };
+        return { ogrenciId: t.ogrenci_id, ogrenciAd: pAd[t.ogrenci_id] || '', campusId: t.campus_id, campusAdi: cAd[t.campus_id] || '', etkinlikId: t.oyun_id, tarih: t.tarih };
       });
     },
     /* ---------- Öğretmenin oluşturduğu özel etkinlikler (onay akışı) ----------
@@ -1371,7 +1371,8 @@
     },
     ogrenciListesi: async function (s) {
       var ps = await sb('profil?campus_id=eq.' + encodeURIComponent(s.campusId) + '&rol=eq.ogrenci&select=*&order=ad');
-      var ts = await sb('tamamlanan?campus_id=eq.' + encodeURIComponent(s.campusId) + '&select=ogrenci_id,oyun_id%20as%20etkinlik_id');
+      var ts = (await sb('tamamlanan?campus_id=eq.' + encodeURIComponent(s.campusId) + '&select=ogrenci_id,oyun_id')) || [];
+      ts.forEach(function (t) { t.etkinlik_id = t.oyun_id; });
       var sayilar = {};
       (ts || []).forEach(function (t) { sayilar[t.ogrenci_id] = (sayilar[t.ogrenci_id] || 0) + 1; });
       return (ps || []).map(function (p) {
@@ -1379,7 +1380,8 @@
       });
     },
     atamaListesi: async function (s) {
-      return (await sb('etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&select=*,oyun_id%20as%20etkinlik_id')) || [];
+      var rows = (await sb('etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&select=*')) || [];
+      return rows.map(function (r) { r.etkinlik_id = r.oyun_id; return r; });
     },
     atamaKaydet: async function (s, etkinlikId, aktif, acilis, kapanis) {
       await sb('etkinlik_atama', {
@@ -1389,7 +1391,8 @@
       });
     },
     tamamlananlar: async function (s) {
-      return (await sb('tamamlanan?ogrenci_id=eq.' + encodeURIComponent(s.id) + '&select=oyun_id%20as%20etkinlik_id,puan,tarih')) || [];
+      var rows = (await sb('tamamlanan?ogrenci_id=eq.' + encodeURIComponent(s.id) + '&select=oyun_id,puan,tarih')) || [];
+      return rows.map(function (r) { r.etkinlik_id = r.oyun_id; return r; });
     },
     tamamla: async function (s, etkinlikId) {
       await sb('tamamlanan', { method: 'POST', body: { ogrenci_id: s.id, campus_id: s.campusId, oyun_id: etkinlikId, puan: PUAN_BASINA } });
