@@ -986,7 +986,7 @@
   }
   
   /* Sayfa geçiş animasyonu */
-  function gsapSayfaGecis yeniSayfa) {
+  function gsapSayfaGecis(yeniSayfa) {
     if (!gsapReady || !yeniSayfa) return;
     gsap.fromTo(yeniSayfa, 
       { opacity: 0, x: 50 }, 
