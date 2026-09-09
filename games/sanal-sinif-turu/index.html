@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanal Sınıf Turu – Bilfen Bilişim Zümresi</title>
+<!--
+  Sanal Sınıf Turu – Fare/dokunma ile 360° gezilen, sıcak noktalı 3B sınıf turu.
+  Tek dosyalık, internet gerektirmez (kütüphane yok). Bilişim Teknolojileri ve Yazılım dersi için hazırlanmıştır.
+-->
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --indigo: #4f46e5;
+    --violet: #7c3aed;
+    --amber: #f59e0b;
+    --ink: #1e293b;
+    --muted: #64748b;
+    --line: #e2e8f0;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #312e81 0%, #4f46e5 45%, #7c3aed 100%);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ---- Üst başlık ---- */
+  header {
+    position: relative; z-index: 3;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    padding: 14px 16px 10px; color: #fff; text-align: center; flex-wrap: wrap;
+  }
+  header h1 { font-size: clamp(20px, 3.6vw, 32px); letter-spacing: .5px; text-shadow: 0 4px 16px rgba(0,0,0,.35); }
+  header .subtitle { color: #e0e7ff; font-size: clamp(12px, 1.8vw, 15px); }
+  .mute-btn {
+    position: absolute; right: 12px; top: 12px; z-index: 5;
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.14);
+    color: #fff; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, transform .15s;
+  }
+  .mute-btn:hover { background: rgba(255,255,255,.28); transform: scale(1.08); }
+
+  /* ---- Sahne ---- */
+  main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 4px 14px 10px; position: relative; z-index: 2; min-height: 0; }
+  .sahne-wrap { position: relative; width: min(96vw, 980px); flex: 1; max-height: 100%; display: flex; align-items: center; justify-content: center; }
+  canvas#sahne {
+    display: block; width: 100%; height: 100%;
+    max-height: calc(100vh - 220px);
+    aspect-ratio: 16 / 9;
+    background: #0f172a;
+    border-radius: 20px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.18);
+    cursor: grab; touch-action: none;
+  }
+  canvas#sahne.surukleniyor { cursor: grabbing; }
+
+  /* ---- Konum rozeti ---- */
+  .konum-rozet {
+    position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%);
+    z-index: 4; pointer-events: none;
+    background: rgba(15,23,42,.72); border: 1px solid rgba(255,255,255,.25);
+    color: #fff; font-size: 14px; font-weight: 700;
+    padding: 8px 18px; border-radius: 999px; white-space: nowrap;
+    backdrop-filter: blur(6px);
+    transition: opacity .3s;
+  }
+
+  /* ---- Alt bilgi çubuğu ---- */
+  footer {
+    position: relative; z-index: 3;
+    display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
+    padding: 8px 14px 16px; color: #e0e7ff; font-size: 12.5px; text-align: center;
+  }
+  footer .brand { font-weight: 800; letter-spacing: 1px; color: #fff; }
+  .ipucu-pill {
+    background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.28);
+    padding: 5px 14px; border-radius: 999px; font-weight: 700;
+  }
+
+  /* ---- Sıcak nokta kartı ---- */
+  .hotspot-kart {
+    position: fixed; z-index: 50; left: 50%; bottom: 86px; transform: translateX(-50%) translateY(16px);
+    max-width: min(92vw, 460px);
+    background: #fff; border-radius: 18px; padding: 16px 20px;
+    box-shadow: 0 22px 50px rgba(0,0,0,.4);
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s, transform .25s;
+  }
+  .hotspot-kart.acik { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  .hotspot-kart h2 { font-size: 17px; color: var(--indigo); display: flex; align-items: center; gap: 8px; }
+  .hotspot-kart p { margin-top: 6px; font-size: 13.5px; line-height: 1.55; color: var(--ink); }
+  .hotspot-kart .kapat {
+    position: absolute; right: 10px; top: 8px; border: none; background: none;
+    font-size: 18px; cursor: pointer; color: var(--muted); line-height: 1;
+  }
+  .hotspot-kart .kapat:hover { color: var(--ink); }
+
+  /* ---- Keşif rozetleri ---- */
+  .rozetler {
+    position: absolute; top: 12px; right: 12px; z-index: 4;
+    display: flex; gap: 6px;
+  }
+  .rozet {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(15,23,42,.72); border: 1px solid rgba(255,255,255,.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; filter: grayscale(1); opacity: .45;
+    transition: filter .3s, opacity .3s, transform .3s;
+  }
+  .rozet.kazanildi {
+    filter: none; opacity: 1; transform: scale(1.08);
+    box-shadow: 0 0 0 3px rgba(245,158,11,.55);
+    animation: rozet-zipla .5s ease;
+  }
+  @keyframes rozet-zipla {
+    0% { transform: scale(.6); } 55% { transform: scale(1.25); } 100% { transform: scale(1.08); }
+  }
+
+  /* ---- Tamamlama bandı ---- */
+  .tamam-band {
+    position: fixed; z-index: 60; left: 50%; top: 76px; transform: translateX(-50%) translateY(-20px);
+    background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff;
+    padding: 10px 24px; border-radius: 999px; font-weight: 800; font-size: 15px;
+    box-shadow: 0 14px 30px rgba(0,0,0,.35);
+    opacity: 0; pointer-events: none; transition: opacity .35s, transform .35s;
+  }
+  .tamam-band.acik { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---- Yükleme / desteklenmiyor katmanı ---- */
+  .katman {
+    position: absolute; inset: 0; z-index: 6; border-radius: 20px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    text-align: center; color: #fff; background: rgba(15,23,42,.88); padding: 24px;
+  }
+  .katman.gizli { display: none; }
+  .katman .buyuk { font-size: 46px; }
+  .katman p { max-width: 420px; line-height: 1.55; font-size: 15px; }
+
+  @media (max-width: 700px) {
+    canvas#sahne { max-height: calc(100vh - 190px); aspect-ratio: 4 / 3; }
+    .hotspot-kart { bottom: 70px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rozet.kazanildi { animation: none; }
+    .hotspot-kart, .tamam-band { transition: opacity .2s; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏫 Sanal Sınıf Turu</h1>
+  <span class="subtitle">Fare ile tıkla-sürükle, 360° keşfet — sıcak noktalara dokun!</span>
+  <button class="mute-btn" id="muteBtn" title="Sesi aç / kapat">🔊</button>
+</header>
+
+<main>
+  <div class="sahne-wrap">
+    <canvas id="sahne"></canvas>
+    <div class="rozetler" id="rozetler"></div>
+    <div class="konum-rozet" id="konum">📍 Sınıfın ortasındasın</div>
+    <div class="katman" id="destekKatmani" style="display:none">
+      <div class="buyuk">🤖</div>
+      <p>Tarayıcın 3B (WebGL) desteklemiyor gibi görünüyor.<br>Chrome, Edge veya Firefox'un güncel bir sürümüyle tekrar dene.</p>
+    </div>
+  </div>
+</main>
+
+<div class="hotspot-kart" id="hotspotKart">
+  <button class="kapat" id="kartKapat" title="Kapat">✕</button>
+  <h2 id="kartBaslik"></h2>
+  <p id="kartMetin"></p>
+</div>
+
+<div class="tamam-band" id="tamamBand">🎉 Turu tamamladın — bütün köşeleri keşfettin!</div>
+
+<footer>
+  <span class="ipucu-pill">🖱️ Sürükle → bak etrafına</span>
+  <span class="ipucu-pill">🖲️ Tekerlek / kıstır → yakınlaş</span>
+  <span class="ipucu-pill">✨ Parlayan noktalar → bilgi kartı</span>
+  <span class="brand">🎓 Bilfen Bilişim Zümresi</span>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =========================================================
+     1) Mini 3B motoru — harici kütüphane YOK (internet gerekmez)
+        Yalnız bu etkinliğin ihtiyaç duyduğu parçalar:
+        sahne, perspektif kamera, kutu/silindir/düzlem örgüleri,
+        basit Phong gölgelendirme, sırt yüz elme.
+     ========================================================= */
+
+  var canvas = document.getElementById('sahne');
+  var gl = canvas.getContext('webgl', { antialias: true }) || canvas.getContext('experimental-webgl');
+  if (!gl) {
+    document.getElementById('destekKatmani').style.display = 'flex';
+    return;
+  }
+
+  /* ---- Matematik yardımcıları ---- */
+  function mat4Kimlik() { return new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]); }
+  function mat4Carp(a, b) {
+    var o = new Float32Array(16);
+    for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) {
+      var s = 0;
+      for (var k = 0; k < 4; k++) s += a[k*4+c] * b[r*4+k];
+      o[r*4+c] = s;
+    }
+    return o;
+  }
+  function mat4Perspektif(fov, en, boy, yakin, uzak) {
+    var f = 1 / Math.tan(fov / 2), enBoy = en / boy;
+    var o = new Float32Array(16);
+    o[0] = f / enBoy; o[5] = f;
+    o[10] = (uzak + yakin) / (yakin - uzak); o[11] = -1;
+    o[14] = (2 * uzak * yakin) / (yakin - uzak);
+    return o;
+  }
+  function mat4Bak(konum, hedef, yukari) {
+    var zx = konum[0]-hedef[0], zy = konum[1]-hedef[1], zz = konum[2]-hedef[2];
+    var zl = Math.hypot(zx,zy,zz) || 1; zx/=zl; zy/=zl; zz/=zl;
+    var xx = yukari[1]*zz - yukari[2]*zy, xy = yukari[2]*zx - yukari[0]*zz, xz = yukari[0]*zy - yukari[1]*zx;
+    var xl = Math.hypot(xx,xy,xz) || 1; xx/=xl; xy/=xl; xz/=xl;
+    var yx = zy*xz - zz*xy, yy = zz*xx - zx*xz, yz = zx*xy - zy*xx;
+    return new Float32Array([
+      xx, yx, zx, 0,
+      xy, yy, zy, 0,
+      xz, yz, zz, 0,
+      -(xx*konum[0]+xy*konum[1]+xz*konum[2]),
+      -(yx*konum[0]+yy*konum[1]+yz*konum[2]),
+      -(zx*konum[0]+zy*konum[1]+zz*konum[2]), 1
+    ]);
+  }
+  function mat4Cevir(x, y, z) {
+    var m = mat4Kimlik(); m[12]=x; m[13]=y; m[14]=z; return m;
+  }
+  function mat4Olcek(x, y, z) {
+    var m = mat4Kimlik(); m[0]=x; m[5]=y; m[10]=z; return m;
+  }
+  function mat4DonY(aci) {
+    var c = Math.cos(aci), s = Math.sin(aci);
+    var m = mat4Kimlik(); m[0]=c; m[2]=-s; m[8]=s; m[10]=c; return m;
+  }
+  function mat4DonX(aci) {
+    var c = Math.cos(aci), s = Math.sin(aci);
+    var m = mat4Kimlik(); m[5]=c; m[6]=s; m[9]=-s; m[10]=c; return m;
+  }
+
+  /* ---- Shader derleme ---- */
+  var VS =
+    'attribute vec3 aKonum;' +
+    'attribute vec3 aNormal;' +
+    'attribute vec3 aRenk;' +
+    'uniform mat4 uProj;' +
+    'uniform mat4 uGorunum;' +
+    'uniform mat4 uModel;' +
+    'varying vec3 vNormal;' +
+    'varying vec3 vRenk;' +
+    'varying vec3 vDunya;' +
+    'void main(){' +
+    '  vec4 dunya = uModel * vec4(aKonum, 1.0);' +
+    '  vDunya = dunya.xyz;' +
+    '  vNormal = mat3(uModel) * aNormal;' +
+    '  vRenk = aRenk;' +
+    '  gl_Position = uProj * uGorunum * dunya;' +
+    '}';
+  var FS =
+    'precision mediump float;' +
+    'varying vec3 vNormal;' +
+    'varying vec3 vRenk;' +
+    'varying vec3 vDunya;' +
+    'uniform vec3 uIsikKonum;' +
+    'uniform vec3 uKameraKonum;' +
+    'uniform float uVurgu;' +      /* sıcak nokta nabzı: 0 = kapalı */
+    'void main(){' +
+    '  vec3 N = normalize(vNormal);' +
+    '  vec3 L = normalize(uIsikKonum - vDunya);' +
+    '  vec3 V = normalize(uKameraKonum - vDunya);' +
+    '  vec3 H = normalize(L + V);' +
+    '  float dagil = max(dot(N, L), 0.0);' +
+    '  float cevre = 0.42 + 0.18 * max(N.y, 0.0);' +
+    '  float parlama = pow(max(dot(N, H), 0.0), 28.0) * 0.5;' +
+    '  vec3 renk = vRenk * (cevre + dagil * 0.75) + vec3(parlama);' +
+    '  renk += vRenk * uVurgu * 0.55;' +
+    '  gl_FragColor = vec4(clamp(renk, 0.0, 1.0), 1.0);' +
+    '}';
+  function shaderDerle(tip, kaynak) {
+    var s = gl.createShader(tip);
+    gl.shaderSource(s, kaynak);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+    return s;
+  }
+  var prog = gl.createProgram();
+  gl.attachShader(prog, shaderDerle(gl.VERTEX_SHADER, VS));
+  gl.attachShader(prog, shaderDerle(gl.FRAGMENT_SHADER, FS));
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+  gl.useProgram(prog);
+
+  var locKonum = gl.getAttribLocation(prog, 'aKonum');
+  var locNormal = gl.getAttribLocation(prog, 'aNormal');
+  var locRenk = gl.getAttribLocation(prog, 'aRenk');
+  var uProj = gl.getUniformLocation(prog, 'uProj');
+  var uGorunum = gl.getUniformLocation(prog, 'uGorunum');
+  var uModel = gl.getUniformLocation(prog, 'uModel');
+  var uIsikKonum = gl.getUniformLocation(prog, 'uIsikKonum');
+  var uKameraKonum = gl.getUniformLocation(prog, 'uKameraKonum');
+  var uVurgu = gl.getUniformLocation(prog, 'uVurgu');
+
+  /* ---- Geometri üreticileri ---- */
+  function agYap(konumlar, normaller, renkler, indeksler) {
+    var vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(konumlar), gl.STATIC_DRAW);
+    var nb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, nb);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normaller), gl.STATIC_DRAW);
+    var cb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, cb);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(renkler), gl.STATIC_DRAW);
+    var ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indeksler), gl.STATIC_DRAW);
+    return { vb: vb, nb: nb, cb: cb, ib: ib, sayi: indeksler.length };
+  }
+
+  function kutuGeometrisi(g, y, d, renk) {
+    /* Merkezi 0 olan kutu; her yüz kendi normalini taşır. */
+    var x = g/2, yy = y/2, z = d/2;
+    var P = [
+      [-x,-yy,-z],[x,-yy,-z],[x,yy,-z],[-x,yy,-z],   // ön  (-z)
+      [x,-yy,z],[-x,-yy,z],[-x,yy,z],[x,yy,z],       // arka (+z)
+      [-x,-yy,z],[-x,-yy,-z],[-x,yy,-z],[-x,yy,z],   // sol
+      [x,-yy,-z],[x,-yy,z],[x,yy,z],[x,yy,-z],       // sağ
+      [-x,yy,-z],[x,yy,-z],[x,yy,z],[-x,yy,z],       // üst
+      [-x,-yy,z],[x,-yy,z],[x,-yy,-z],[-x,-yy,-z]    // alt
+    ];
+    var N = [
+      [0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],
+      [0,0,1],[0,0,1],[0,0,1],[0,0,1],
+      [-1,0,0],[-1,0,0],[-1,0,0],[-1,0,0],
+      [1,0,0],[1,0,0],[1,0,0],[1,0,0],
+      [0,1,0],[0,1,0],[0,1,0],[0,1,0],
+      [0,-1,0],[0,-1,0],[0,-1,0],[0,-1,0]
+    ];
+    var I = [];
+    for (var f = 0; f < 6; f++) {
+      var b = f*4;
+      I.push(b, b+1, b+2, b, b+2, b+3);
+    }
+    var R = [];
+    for (var i = 0; i < 24; i++) R.push(renk[0], renk[1], renk[2]);
+    var K = []; P.forEach(function (p) { K.push(p[0], p[1], p[2]); });
+    var Nn = []; N.forEach(function (n) { Nn.push(n[0], n[1], n[2]); });
+    return agYap(K, Nn, R, I);
+  }
+
+  function duzlemGeometrisi(g, d, renk, normalYukari) {
+    var x = g/2, z = d/2, ny = normalYukari ? 1 : -1;
+    var K = [-x,0,-z, x,0,-z, x,0,z, -x,0,z];
+    var N = [0,ny,0, 0,ny,0, 0,ny,0, 0,ny,0];
+    var R = []; for (var i = 0; i < 4; i++) R.push(renk[0], renk[1], renk[2]);
+    return agYap(K, N, R, [0,2,1, 0,3,2]);
+  }
+
+  function silindirGeometrisi(r, h, kenar, renk) {
+    var K = [], N = [], R = [], I = [];
+    var yarim = h/2;
+    for (var i = 0; i <= kenar; i++) {
+      var a = (i / kenar) * Math.PI * 2;
+      var cx = Math.cos(a), cz = Math.sin(a);
+      K.push(cx*r, -yarim, cz*r, cx*r, yarim, cz*r);
+      N.push(cx,0,cz, cx,0,cz);
+      R.push(renk[0],renk[1],renk[2], renk[0],renk[1],renk[2]);
+    }
+    for (var s = 0; s < kenar; s++) {
+      var b = s*2;
+      I.push(b, b+1, b+3, b, b+3, b+2);
+    }
+    /* üst kapak */
+    var ust = K.length/3;
+    K.push(0,yarim,0); N.push(0,1,0); R.push(renk[0],renk[1],renk[2]);
+    for (var t = 0; t <= kenar; t++) {
+      var at = (t/kenar)*Math.PI*2;
+      K.push(Math.cos(at)*r, yarim, Math.sin(at)*r);
+      N.push(0,1,0); R.push(renk[0],renk[1],renk[2]);
+    }
+    for (var u = 0; u < kenar; u++) I.push(ust, ust+1+u, ust+2+u);
+    return agYap(K, N, R, I);
+  }
+
+  /* ---- Sahne nesnesi ---- */
+  var nesneler = [];   /* { ag, model, vurgu (0/1 nabız için) } */
+  function ekle(ag, model, vurgulu) {
+    nesneler.push({ ag: ag, model: model, vurgulu: !!vurgulu });
+  }
+  function kutuEkle(g, y, d, renk, x, yP, z, donY, vurgulu) {
+    var m = mat4Cevir(x, yP, z);
+    if (donY) m = mat4Carp(m, mat4DonY(donY));
+    ekle(kutuGeometrisi(g, y, d, renk), m, vurgulu);
+  }
+
+  /* =========================================================
+     2) Sınıfın inşası
+        Zemin 12x12, duvarlar y=2 ortalanmış (yükseklik 4),
+        tahta kuzey duvarında (−z), kapı güneydoğuda.
+     ========================================================= */
+
+  /* Zemin + tavan */
+  ekle(duzlemGeometrisi(12, 12, [0.545, 0.451, 0.325], true), mat4Cevir(0, 0, 0));            // parke
+  ekle(duzlemGeometrisi(12, 12, [0.831, 0.773, 0.663], false), mat4Cevir(0, 4, 0));           // tavan
+
+  /* Halı — tahtanın önünde */
+  ekle(duzlemGeometrisi(4.6, 3.2, [0.29, 0.47, 0.71], true), mat4Cevir(0, 0.012, -2.4));
+
+  /* Duvarlar (renk tonları birbirinden ayrışsın) */
+  var duvarRenkleri = [[0.909,0.862,0.784],[0.831,0.773,0.663],[0.788,0.722,0.588],[0.878,0.831,0.753]];
+  kutuEkle(12, 4, 0.2, duvarRenkleri[0], 0, 2, -6);   // kuzey (tahta duvarı)
+  kutuEkle(12, 4, 0.2, duvarRenkleri[1], 0, 2, 6);    // güney
+  kutuEkle(0.2, 4, 12, duvarRenkleri[2], -6, 2, 0);   // batı (pencere duvarı)
+  kutuEkle(0.2, 4, 12, duvarRenkleri[3], 6, 2, 0);    // doğu
+
+  /* Tahta + tebeşir tepsisi + tahta çerçevesi */
+  kutuEkle(7.6, 0.12, 0.1, [0.176, 0.314, 0.086], 0, 2.6, -5.86);   // yeşil yüzey
+  kutuEkle(7.8, 0.14, 0.16, [0.545, 0.361, 0.216], 0, 2.6, -5.82);  // ahşap çerçeve (arka plaka)
+  kutuEkle(7.8, 0.1, 0.12, [0.42, 0.28, 0.16], 0, 1.95, -5.84);     // tebeşir tepsisi
+
+  /* Öğretmen masası + bilgisayar */
+  kutuEkle(2.4, 0.14, 1.1, [0.545, 0.361, 0.216], -4.2, 1.02, -4.9);          // masa üstü
+  kutuEkle(0.14, 0.95, 0.9, [0.42, 0.28, 0.16], -5.2, 0.5, -4.9);             // bacaklar
+  kutuEkle(0.14, 0.95, 0.9, [0.42, 0.28, 0.16], -3.2, 0.5, -4.9);
+  kutuEkle(0.9, 0.6, 0.08, [0.1, 0.1, 0.12], -4.2, 1.45, -5.05);              // monitör
+  kutuEkle(0.24, 0.28, 0.2, [0.3, 0.3, 0.32], -4.2, 1.18, -5.05);             // monitör ayağı
+  kutuEkle(0.7, 0.06, 0.4, [0.25, 0.26, 0.3], -4.2, 1.12, -4.75);             // klavye
+
+  /* Öğrenci sıraları: 3 sıra x 4 masa (sıra aralığı 2.2) */
+  var siraRenk = [0.545, 0.412, 0.078];
+  var sandalyeRenk = [0.29, 0.29, 0.541];
+  for (var sira = 0; sira < 3; sira++) {
+    for (var kolon = 0; kolon < 4; kolon++) {
+      var mx = -3 + kolon * 2;
+      var mz = -1.2 + sira * 2.2;
+      /* masa */
+      kutuEkle(1.5, 0.1, 0.8, siraRenk, mx, 0.86, mz);
+      kutuEkle(0.1, 0.82, 0.7, [0.42, 0.3, 0.14], mx - 0.65, 0.44, mz);
+      kutuEkle(0.1, 0.82, 0.7, [0.42, 0.3, 0.14], mx + 0.65, 0.44, mz);
+      /* sandalye (masanın arkasında, tahtaya bakar) */
+      kutuEkle(0.55, 0.1, 0.55, sandalyeRenk, mx, 0.48, mz + 0.75);
+      kutuEkle(0.55, 0.62, 0.09, sandalyeRenk, mx, 0.82, mz + 1.0);
+      kutuEkle(0.09, 0.44, 0.09, [0.2, 0.2, 0.24], mx - 0.22, 0.22, mz + 0.75);
+      kutuEkle(0.09, 0.44, 0.09, [0.2, 0.2, 0.24], mx + 0.22, 0.22, mz + 0.75);
+      /* masaüstü defter */
+      kutuEkle(0.34, 0.035, 0.26, [0.949, 0.906, 0.804], mx + 0.35, 0.93, mz + 0.05, 0.35);
+      /* kalem kutusu */
+      kutuEkle(0.16, 0.09, 0.1, [0.937, 0.325, 0.314], mx - 0.45, 0.955, mz + 0.1);
+    }
+  }
+
+  /* Pencere — batı duvarında 3 adet (çerçeve + cam) */
+  for (var p = 0; p < 3; p++) {
+    var pz = -3.4 + p * 3.4;
+    kutuEkle(0.1, 1.9, 2.2, [0.42, 0.28, 0.16], -5.93, 2.1, pz);        // çerçeve plakası
+    kutuEkle(0.06, 1.6, 1.9, [0.62, 0.83, 0.95], -5.88, 2.1, pz);       // cam (açık mavi)
+    kutuEkle(0.08, 1.6, 0.08, [0.42, 0.28, 0.16], -5.86, 2.1, pz);      // orta kayıt
+  }
+
+  /* Kapı — güney duvarında */
+  kutuEkle(1.15, 2.3, 0.1, [0.42, 0.28, 0.16], 3.4, 1.15, 5.93);
+  kutuEkle(0.1, 0.1, 0.1, [0.9, 0.75, 0.2], 3.95, 1.15, 5.86);         // kulp
+
+  /* Kitaplık — doğu duvarında */
+  kutuEkle(0.5, 2.6, 3.4, [0.42, 0.28, 0.16], 5.7, 1.3, -2.2);
+  var kitapRenkleri = [[0.937,0.325,0.314],[0.302,0.565,0.949],[0.976,0.71,0.184],[0.42,0.71,0.38],[0.71,0.44,0.86]];
+  for (var raf = 0; raf < 4; raf++) {
+    kutuEkle(0.56, 0.06, 3.3, [0.29, 0.18, 0.1], 5.7, 0.45 + raf * 0.62, -2.2);   // raf
+    for (var k = 0; k < 7; k++) {
+      var r = kitapRenkleri[(raf * 7 + k) % kitapRenkleri.length];
+      kutuEkle(0.3, 0.34, 0.12, r, 5.62, 0.66 + raf * 0.62, -3.6 + k * 0.44);
+    }
+  }
+
+  /* Robi maskotu — öğretmen masasının yanında (gövde + kafa + anten) */
+  var robiX = -2.6, robiZ = -4.6;
+  ekle(silindirGeometrisi(0.42, 0.85, 24, [0.55, 0.36, 0.93]), mat4Cevir(robiX, 1.45, robiZ));          // gövde
+  ekle(silindirGeometrisi(0.3, 0.34, 20, [0.68, 0.51, 0.98]), mat4Cevir(robiX, 2.05, robiZ));           // kafa
+  ekle(silindirGeometrisi(0.045, 0.3, 8, [0.85, 0.85, 0.9]), mat4Cevir(robiX, 2.35, robiZ));            // anten
+  ekle(silindirGeometrisi(0.07, 0.05, 10, [0.96, 0.62, 0.14]), mat4Cevir(robiX, 2.52, robiZ));          // anten topu
+  ekle(silindirGeometrisi(0.5, 0.08, 24, [0.4, 0.27, 0.75]), mat4Cevir(robiX, 1.05, robiZ));            // kaide
+
+  /* Türk bayrağı — köşede direk + bayrak */
+  var bayrakX = 5.2, bayrakZ = 4.8;
+  ekle(silindirGeometrisi(0.045, 2.6, 10, [0.75, 0.75, 0.78]), mat4Cevir(bayrakX, 1.3, bayrakZ));
+  kutuEkle(1.0, 0.6, 0.03, [0.925, 0.157, 0.157], bayrakX - 0.52, 2.25, bayrakZ, Math.PI / 2);
+
+  /* Dünya saati — doğu duvarının üstünde */
+  ekle(silindirGeometrisi(0.42, 0.09, 24, [0.95, 0.95, 0.97]), mat4Carp(mat4Cevir(5.9, 3.3, 1.6), mat4DonX(Math.PI / 2)));
+  kutuEkle(0.06, 0.28, 0.04, [0.15, 0.15, 0.18], 5.84, 3.3, 1.6, 0);   // akrep (y ekseni boyunca, dönY ile çevrilecek)
+  kutuEkle(0.04, 0.36, 0.04, [0.15, 0.15, 0.18], 5.84, 3.3, 1.6, 1.1); // yelkovan
+
+  /* =========================================================
+     3) Sıcak noktalar (dünya konumu + bilgi kartı)
+     ========================================================= */
+  var NOKTALAR = [
+    {
+      baslik: '🧑‍🏫 Öğretmen Masası',
+      metin: 'Ders buradan yönetilir: bilgisayar, projeksiyon bağlantısı ve ders materyalleri. Öğretmen masası tahtayı rahat görebilecek şekilde yerleştirilir.',
+      x: -4.2, y: 1.6, z: -4.9
+    },
+    {
+      baslik: '🪑 Öğrenci Sıraları',
+      metin: 'Sıralar tahtaya bakacak şekilde sıralanır; grup çalışmasında masalar birleştirilebilir. Oturma planı çarkıyla burada kura çekilir!',
+      x: 0, y: 1.3, z: 0.2
+    },
+    {
+      baslik: '🪟 Pencereler',
+      metin: 'Sınıfın ışık kaynağı. Güneş ışığı dikkat dağıtmaması için yan panjurlarla ayarlanır — fen deneylerinde perde de iner.',
+      x: -5.6, y: 2.1, z: 0
+    },
+    {
+      baslik: '📚 Kitaplık',
+      metin: 'Ders kitapları, hikâye kitapları ve robotik setler burada düzenli durur. Her raf bir konuya ayrılabilir.',
+      x: 5.3, y: 1.4, z: -2.2
+    },
+    {
+      baslik: '🤖 Robi',
+      metin: 'Bilişim sınıfının maskotu Robi! Kodlama etkinliklerinde sana eşlik eder, algoritma maceralarında rehberlik eder.',
+      x: -2.6, y: 2.1, z: -4.6
+    },
+    {
+      baslik: '🇹🇷 Türk Bayrağı',
+      metin: 'Her pazartesi törende andımızı içtiğimiz bayrak, sınıfın da onur köşesindedir.',
+      x: 5.2, y: 2.4, z: 4.8
+    },
+    {
+      baslik: '🕰️ Dünya Saati',
+      metin: 'Bilişim dersi küreseldir: farklı ülkelerdeki kodlama dostlarımızla buluşurken saat farklarını buradan takip ederiz.',
+      x: 5.6, y: 3.3, z: 1.6
+    }
+  ];
+
+  /* Sıcak nokta kuleleri (yere dikilen ince ışın + zemin halkası) */
+  NOKTALAR.forEach(function (n) {
+    ekle(silindirGeometrisi(0.05, n.y, 8, [0.98, 0.78, 0.24]), mat4Cevir(n.x, n.y / 2, n.z), true);
+    ekle(silindirGeometrisi(0.34, 0.05, 20, [0.98, 0.78, 0.24]), mat4Cevir(n.x, 0.04, n.z), true);
+  });
+
+  /* =========================================================
+     4) Kamera kontrolü (orbit) + etkileşim
+     ========================================================= */
+  var aci = { theta: 0, phi: 0.12 };       /* yatay / dikey açı */
+  var mesafe = 7.2;                        /* merkezden uzaklık */
+  var MESAFE_MIN = 3.2, MESAFE_MAX = 10.5;
+  var merkez = [0, 1.6, 0];
+
+  var surukleniyor = false;
+  var sonFare = { x: 0, y: 0 };
+  var dokunmaMesafe = 0;
+
+  canvas.addEventListener('mousedown', function (e) {
+    surukleniyor = true;
+    sonFare = { x: e.clientX, y: e.clientY };
+    canvas.classList.add('surukleniyor');
+  });
+  window.addEventListener('mouseup', function () {
+    surukleniyor = false;
+    canvas.classList.remove('surukleniyor');
+  });
+  window.addEventListener('mousemove', function (e) {
+    if (!surukleniyor) return;
+    var dx = (e.clientX - sonFare.x) * 0.006;
+    var dy = (e.clientY - sonFare.y) * 0.005;
+    aci.theta -= dx;
+    aci.phi = Math.max(-0.15, Math.min(0.85, aci.phi + dy));
+    sonFare = { x: e.clientX, y: e.clientY };
+  });
+  canvas.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    mesafe = Math.max(MESAFE_MIN, Math.min(MESAFE_MAX, mesafe + e.deltaY * 0.004));
+  }, { passive: false });
+
+  /* Dokunmatik: tek parmak sürükle, iki parmak kıstır */
+  canvas.addEventListener('touchstart', function (e) {
+    if (e.touches.length === 1) {
+      surukleniyor = true;
+      sonFare = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    } else if (e.touches.length === 2) {
+      surukleniyor = false;
+      dokunmaMesafe = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+    }
+  }, { passive: true });
+  canvas.addEventListener('touchmove', function (e) {
+    e.preventDefault();
+    if (e.touches.length === 1 && surukleniyor) {
+      var dx = (e.touches[0].clientX - sonFare.x) * 0.006;
+      var dy = (e.touches[0].clientY - sonFare.y) * 0.005;
+      aci.theta -= dx;
+      aci.phi = Math.max(-0.15, Math.min(0.85, aci.phi + dy));
+      sonFare = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    } else if (e.touches.length === 2) {
+      var m = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      if (dokunmaMesafe > 0) {
+        mesafe = Math.max(MESAFE_MIN, Math.min(MESAFE_MAX, mesafe - (m - dokunmaMesafe) * 0.02));
+      }
+      dokunmaMesafe = m;
+    }
+  }, { passive: false });
+  canvas.addEventListener('touchend', function () {
+    surukleniyor = false;
+    dokunmaMesafe = 0;
+  });
+
+  /* ---- Sıcak nokta tıklaması: ekran uzayına projekte edip yakınlık testi ---- */
+  var genislik = 0, boy = 0;
+  function ekranaProjekte(n) {
+    var kameraKonum = kameraKonumuHesapla();
+    var gorunum = mat4Bak(kameraKonum, merkez, [0, 1, 0]);
+    var proj = mat4Perspektif(fov, Math.max(genislik, 1), Math.max(boy, 1), 0.1, 100);
+    var vp = mat4Carp(proj, gorunum);
+    var x = n.x, y = n.y, z = n.z;
+    var cx = vp[0]*x + vp[4]*y + vp[8]*z + vp[12];
+    var cy = vp[1]*x + vp[5]*y + vp[9]*z + vp[13];
+    var cw = vp[3]*x + vp[7]*y + vp[11]*z + vp[15];
+    if (cw <= 0) return null;
+    return {
+      x: (cx / cw * 0.5 + 0.5) * genislik,
+      y: (1 - (cy / cw * 0.5 + 0.5)) * boy,
+      derinlik: cw
+    };
+  }
+  function enYakinNokta(px, py) {
+    var enIyi = null, enIyiMesafe = 46;   /* px toleransı */
+    NOKTALAR.forEach(function (n) {
+      var p = ekranaProjekte(n);
+      if (!p) return;
+      var d = Math.hypot(p.x - px, p.y - py);
+      if (d < enIyiMesafe) { enIyiMesafe = d; enIyi = n; }
+    });
+    return enIyi;
+  }
+  canvas.addEventListener('click', function (e) {
+    /* Sürükleme ile tıklamayı ayır: küçük hareket tıklama sayılır */
+    var r = canvas.getBoundingClientRect();
+    var px = (e.clientX - r.left) * (genislik / r.width);
+    var py = (e.clientY - r.top) * (boy / r.height);
+    var n = enYakinNokta(px, py);
+    if (n) kartAc(n);
+  });
+
+  /* ---- Bilgi kartı ---- */
+  var kart = document.getElementById('hotspotKart');
+  var kartBaslik = document.getElementById('kartBaslik');
+  var kartMetin = document.getElementById('kartMetin');
+  var acikNokta = null;
+  function kartAc(n) {
+    acikNokta = n;
+    kartBaslik.textContent = n.baslik;
+    kartMetin.textContent = n.metin;
+    kart.classList.add('acik');
+    kesifIsaretle(n);
+  }
+  document.getElementById('kartKapat').addEventListener('click', function () {
+    kart.classList.remove('acik');
+    acikNokta = null;
+  });
+
+  /* ---- Keşif rozetleri ---- */
+  var kesfedilen = {};
+  var rozetKutu = document.getElementById('rozetler');
+  var ROZET_EMOJILER = ['🧑‍🏫', '🪑', '🪟', '📚', '🤖', '🇹🇷', '🕰️'];
+  NOKTALAR.forEach(function (n, i) {
+    var r = document.createElement('div');
+    r.className = 'rozet';
+    r.textContent = ROZET_EMOJILER[i] || '✨';
+    r.title = n.baslik.replace(/^[^\s]+\s/, '');
+    rozetKutu.appendChild(r);
+    n.rozetEl = r;
+  });
+  var tamamBand = document.getElementById('tamamBand');
+  function kesifIsaretle(n) {
+    if (kesfedilen[n.baslik]) return;
+    kesfedilen[n.baslik] = true;
+    n.rozetEl.classList.add('kazanildi');
+    var hepsi = NOKTALAR.every(function (x) { return kesfedilen[x.baslik]; });
+    if (hepsi) {
+      tamamBand.classList.add('acik');
+      setTimeout(function () { tamamBand.classList.remove('acik'); }, 4200);
+    }
+  }
+
+  /* ---- Konum rozeti: bakış açısına göre oda adı ---- */
+  var konumEl = document.getElementById('konum');
+  function konumGuncelle() {
+    var derece = ((aci.theta * 180 / Math.PI) % 360 + 360) % 360;
+    var ad;
+    if (derece < 45 || derece >= 315) ad = '📍 Tahtanın karşısında';
+    else if (derece < 135) ad = '📍 Pencere tarafında';
+    else if (derece < 225) ad = '📍 Tahtanın önünde';
+    else ad = '📍 Kitaplık köşesinde';
+    if (konumEl.textContent !== ad) konumEl.textContent = ad;
+  }
+
+  /* =========================================================
+     5) Ses — Web Audio ile üretilir, dosya gerekmez
+     ========================================================= */
+  var audioCtx = null;
+  var sesKapali = false;
+  function sesBaglamGetir() {
+    if (!audioCtx) {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  function bipFrekans(frekans, sure, tur, sesDuzeyi) {
+    if (sesKapali) return;
+    var ctx = sesBaglamGetir();
+    if (!ctx) return;
+    var osc = ctx.createOscillator();
+    var kazanc = ctx.createGain();
+    osc.type = tur || 'sine';
+    osc.frequency.value = frekans;
+    kazanc.gain.setValueAtTime(sesDuzeyi || 0.08, ctx.currentTime);
+    kazanc.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + sure);
+    osc.connect(kazanc).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + sure);
+  }
+  var muteBtn = document.getElementById('muteBtn');
+  muteBtn.addEventListener('click', function () {
+    sesKapali = !sesKapali;
+    muteBtn.textContent = sesKapali ? '🔇' : '🔊';
+    if (!sesKapali) bipFrekans(660, 0.12, 'sine', 0.06);
+  });
+  /* İlk kullanıcı hareketiyle ses bağlamını aç */
+  window.addEventListener('pointerdown', function ilkSes() {
+    sesBaglamGetir();
+    window.removeEventListener('pointerdown', ilkSes);
+  });
+
+  /* Kart açılış jingle'ı */
+  function kartSesi() {
+    bipFrekans(523, 0.12, 'sine', 0.07);
+    setTimeout(function () { bipFrekans(659, 0.12, 'sine', 0.07); }, 110);
+    setTimeout(function () { bipFrekans(784, 0.18, 'sine', 0.07); }, 220);
+  }
+  var eskiKartAc = kartAc;
+  kartAc = function (n) { eskiKartAc(n); kartSesi(); };
+
+  /* =========================================================
+     6) Boyutlandırma + ana döngü
+     ========================================================= */
+  var fov = 62 * Math.PI / 180;
+
+  function kameraKonumuHesapla() {
+    var yatay = Math.cos(aci.phi) * mesafe;
+    return [
+      merkez[0] + Math.sin(aci.theta) * yatay,
+      merkez[1] + Math.sin(aci.phi) * mesafe,
+      merkez[2] + Math.cos(aci.theta) * yatay
+    ];
+  }
+
+  function boyutlandir() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var r = canvas.getBoundingClientRect();
+    genislik = Math.max(1, Math.round(r.width * dpr));
+    boy = Math.max(1, Math.round(r.height * dpr));
+    if (canvas.width !== genislik || canvas.height !== boy) {
+      canvas.width = genislik;
+      canvas.height = boy;
+    }
+  }
+
+  var sonZaman = 0;
+  function ciz(zaman) {
+    boyutlandir();
+    gl.viewport(0, 0, genislik, boy);
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
+    gl.clearColor(0.055, 0.078, 0.16, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    var kameraKonum = kameraKonumuHesapla();
+    var gorunum = mat4Bak(kameraKonum, merkez, [0, 1, 0]);
+    var proj = mat4Perspektif(fov, genislik, boy, 0.1, 100);
+
+    gl.uniformMatrix4fv(uProj, false, proj);
+    gl.uniformMatrix4fv(uGorunum, false, gorunum);
+    gl.uniform3f(uIsikKonum, 2.5, 3.8, 2.0);
+    gl.uniform3f(uKameraKonum, kameraKonum[0], kameraKonum[1], kameraKonum[2]);
+
+    /* Sıcak nokta nabzı */
+    var nabiz = (Math.sin(zaman * 0.004) * 0.5 + 0.5) * (0.35 + 0.25 * Math.sin(zaman * 0.011));
+
+    /* Gezgin kamera sesi: yavaş dönüşte hafif adım tıkırtısı */
+    if (!surukleniyor) {
+      /* boşta hafif salınım: sahneyi canlı tutar */
+      aci.theta += 0.00035;
+    }
+
+    nesneler.forEach(function (o) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, o.ag.vb);
+      gl.enableVertexAttribArray(locKonum);
+      gl.vertexAttribPointer(locKonum, 3, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, o.ag.nb);
+      gl.enableVertexAttribArray(locNormal);
+      gl.vertexAttribPointer(locNormal, 3, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, o.ag.cb);
+      gl.enableVertexAttribArray(locRenk);
+      gl.vertexAttribPointer(locRenk, 3, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, o.ag.ib);
+
+      gl.uniformMatrix4fv(uModel, false, o.model);
+      gl.uniform1f(uVurgu, o.vurgulu ? nabiz : 0);
+      gl.drawElements(gl.TRIANGLES, o.ag.sayi, gl.UNSIGNED_SHORT, 0);
+    });
+
+    konumGuncelle();
+    requestAnimationFrame(ciz);
+  }
+
+  requestAnimationFrame(ciz);
+
+  /* Klavye erişilebilirliği: ok tuşlarıyla da gez */
+  window.addEventListener('keydown', function (e) {
+    var adim = 0.06;
+    if (e.key === 'ArrowLeft') aci.theta -= adim;
+    else if (e.key === 'ArrowRight') aci.theta += adim;
+    else if (e.key === 'ArrowUp') aci.phi = Math.min(0.85, aci.phi + adim * 0.6);
+    else if (e.key === 'ArrowDown') aci.phi = Math.max(-0.15, aci.phi - adim * 0.6);
+  });
+})();
+</script>
+</body>
+</html>

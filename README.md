@@ -20,10 +20,13 @@ bilfenbilisimai/
 ├── supabase-schema.sql     ← Bulut (Supabase) veritabanı şeması
 ├── robi.png                ← Robi maskotu
 ├── games/                  ← Etkinlikler (her etkinlik bir klasör)
-│   └── carkifelek/
-│       └── index.html      ← Örnek etkinlik: Sınıf Çarkıfeleği
+│   ├── carkifelek/
+│   │   └── index.html      ← Örnek etkinlik: Sınıf Çarkıfeleği
+│   └── sanal-sinif-turu/
+│       └── index.html      ← Etkinlik: Sanal Sınıf Turu (3B sınıf gezisi)
 ├── thumbnails/             ← Etkinlik kartlarının önizleme görselleri
-│   └── carkifelek.jpg
+│   ├── carkifelek.jpg
+│   └── sanal-sinif-turu.svg
 └── README.md
 ```
 
