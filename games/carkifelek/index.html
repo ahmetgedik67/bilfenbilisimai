@@ -203,6 +203,27 @@
     main { flex-direction: column; }
     .panel { min-width: 0; }
   }
+
+  /* ---- Tam ekran düğmesi + tam ekran yerleşimi ---- */
+  .fullscreen-btn {
+    position: absolute; right: 64px; top: 14px; z-index: 5;
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.14);
+    color: #fff; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, transform .15s;
+  }
+  .fullscreen-btn:hover { background: rgba(255,255,255,.28); transform: scale(1.08); }
+  :fullscreen, :-webkit-full-screen { width: 100%; height: 100%; }
+  /* Tam ekranda: dekor + başlık gizlenir, çark ve panel bütün ekranı verimli kullanır */
+  :fullscreen .bg-decor, :-webkit-full-screen .bg-decor { display: none; }
+  :fullscreen header, :-webkit-full-screen header { padding: 10px 16px 2px; }
+  :fullscreen header h1, :-webkit-full-screen header h1 { font-size: clamp(20px, 3vw, 30px); }
+  :fullscreen .robi, :-webkit-full-screen .robi { width: clamp(56px, 7vw, 84px); }
+  :fullscreen main, :-webkit-full-screen main { max-width: 1500px; padding: 8px 18px 12px; gap: 18px; align-items: center; }
+  :fullscreen .wheel-card, :-webkit-full-screen .wheel-card { padding: 14px; }
+  :fullscreen .wheel-wrap, :-webkit-full-screen .wheel-wrap { max-width: min(78vh, 900px); }
+  :fullscreen footer, :-webkit-full-screen footer { padding: 4px 16px 10px; }
 </style>
 </head>
 <body>
@@ -657,6 +678,35 @@ iVBORw0KGgoAAAANSUhEUgAAAeAAAAFACAYAAABkyK97AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
   });
   $('muteBtn').textContent = muted ? '🔇' : '🔊';
   $('muteBtn').title = muted ? 'Sesi aç' : 'Sesi kapat';
+
+  /* ---- Tam ekran (düğme + F kısayolu) ---- */
+  function tamEkranAc() {
+    var el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  }
+  function tamEkranKapat() {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+  var fullscreenBtn = document.createElement('button');
+  fullscreenBtn.className = 'fullscreen-btn';
+  fullscreenBtn.textContent = '⛶';
+  fullscreenBtn.title = 'Tam ekran (F)';
+  document.body.appendChild(fullscreenBtn);
+  fullscreenBtn.addEventListener('click', function () {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) tamEkranAc();
+    else tamEkranKapat();
+  });
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) tamEkranAc();
+      else tamEkranKapat();
+    }
+  });
+  document.addEventListener('fullscreenchange', function () {
+    fullscreenBtn.title = document.fullscreenElement ? 'Tam ekrandan çık (F)' : 'Tam ekran (F)';
+  });
   $('buildBtn').addEventListener('click', buildWheel);
   $('spinBtn').addEventListener('click', spin);
   $('undoBtn').addEventListener('click', undo);
