@@ -577,37 +577,69 @@
   kutuEkle(0.7, 0.06, 0.4, [0.25, 0.26, 0.3], -4.2, 1.12, -4.75);             // klavye
 
   /* =========================================================
-     ÖĞRENCİ BİLGİSAYAR İSTASYONLARI — 3 sıra x 4 masa
-     Her masada: monitör + klavye + fare + PC kasası
+     ÖĞRENCİ BİLGİSAYAR İSTASYONLARI — U DUVAR DÜZENİ
+     Masalar duvara yapışık, ortası boş: kuzey duvarda 2 sıra,
+     batı duvarında 1 sıra, doğu duvarında 1 sıra (toplam 12).
+     Her istasyonda: monitör + klavye + fare + PC kasası.
      ========================================================= */
   var siraRenk = [0.545, 0.412, 0.078];
   var sandalyeRenk = [0.29, 0.29, 0.541];
   var monitorRenk = [0.1, 0.1, 0.12];
   var ekranRenk = [0.42, 0.62, 0.86];
   var kasaRenk = [0.28, 0.3, 0.36];
-  for (var sira = 0; sira < 3; sira++) {
-    for (var kolon = 0; kolon < 4; kolon++) {
-      var mx = -3 + kolon * 2;
-      var mz = -1.2 + sira * 2.2;
-      /* masa */
-      kutuEkle(1.5, 0.1, 0.8, siraRenk, mx, 0.86, mz);
-      kutuEkle(0.1, 0.82, 0.7, [0.42, 0.3, 0.14], mx - 0.65, 0.44, mz);
-      kutuEkle(0.1, 0.82, 0.7, [0.42, 0.3, 0.14], mx + 0.65, 0.44, mz);
-      /* sandalye (masanın arkasında, tahtaya bakar) */
-      kutuEkle(0.55, 0.1, 0.55, sandalyeRenk, mx, 0.48, mz + 0.75);
-      kutuEkle(0.55, 0.62, 0.09, sandalyeRenk, mx, 0.82, mz + 1.0);
-      kutuEkle(0.09, 0.44, 0.09, [0.2, 0.2, 0.24], mx - 0.22, 0.22, mz + 0.75);
-      kutuEkle(0.09, 0.44, 0.09, [0.2, 0.2, 0.24], mx + 0.22, 0.22, mz + 0.75);
-      /* ---- bilgisayar istasyonu ---- */
-      kutuEkle(0.82, 0.52, 0.07, monitorRenk, mx, 1.18, mz - 0.18);                    // monitör
-      kutuEkle(0.72, 0.42, 0.02, ekranRenk, mx, 1.18, mz - 0.14);                      // açık ekran
-      kutuEkle(0.2, 0.12, 0.16, [0.3, 0.3, 0.32], mx, 0.94, mz - 0.18);                // monitör ayağı
-      kutuEkle(0.68, 0.05, 0.3, [0.25, 0.26, 0.3], mx, 0.925, mz + 0.12);              // klavye
-      kutuEkle(0.14, 0.035, 0.2, [0.3, 0.3, 0.34], mx + 0.5, 0.93, mz + 0.12);         // fare
-      kutuEkle(0.24, 0.48, 0.5, kasaRenk, mx - 0.62, 1.12, mz - 0.1);                  // PC kasası
-      kutuEkle(0.2, 0.04, 0.04, [0.42, 0.85, 0.44], mx - 0.62, 1.3, mz + 0.16);        // güç ışığı
-    }
+
+  /* Bir istasyonu (yön + konum) kurar: yon 'kuzey' → ekran duvara bakar,
+     öğrenci güneyden oturur; 'batı'/'doğu' → yan duvarlar, masa 90° dönük. */
+  function istasyonKur(mx, mz, yon) {
+    var don = yon === 'kuzey' ? 0 : (yon === 'guney' ? Math.PI : (yon === 'batı' ? Math.PI / 2 : -Math.PI / 2));
+    /* Masa (duvara yapışık) — yerel koordinatta ön kenar duvara bakar */
+    kutuEkle(1.5, 0.1, 0.7, siraRenk, mx, 0.86, mz, don);
+    kutuEkle(0.1, 0.82, 0.6, [0.42, 0.3, 0.14], mx, 0.44, mz, don);
+    /* Sandalye — oda merkezine bakacak şekilde masanın oda tarafında */
+    var sx = mx, sz = mz;
+    if (yon === 'kuzey') sz = mz + 0.95;
+    else if (yon === 'guney') sz = mz - 0.95;
+    else if (yon === 'batı') sx = mx + 0.95;
+    else sx = mx - 0.95;
+    kutuEkle(0.55, 0.1, 0.55, sandalyeRenk, sx, 0.48, sz, don);
+    kutuEkle(0.55, 0.62, 0.09, sandalyeRenk, sx, 0.82, sz, don + Math.PI);
+    kutuEkle(0.09, 0.44, 0.09, [0.2, 0.2, 0.24], sx - 0.22, 0.22, sz, don);
+    kutuEkle(0.09, 0.44, 0.09, [0.2, 0.2, 0.24], sx + 0.22, 0.22, sz, don);
+    /* Bilgisayar — monitör duvara sıfat, ekran odaya bakar (yerel -z duvar yönü) */
+    kutuEkle(0.82, 0.52, 0.07, monitorRenk, mx, 1.18, mz, don);
+    kutuEkle(0.72, 0.42, 0.02, ekranRenk, mx, 1.18, mz, don);
+    kutuEkle(0.2, 0.12, 0.16, [0.3, 0.3, 0.32], mx, 0.94, mz, don);
+    kutuEkle(0.68, 0.05, 0.3, [0.25, 0.26, 0.3], mx, 0.925, mz, don);
+    kutuEkle(0.14, 0.035, 0.2, [0.3, 0.3, 0.34], mx, 0.93, mz, don);
+    kutuEkle(0.24, 0.48, 0.5, kasaRenk, mx, 1.12, mz, don);
+    kutuEkle(0.2, 0.04, 0.04, [0.42, 0.85, 0.44], mx, 1.3, mz, don);
   }
+
+  /* Yerel (lx, lz) ofsetlerini yöne göre dünya konumuna çevirip istasyon kurar */
+  function yonluIstasyon(cx0, cz0, yon, lx, lz) {
+    var mx, mz;
+    if (yon === 'kuzey') { mx = cx0 + lx; mz = cz0 + lz; }
+    else if (yon === 'guney') { mx = cx0 - lx; mz = cz0 - lz; }
+    else if (yon === 'batı') { mx = cx0 + lz; mz = cz0 - lx; }
+    else { mx = cx0 - lz; mz = cz0 + lx; }
+    istasyonKur(mx, mz, yon);
+  }
+
+  /* KUZEY duvarı (akıllı tahta duvarı, 1 sıra — duvara yapışık): z = -5.45.
+     Öğretmen masası solda (x −5.4..−3.0) olduğu için sıra onun sağından başlar. */
+  for (var kn = 0; kn < 4; kn++) {
+    yonluIstasyon(-2.25 + kn * 2.25, -5.45, 'kuzey', 0, 0);
+  }
+  /* BATI duvarı (pencere altı, 1 sıra — duvara yapışık): x = -5.45 */
+  yonluIstasyon(-5.45, -3.5, 'batı', 0, 0);
+  yonluIstasyon(-5.45, -1.5, 'batı', 0, 0);
+  yonluIstasyon(-5.45, 0.5, 'batı', 0, 0);
+  yonluIstasyon(-5.45, 2.5, 'batı', 0, 0);
+  /* DOĞU duvarı (kitaplığın altında, 1 sıra — duvara yapışık): x = 5.45 */
+  yonluIstasyon(5.45, -3.5, 'doğu', 0, 0);
+  yonluIstasyon(5.45, -1.5, 'doğu', 0, 0);
+  yonluIstasyon(5.45, 0.5, 'doğu', 0, 0);
+  yonluIstasyon(5.45, 2.5, 'doğu', 0, 0);
 
   /* Pencere — batı duvarında 3 adet (çerçeve + cam) */
   for (var p = 0; p < 3; p++) {
@@ -621,14 +653,14 @@
   kutuEkle(1.15, 2.3, 0.1, [0.42, 0.28, 0.16], 3.4, 1.15, 5.93);
   kutuEkle(0.1, 0.1, 0.1, [0.9, 0.75, 0.2], 3.95, 1.15, 5.86);         // kulp
 
-  /* Kitaplık — doğu duvarında (robotik setler) */
-  kutuEkle(0.5, 2.6, 3.4, [0.42, 0.28, 0.16], 5.7, 1.3, -2.2);
+  /* Kitaplık — doğu duvarının üst segmentinde (yeni doğu sırasının üzerinde kalmayacak şekilde yukarıda) */
+  kutuEkle(0.5, 1.9, 3.0, [0.42, 0.28, 0.16], 5.7, 3.1, -2.2);
   var kitapRenkleri = [[0.937,0.325,0.314],[0.302,0.565,0.949],[0.976,0.71,0.184],[0.42,0.71,0.38],[0.71,0.44,0.86]];
-  for (var raf = 0; raf < 4; raf++) {
-    kutuEkle(0.56, 0.06, 3.3, [0.29, 0.18, 0.1], 5.7, 0.45 + raf * 0.62, -2.2);   // raf
-    for (var k = 0; k < 7; k++) {
-      var r = kitapRenkleri[(raf * 7 + k) % kitapRenkleri.length];
-      kutuEkle(0.3, 0.34, 0.12, r, 5.62, 0.66 + raf * 0.62, -3.6 + k * 0.44);
+  for (var raf = 0; raf < 3; raf++) {
+    kutuEkle(0.56, 0.06, 2.9, [0.29, 0.18, 0.1], 5.7, 2.3 + raf * 0.55, -2.2);   // raf
+    for (var k = 0; k < 6; k++) {
+      var r = kitapRenkleri[(raf * 6 + k) % kitapRenkleri.length];
+      kutuEkle(0.3, 0.3, 0.12, r, 5.62, 2.48 + raf * 0.55, -3.4 + k * 0.46);
     }
   }
 
@@ -643,7 +675,7 @@
   }
 
   /* Robi maskotu — öğretmen masasının yanında (tam 3B: gövde + kafa + gözler + kollar + göğüs ekranı) */
-  var robiX = -2.6, robiZ = -4.6;
+  var robiX = -3.6, robiZ = -3.7;
   ekle(silindirGeometrisi(0.42, 0.85, 24, [0.55, 0.36, 0.93]), mat4Cevir(robiX, 1.45, robiZ));          // gövde
   ekle(silindirGeometrisi(0.3, 0.34, 20, [0.68, 0.51, 0.98]), mat4Cevir(robiX, 2.05, robiZ));           // kafa
   ekle(silindirGeometrisi(0.055, 0.05, 12, [1, 1, 1]), mat4Cevir(robiX - 0.1, 2.1, robiZ - 0.27));      // sol göz
@@ -678,8 +710,8 @@
     },
     {
       baslik: '💻 Bilgisayar İstasyonları',
-      metin: 'Bilişim sınıfının kalbi! Her masada monitör, klavye, fare ve PC kasası var. Bilgisayarları açmadan önce kabloları düzgün bağlamak, çıkarken de kapatmak bizim görevimiz.',
-      x: 0, y: 1.4, z: -0.5
+      metin: 'Bilişim sınıfının kalbi! Masalar duvara yapışık U düzeninde: 12 istasyonda monitör, klavye, fare ve PC kasası var — sınıfın ortası tamamen boş kalır. Bilgisayarları açmadan önce kabloları düzgün bağlamak, çıkarken de kapatmak bizim görevimiz.',
+      x: 0, y: 1.4, z: 0.5
     },
     {
       baslik: '📜 Sınıf Kuralları Panosu',
@@ -688,9 +720,9 @@
       x: -5.5, y: 2.3, z: 3.2
     },
     {
-      baslik: '🪑 Öğrenci Sıraları',
-      metin: 'Sıralar tahtaya bakacak şekilde sıralanır. Oturma planı çarkıyla burada kura çekilir! Ekranını başkasına gösterirken kibar olmayı unutma.',
-      x: 0, y: 1.3, z: 1.2
+      baslik: '🪑 Oturma Yerleri',
+      metin: 'Sandalyeler duvardaki bilgisayarların önündedir, hepsi tahtaya bakar. Oturma planı çarkıyla burada kura çekilir! Ekranını başkasına gösterirken kibar olmayı unutma.',
+      x: 0, y: 1.3, z: 1.8
     },
     {
       baslik: '🪟 Pencereler',
@@ -699,13 +731,13 @@
     },
     {
       baslik: '📚 Kitaplık',
-      metin: 'Bilişim kitapları ve robotik setler burada düzenli durur. Robotları ödünç alırken kaydını yaptır, bitince yerine koy!',
-      x: 5.3, y: 1.4, z: -2.2
+      metin: 'Bilişim kitapları ve robotik setler burada, duvar üst segmentinde düzenli durur. Robotları ödünç alırken kaydını yaptır, bitince yerine koy!',
+      x: 5.3, y: 3.0, z: -2.2
     },
     {
       baslik: '🤖 Robi',
       metin: 'Bilişim sınıfının maskotu Robi! Kodlama etkinliklerinde sana eşlik eder, algoritma maceralarında rehberlik eder. Göğsündeki ekranda sana mesajları belirir.',
-      x: -2.6, y: 2.1, z: -4.6
+      x: -3.6, y: 2.1, z: -3.7
     },
     {
       baslik: '🇹🇷 Türk Bayrağı',
@@ -728,8 +760,8 @@
   /* =========================================================
      4) Kamera kontrolü (orbit) + etkileşim
      ========================================================= */
-  var aci = { theta: 0, phi: 0.12 };       /* yatay / dikey açı */
-  var mesafe = 7.2;                        /* merkezden uzaklık */
+  var aci = { theta: -0.4, phi: 0.12 };    /* yatay / dikey açı — tahtaya çapraz bakış */
+  var mesafe = 4.6;                        /* merkezden uzaklık — sınıfın İÇİNDE kalır (güney duvar 5.9) */
   var MESAFE_MIN = 3.2, MESAFE_MAX = 10.5;
   var merkez = [0, 1.6, 0];
 
@@ -1124,6 +1156,7 @@
     requestAnimationFrame(ciz);
   }
 
+  ciz(0);                    /* İlk kareyi beklemeden çiz: yavaş cihazlarda da anında açılır */
   requestAnimationFrame(ciz);
 
   /* Klavye erişilebilirliği: ok tuşlarıyla da gez */
