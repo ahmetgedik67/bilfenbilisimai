@@ -371,9 +371,9 @@
   <div id="ekranKayit" class="giris-kutu" style="display:none">
     <div class="kart">
       <h2>👩‍🏫 Öğretmen Kaydı</h2>
-      <p class="kucuk-not">Kayıt olunca bir kampüs oluşturulur; öğrencilerini bu kampüse eklersin.</p>
-      <label>Kampüs adı (örn. Kurtköy Bilfen)</label>
-      <input id="kKampus" placeholder="Kurtköy Bilfen">
+      <p class="kucuk-not">Kampüsünü aşağıdaki listeden seç — öğrencilerini bu kampüse eklersin.</p>
+      <label>Kampüs</label>
+      <select id="kKampus"><option value="">Kampüs seç…</option></select>
       <label>Adın soyadın</label>
       <input id="kAd">
       <label>Kullanıcı adı</label>
@@ -665,12 +665,7 @@
 
       <div class="kart">
         <h2>🏫 Kampüsler</h2>
-        <div class="satir">
-          <div><label>Yeni kampüs adı</label><input id="adKampusAd" placeholder="örn. Kurtköy Bilfen"></div>
-        </div>
-        <div style="margin-top:12px"><button class="btn yesil" id="adKampusEkleBtn">➕ Kampüs Ekle</button></div>
-        <div class="hata" id="adKampusHata"></div>
-        <div class="bilgi" id="adKampusBilgi"></div>
+        <p class="kucuk-not">Kampüs listesi sistem genelinde standarttır; yeni kampüs eklenmez.</p>
         <div id="adKampusListe" style="margin-top:8px"></div>
       </div>
 
@@ -772,6 +767,16 @@
      ============================================================ */
   /* Supabase bağlantısı: kod sabiti + bu cihazda yönetici panelinden
      '🔌 Supabase Bağlantısı' kartıyla kaydedilen değer (önceliklidir). */
+  /* ---------- Standart kampüs listesi (sabit) ----------
+     Kampüs bilgisi bu listeden seçilir; yeni kampüs eklenemez.
+     Öğretmen kaydı seçilen kampüsü kullanır (yenisini oluşturmaz). */
+  var KAMPUS_LISTESI = [
+    'Çamlıca', 'Ataşehir', 'Koşuyolu', 'Sancaktepe', 'Yenişehir',
+    'Esenşehir', 'Kurtköy', 'Halkalı', 'Maslak', 'Bahçeşehir',
+    'Florya', 'Çayyolu', 'Bornova', 'Güzelbahçe', 'Bursa',
+    'Antalya', 'Kayseri', 'Çukurambar', 'Oran', 'İskenderun'
+  ];
+
   var SUPABASE_URL = localStorage.getItem('bt_supabase_url') || 'https://zvqwhesibqntcnpqoytm.supabase.co';
   var SUPABASE_ANON = localStorage.getItem('bt_supabase_anon') || 'sb_publishable_hU6il_Kq9_E_57WqaOT8BA_iLtDPpuM';
 
@@ -1283,8 +1288,10 @@
   var SupabaseAPI = {
     kayitOgretmen: async function (kamp, ad, kullaniciAdi, sifre) {
       adminAdiEngelle(kullaniciAdi);
-      var cs = await sb('campus', { method: 'POST', body: { ad: kamp } });
-      var c = cs[0];
+      if (!KAMPUS_LISTESI.includes(kamp)) throw new Error('Kampüs standart listede değil.');
+      // Standart kampüs: var olanını kullan (yeni oluşturma)
+      var mevcut = await sb('campus?ad=eq.' + encodeURIComponent(kamp) + '&select=*');
+      var c = (mevcut && mevcut.length) ? mevcut[0] : (await sb('campus', { method: 'POST', body: { ad: kamp } }))[0];
       var tuz = tuzUret();
       var hash = await sifreHash(sifre, tuz);
       await sb('profil', { method: 'POST', body: { campus_id: c.id, kullanici_adi: kullaniciAdi, ad: ad, rol: 'ogretmen', sifre_tuz: tuz, sifre_hash: hash, avatar: '👩‍🏫' } });
@@ -1323,8 +1330,8 @@
       });
     },
     kampusEkle: async function (ad) {
-      var cs = await sb('campus', { method: 'POST', body: { ad: ad } });
-      return cs[0];
+      // Kampüs listesi sabittir; yeni kampüs eklenemez.
+      throw new Error('Kampüs listesi standarttır; yeni kampüs eklenemez.');
     },
     kampusGuncelle: async function (id, ad) {
       await sb('campus?id=eq.' + encodeURIComponent(id), { method: 'PATCH', body: { ad: ad } });
@@ -1512,12 +1519,13 @@
   var DemoAPI = {
     kayitOgretmen: async function (kamp, ad, kullaniciAdi, sifre) {
       adminAdiEngelle(kullaniciAdi);
+      if (!KAMPUS_LISTESI.includes(kamp)) throw new Error('Kampüs standart listede değil.');
       var ks = dGet(DK.campus);
-      if (ks.some(function (c) { return c.ad.toLowerCase() === kamp.toLowerCase(); })) throw new Error('Bu kampüs adı zaten var.');
+      // Standart kampüs: var olanını kullan (yeni oluşturma)
+      var c = ks.filter(function (x) { return x.ad === kamp; })[0];
+      if (!c) { c = { id: dId(), ad: kamp }; ks.push(c); dSet(DK.campus, ks); }
       var tuz = tuzUret();
       var hash = await sifreHash(sifre, tuz);
-      var c = { id: dId(), ad: kamp };
-      ks.push(c); dSet(DK.campus, ks);
       var ps = dGet(DK.profil);
       if (ps.some(function (p) { return p.kullaniciAdi.toLowerCase() === kullaniciAdi.toLowerCase(); })) throw new Error('Bu kullanıcı adı alınmış.');
       var p = { id: dId(), campusId: c.id, kullaniciAdi: kullaniciAdi, tuz: tuz, hash: hash, ad: ad, rol: 'ogretmen', avatar: '👩‍🏫', puan: 0 };
@@ -1603,11 +1611,8 @@
       });
     },
     kampusEkle: async function (ad) {
-      var ks = dGet(DK.campus);
-      if (ks.some(function (c) { return c.ad.toLowerCase() === ad.toLowerCase(); })) throw new Error('Bu kampüs adı zaten var.');
-      var c = { id: dId(), ad: ad };
-      ks.push(c); dSet(DK.campus, ks);
-      return c;
+      // Kampüs listesi sabittir; yeni kampüs eklenemez.
+      throw new Error('Kampüs listesi standarttır; yeni kampüs eklenemez.');
     },
     kampusGuncelle: async function (id, ad) {
       var ks = dGet(DK.campus);
@@ -2933,39 +2938,19 @@
         raporuCiz();
         return;
       }
-      var h = '<table><tr><th>Kampüs</th><th>Öğretmen</th><th>Öğrenci</th><th>Toplam Puan</th><th>Tamamlanan Etkinlik</th><th>İşlem</th></tr>';
+      var h = '<table><tr><th>Kampüs</th><th>Öğretmen</th><th>Öğrenci</th><th>Toplam Puan</th><th>Tamamlanan Etkinlik</th></tr>';
       kampüsler.forEach(function (c) {
-        h += '<tr class="satir"><td><b>🏫 ' + esc(c.ad) + '</b></td><td>👩‍🏫 ' + (c.ogretmenSayisi || 0) + '</td><td>👨‍🎓 ' + c.ogrenciSayisi + '</td><td>⭐ ' + c.toplamPuan + '</td><td>✅ ' + c.tamamlananSayisi + '</td>' +
-          '<td><button class="btn ikincil kucuk" data-kampus-duzenle="' + esc(c.id) + '">✏️ Düzenle</button> ' +
-          '<button class="btn kirmizi kucuk" data-kampus-sil="' + esc(c.id) + '">🗑 Sil</button></td></tr>';
+        h += '<tr class="satir"><td><b>🏫 ' + esc(c.ad) + '</b></td><td>👩‍🏫 ' + (c.ogretmenSayisi || 0) + '</td><td>👨‍🎓 ' + c.ogrenciSayisi + '</td><td>⭐ ' + c.toplamPuan + '</td><td>✅ ' + c.tamamlananSayisi + '</td></tr>';
+      });
+      // Standart listede olup henüz veritabanında olmayan kampüsleri de göster
+      var mevcutAdlar = kampüsler.map(function (c) { return c.ad; });
+      KAMPUS_LISTESI.forEach(function (ad) {
+        if (mevcutAdlar.indexOf(ad) === -1) {
+          h += '<tr class="satir" style="opacity:.55"><td>🏫 ' + esc(ad) + '</td><td>—</td><td>—</td><td>—</td><td><span class="kucuk-not">henüz kayıt yok</span></td></tr>';
+        }
       });
       h += '</table>';
       kutu.innerHTML = h;
-      Array.prototype.forEach.call(kutu.querySelectorAll('[data-kampus-duzenle]'), function (b) {
-        b.onclick = function () {
-          var id = b.getAttribute('data-kampus-duzenle');
-          var c = kampüsler.filter(function (x) { return x.id === id; })[0];
-          var yeni = prompt('Kampüs adını düzenle:', c ? c.ad : '');
-          if (!yeni || !yeni.trim()) return;
-          API.kampusGuncelle(id, yeni.trim()).then(function () {
-            bilgiGoster($('adKampusBilgi'), '✅ Kampüs adı güncellendi.');
-            kampuslariCiz();
-            setTimeout(function () { bilgiGoster($('adKampusBilgi'), ''); }, 2500);
-          }).catch(function (e) { hataGoster($('adKampusHata'), e.message); });
-        };
-      });
-      Array.prototype.forEach.call(kutu.querySelectorAll('[data-kampus-sil]'), function (b) {
-        b.onclick = function () {
-          var id = b.getAttribute('data-kampus-sil');
-          var c = kampüsler.filter(function (x) { return x.id === id; })[0];
-          if (!confirm('“' + (c ? c.ad : '') + '” kampüsünü ve içindeki tüm öğretmen/öğrenci ve puan kayıtlarını silmek istediğine emin misin? Bu geri alınamaz.')) return;
-          API.kampusSil(id).then(function () {
-            bilgiGoster($('adKampusBilgi'), '🗑 Kampüs silindi.');
-            kampuslariCiz();
-            setTimeout(function () { bilgiGoster($('adKampusBilgi'), ''); }, 2500);
-          }).catch(function (e) { hataGoster($('adKampusHata'), e.message); });
-        };
-      });
       ogretmenleriCiz();
       adminOgrencileriCiz();
       raporuCiz();
@@ -3105,20 +3090,7 @@
       hataGoster($('adOgretmenHata'), e.message);
     }).finally(function () { $('adOgretmenEkleBtn').disabled = false; });
   };
-  $('adKampusEkleBtn').onclick = function () {
-    var ad = $('adKampusAd').value.trim();
-    if (!ad) { hataGoster($('adKampusHata'), 'Kampüs adı girin.'); return; }
-    hataGoster($('adKampusHata'), '');
-    $('adKampusEkleBtn').disabled = true;
-    API.kampusEkle(ad).then(function () {
-      $('adKampusAd').value = '';
-      bilgiGoster($('adKampusBilgi'), '✅ Kampüs eklendi: ' + ad);
-      kampuslariCiz();
-      setTimeout(function () { bilgiGoster($('adKampusBilgi'), ''); }, 3000);
-    }).catch(function (e) {
-      hataGoster($('adKampusHata'), e.message);
-    }).finally(function () { $('adKampusEkleBtn').disabled = false; });
-  };
+  // (Kampüs ekleme kaldırıldı — liste standarttır)
   $('adOgrenciEkleBtn').onclick = function () {
     var campusId = $('adEkleKampus').value;
     var ad = $('adEkleAd').value.trim();
@@ -3364,13 +3336,24 @@
     }).catch(function () { alert('Bağlantı hatası.'); });
   };
 
+  /* Kayıt ekranındaki kampüs seçim listesini standart listeden doldur */
+  (function () {
+    var sel = $('kKampus');
+    KAMPUS_LISTESI.forEach(function (ad) {
+      var o = document.createElement('option');
+      o.value = ad; o.textContent = ad;
+      sel.appendChild(o);
+    });
+  })();
+
   $('kayitBtn').onclick = function () {
     var kamp = $('kKampus').value.trim();
     var ad = $('kAd').value.trim();
     var k = $('kKullanici').value.trim();
     var s1 = $('kSifre').value;
     var s2 = $('kSifre2').value;
-    if (!kamp || !ad || !k || !s1) { hataGoster($('kHata'), 'Lütfen tüm alanları doldur.'); return; }
+    if (!KAMPUS_LISTESI.includes(kamp)) { hataGoster($('kHata'), 'Lütfen listeden bir kampüs seç.'); return; }
+    if (!ad || !k || !s1) { hataGoster($('kHata'), 'Lütfen tüm alanları doldur.'); return; }
     if (s1 !== s2) { hataGoster($('kHata'), 'Şifreler eşleşmiyor.'); return; }
     if (s1.length < 4) { hataGoster($('kHata'), 'Şifre en az 4 karakter olmalı.'); return; }
     hataGoster($('kHata'), '');
