@@ -154,7 +154,7 @@
   }
   .tamam-band.acik { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* ---- Sınıf Kuralları modalı + oyun ---- */
+  /* ---- Sınıf Kuralları modalı + etkinlik ---- */
   .kural-modal {
     position: fixed; inset: 0; z-index: 70;
     display: flex; align-items: center; justify-content: center;
@@ -280,7 +280,7 @@
         <div class="kural-satir"><div class="ikon">🌐</div><div><b>İnternette nazik ol</b><span>Yalnız öğretmenin izin verdiği sitelere gir; tanımadığın kişiyle bilgi paylaşma.</span></div></div>
       </div>
 
-      <button class="kural-oyu-btn" id="kuralOyunBtn">🎮 Kuralları Oyunla Öğren</button>
+      <button class="kural-oyu-btn" id="kuralOyunBtn">🎓 Kuralları Etkinlikle Öğren</button>
 
       <div class="oyu-alan" id="oyuAlan">
         <div class="oyu-soru" id="oyuSoru"></div>
@@ -293,15 +293,14 @@
         <div class="oyu-sonuc" id="oyuSonuc" style="display:none">
           <div class="buyuk">🏆</div>
           <p id="oyuSonucMetin"></p>
-        </div>
-        <button class="oyu-tekrar gizli" id="oyuTekrar">🔄 Tekrar Oyna</button>
+        </div>          <button class="oyu-tekrar gizli" id="oyuTekrar">🔄 Tekrar Et</button>
       </div>
     </div>
   </div>  <footer>
   <span class="ipucu-pill">🖱️ Sürükle → bak etrafına</span>
   <span class="ipucu-pill">🖲️ Tekerlek / kıstır → yakınlaş</span>
   <span class="ipucu-pill">✨ Parlayan noktalar → bilgi kartı</span>
-  <span class="ipucu-pill">📜 Kurallar panosu → oyun!</span>
+  <span class="ipucu-pill">📜 Kurallar panosu → etkinlik!</span>
   <span class="brand">🎓 Bilfen Bilişim Zümresi</span>
 </footer>
 
@@ -560,7 +559,7 @@
   kodSatirlari.forEach(function (r, i) {
     kutuEkle(0.7 + (i % 3) * 1.0, 0.09, 0.02, r, -2.4 + (i % 2) * 0.9, 3.06 - i * 0.17, -5.79);
   });
-  /* Tahtanın sağı: yeşil alanda "SINIF KURALLARI" başlık kartı (kurallar oyununu işaret eder) */
+  /* Tahtanın sağı: yeşil alanda "SINIF KURALLARI" başlık kartı (kurallar etkinliğini işaret eder) */
   kutuEkle(1.7, 0.55, 0.06, [0.129, 0.412, 0.278], 2.9, 2.75, -5.84);
   kutuEkle(0.015, 0.06, 1.2, [0.976, 0.71, 0.184], 2.95, 2.75, -5.8);
 
@@ -696,7 +695,7 @@
 
   /* Dünya saati — doğu duvarının üstünde */
   ekle(silindirGeometrisi(0.42, 0.09, 24, [0.95, 0.95, 0.97]), mat4Carp(mat4Cevir(5.9, 3.3, 1.6), mat4DonX(Math.PI / 2)));
-  kutuEkle(0.06, 0.28, 0.04, [0.15, 0.15, 0.18], 5.84, 3.3, 1.6, 0);   // akrep (y ekseni boyunca, dönY ile çevrilecek)
+  kutuEkle(0.06, 0.28, 0.04, [0.15, 0.15, 0.18], 5.84, 3.3, 1.6, 0);   // akrep (y ekseni doğrultusunda, dönY ile çevrilecek)
   kutuEkle(0.04, 0.36, 0.04, [0.15, 0.15, 0.18], 5.84, 3.3, 1.6, 1.1); // yelkovan
 
   /* =========================================================
@@ -716,7 +715,7 @@
     {
       baslik: '📜 Sınıf Kuralları Panosu',
       kural: true,
-      metin: 'Bilişim sınıfının kuralları burada yazılı! Bilgisayarı doğru kullanmak, hem teknolojiyi korumak hem de birbirimize saygılı olmak demek. Kartı açık: kuralları oyunla öğren!',
+      metin: 'Bilişim sınıfının kuralları burada yazılı! Bilgisayarı doğru kullanmak, hem teknolojiyi korumak hem de birbirimize saygılı olmak demek. Kartı açık: kuralları etkinlikle öğren!',
       x: -5.5, y: 2.3, z: 3.2
     },
     {
@@ -876,14 +875,14 @@
     kartMetin.textContent = n.metin;
     kart.classList.add('acik');
     kesifIsaretle(n);
-    /* Kurallar panosu tıklandıysa bilgi kartıyla birlikte kural oyununu da aç */
+    /* Kurallar panosu tıklandıysa bilgi kartıyla birlikte kural etkinliğini de aç */
     if (n.kural) {
       setTimeout(function () { kuralModalAc(); }, 700);
     }
   }
 
   /* =========================================================
-     SINIF KURALLARI OYUNU — Doğru/Yanlış (6 soru)
+     SINIF KURALLARI ETKİNLİĞİ — Doğru/Yanlış (6 soru)
      ========================================================= */
   var KURAL_SORULARI = [
     { s: 'Arkadaşının klavyesine izinsiz dokunmak doğru mu?', dogru: false, aciklama: 'Hayır! Önce izin isteriz — herkesin bilgisayarı kendine aittir.' },
@@ -908,7 +907,7 @@
   function kuralModalAc() {
     kuralModal.classList.add('acik');
     document.body.style.overflow = 'hidden';
-    /* Yeniden açılışta listeye dön: oyun alanı gizli, liste + düğme görünür */
+    /* Yeniden açılışta listeye dön: etkinlik alanı gizli, liste + düğme görünür */
     document.getElementById('oyuAlan').classList.remove('acik');
     kuralListeEl.style.display = '';
     kuralOyunBtn.style.display = '';
@@ -940,7 +939,7 @@
     oyuTekrarBtn.classList.add('gizli');
     oyuDugmelerEl.style.display = 'flex';
     document.getElementById('oyuAlan').classList.add('acik');   /* oyun alanını görünür kıl */
-    document.getElementById('kuralBaslik').textContent = '🎮 Kurallar Oyunu — Doğru mu, Yanlış mı?';
+    document.getElementById('kuralBaslik').textContent = '🎓 Kurallar Etkinliği — Doğru mu, Yanlış mı?';
     oyuGoster();
   }
   function oyuGoster() {
@@ -955,7 +954,7 @@
     /* Hızlı çift tıklamaya karşı kilit: bir soruya yalnız bir cevap sayılır */
     if (cevapKilitli) return;
     var q = aktifSorular[oyuSirasi];
-    if (!q) return;   /* son sorudan sonraki tıklamalar (oyun bitti) yok sayılır */
+    if (!q) return;   /* son sorudan sonraki tıklamalar (etkinlik bitti) yok sayılır */
     cevapKilitli = true;
     var dogruMu = kullanicininCevabi === q.dogru;
     if (dogruMu) oyuPuan++;
@@ -980,7 +979,7 @@
        oyuPuan >= 3 ? 'İyi iş! Biraz daha tekrar edelim.' :
        'Kuralları bir daha okuyup tekrar denesek mi?');
     oyuTekrarBtn.classList.remove('gizli');
-    /* Oyunu bitiren öğrenci kural rozetini kazanır */
+    /* Etkinliği bitiren öğrenci kural rozetini kazanır */
     kesfedilen['📜 Sınıf Kuralları Panosu'] = true;
     var rozetIdx = NOKTALAR.findIndex(function (n) { return n.kural; });
     if (rozetIdx >= 0 && NOKTALAR[rozetIdx].rozetEl) NOKTALAR[rozetIdx].rozetEl.classList.add('kazanildi');

@@ -855,13 +855,13 @@
       ogretmen: true, // yalnız öğretmenin tahtada uyguladığı etkinlik → ÖĞRETMEN kategorisinde görünür
       url: 'games/sanal-sinif-turu/index.html',
       onizleme: 'thumbnails/sanal-sinif-turu.svg',
-      aciklama: 'Fareyle 360° gezilen 3B bilgisayar sınıfı: monitörlü istasyonlar, akıllı tahta, kod editörü, tam 3B Robi ve oyunla öğrenilen sınıf kuralları!',
+      aciklama: 'Fareyle 360° gezilen 3B bilgisayar sınıfı: monitörlü istasyonlar, akıllı tahta, kod editörü, tam 3B Robi ve etkinlikle öğrenilen sınıf kuralları!',
       etiketler: ['3B', 'Tanışma', 'Keşif', 'Sınıf Kuralları', 'Robi'],
       nasil: [
         'Ekranda parlayan sarı ışınlar bilgisayar sınıfındaki önemli köşeleri gösterir: istasyonlar, akıllı tahta, kurallar panosu…',
         '🖱️ Fareyle tıkla-sürükle (dokunmatikte parmağınla kaydır) — sınıfı 360° keşfet; tekerlekle ya da iki parmakla yaklaşıp uzaklaş.',
         '✨ Bir ışına tıkladığında o köşeyi anlatan bilgi kartı açılır ve keşif rozeti kazanılır.',
-        '📜 Kurallar panosuna tıklayınca Bilişim Sınıfı Kuralları listesi açılır; “Kuralları Oyunla Öğren” ile 6 soruluk Doğru/Yanlış oyunu başlar — oyunu bitiren kural rozetini kazanır.',
+        '📜 Kurallar panosuna tıklayınca Bilişim Sınıfı Kuralları listesi açılır; “Kuralları Etkinlikle Öğren” ile 6 soruluk Doğru/Yanlış etkinliği başlar — etkinliği bitiren kural rozetini kazanır.',
         'Bütün sıcak noktaları keşfettiğinde tur tamamlanır; sağ üstteki 🔊/🔇 ile sesleri açıp kapatabilirsin. Ok tuşlarıyla da gezinebilirsin!'
       ]
     }
@@ -925,7 +925,7 @@
       + '<text x="200" y="208" text-anchor="middle" font-size="13" fill="rgba(255,255,255,0.85)" font-family="system-ui,sans-serif">'
       + aciklama.replace(/</g,'&lt;') + '</text>'
       + '<rect x="145" y="225" width="110" height="32" rx="16" fill="rgba(255,255,255,0.3)" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>'
-      + '<text x="200" y="246" text-anchor="middle" font-size="13" fill="white" font-weight="bold" font-family="system-ui,sans-serif">\u25B6 Oyna</text>'
+      + '<text x="200" y="246" text-anchor="middle" font-size="13" fill="white" font-weight="bold" font-family="system-ui,sans-serif">\u25B6 Başlat</text>'
       + '</svg>';
     return 'data:image/svg+xml,' + encodeURIComponent(svg);
   }
@@ -944,7 +944,7 @@
           gorsel: o.gorsel || '',
           kategoriler: coz.kategoriler, siniflar: coz.siniflar, ogretmen: coz.ogretmen,
           etiketler: ['Özel Etkinlik'], ozel: true, ozelTip: o.tip, ozelIcerik: o.icerik || '',
-          nasil: ['Öğretmeniniz bu etkinliği oluşturdu.', '▶ Oyna ile açın.'],
+          nasil: ['Öğretmeniniz bu etkinliği oluşturdu.', '▶ Başlat ile açın.'],
           _ozelId: o.id
         };
       });
@@ -1166,7 +1166,7 @@
     const overlay = document.createElement('div');
     overlay.className = 'oyna-overlay';
     const oynaEtiketi = document.createElement('span');
-    oynaEtiketi.textContent = '▶ Oyna';
+    oynaEtiketi.textContent = '▶ Başlat';
     overlay.appendChild(oynaEtiketi);
     thumb.append(img, overlay);
 
@@ -1204,7 +1204,7 @@
     });
     const btn = document.createElement('button');
     btn.className = 'oynat-btn';
-    btn.textContent = '▶ Oyna';
+    btn.textContent = '▶ Başlat';
     btn.onclick = e => { e.stopPropagation(); oynat(etkinlik); };
     /* 🔊 Dinle butonu — 1. sınıf öğrencileri için */
     const dinleBtn = document.createElement('button');
@@ -1261,7 +1261,7 @@
     araclar.forEach(arac => {
       const adimSayi = (arac.nasil || []).length;
       const adimlar = adimSayi ? arac.nasil : [
-        'Aracı ▶ Oyna ile tam ekran aç.',
+        'Aracı ▶ Başlat ile tam ekran aç.',
         'Ekrandaki yönergeleri izle.',
         'Bittiğinde ✕ (kapat) düğmesiyle geri dön.'
       ];
@@ -1423,8 +1423,8 @@
   }
   $('pencereKapat').onclick = kapat;
 
-  /* 🔗 Kopyala: oyunun KALICI adresini verir (blob değil) — ders planına, e-postaya
-     veya Word belgesine yapıştırılabilir; açılışta oyunu doğrudan oynatır. */
+  /* 🔗 Kopyala: etkinliğin KALICI adresini verir (blob değil) — ders planına, e-postaya
+     veya Word belgesine yapıştırılabilir; açılışta etkinlik doğrudan oynatma penceresinde başlar. */
   var aktifEtkinlikId = '';
   function eskiKopyala(metin) {
     var ta = document.createElement('textarea');
@@ -1475,7 +1475,7 @@
   $('robiLogo').src = ROBI_DATA;
   /* ---------- Kalıcı bağlantı açılışı (#etkinlik=<id>) ----------
      Öğretmenler "🔗 Kopyala" ile aldıkları adresi ders planına ekler; adres
-     açıldığında oyun doğrudan oynatma penceresinde başlar. Bağlantı kalıcıdır:
+     açıldığında etkinlik doğrudan oynatma penceresinde başlar. Bağlantı kalıcıdır:
      blob: gibi oturumluk değil, her cihazda ve her açılışta çalışır. */
   function derseHazirAcilis() {
     var m = (location.hash || '').match(/^#etkinlik=(.+)$/);

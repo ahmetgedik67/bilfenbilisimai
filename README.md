@@ -38,7 +38,7 @@ bilfenbilisimai/
 2. **Önizleme görselini ekle:** `thumbnails/<etkinlik-adı>.jpg` olarak koy.
    İstersen etkinliği tarayıcıda açıp ekran görüntüsü alabilirsin (16:10 önerilir).
 
-3. **`index.html` içindeki `OYUNLAR` listesine bir satır ekle:**
+3. **`index.html` içindeki `ETKINLIKLER` listesine bir satır ekle:**
 
 ```js
 {
@@ -210,7 +210,7 @@ etkinlikleri yalnız yönetici silebilir; onay bekleyen/reddedilenleri öğretme
 
 - 🏫 Üst menüde **SINIF** çipleri (1 – 7), **IPT KATEGORİSİ** açılır menüsü (2 IPT – 7 IPT) ve **ÖĞRETMEN** kategorisi ayrı ayrı durur
 - 👩‍🏫 Öğretmen kategorisinde tahtada yalnız öğretmenin uyguladığı etkinlikler toplanır (ör. Sınıf Çarkıfeleği) — bu araçlar **giriş yapılmadan da herkese açıktır**; öğrenci ataması/kapalı durumu bunlara uygulanmaz
-- 📖 Öğretmen sekmesinde, giriş gerektirmeyen açılır **"Nasıl kullanılır?"** mini rehberi: her tahta aracının adım adım kullanımı (oyun nesnesindeki isteğe bağlı `nasil` listesinden; yoksa genel adımlar)
+- 📖 Öğretmen sekmesinde, giriş gerektirmeyen açılır **"Nasıl kullanılır?"** mini rehberi: her tahta aracının adım adım kullanımı (etkinlik nesnesindeki isteğe bağlı `nasil` listesinden; yoksa genel adımlar)
 - 🗂️ IPT kategorilerine göre bölümler (2 IPT – 7 IPT); 1. sınıf seçilince o sınıfa uygun etkinlikler görünür
 - 🖼️ Her etkinlik için gerçek önizleme görüntüsü ve açıklama kartı
 - ▶️ Karta tıklayınca tam ekran oynatma penceresi (+ yeni sekmede aç)
@@ -223,4 +223,4 @@ etkinlikleri yalnız yönetici silebilir; onay bekleyen/reddedilenleri öğretme
 - ⭐ Öğrenci panelinde puan toplama, rozet kazanma ve avatar seçme
 - 📱 Telefon, tablet ve projeksiyonda çalışan duyarlı tasarım
 - 🎨 **“Robi’nin Gökyüzü” çocuk dostu görsel katman** (portal): canlı ama dengeli pastel gökkuşağı paleti, büyük yuvarlak dokunma alanları, zıplayan Robi, süzülen ☁️🎈🪁 süsleri, gökkuşağı şeridi, kart başına gökkuşağı vurgu rengi ve kısa/akıcı mikro animasyonlar — tümü `prefers-reduced-motion` duyarlı ve internet gerektirmez (harici font/JS yok)
-- 🧸 Panel aynı oyuncak dilde ama yoğun tablolar okunur kalır: yumuşak kartlar, basınca tepki veren (eğilip zıplayan) butonlar, eğlenceli sekmeler ve maskotlu giriş/kayıt ekranı
+- 🧸 Panel aynı neşeli dilde ama yoğun tablolar okunur kalır: yumuşak kartlar, basınca tepki veren (eğilip zıplayan) butonlar, eğlenceli sekmeler ve maskotlu giriş/kayıt ekranı
