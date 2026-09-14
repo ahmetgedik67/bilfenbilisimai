@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bilfen Bilişim AI – Panel</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -18,6 +16,11 @@
   .ust-bar { background: #1e1b4b; color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .ust-bar .marka { font-weight: 800; font-size: 15px; }
   .ust-bar .marka span { color: #fbbf24; }
+  .ust-bar .panel-nav a {
+    color: rgba(255,255,255,.85); background: rgba(255,255,255,.10); border-radius: 999px;
+    padding: 7px 15px; font-size: 13px; font-weight: 700; transition: background .15s, color .15s;
+  }
+  .ust-bar .panel-nav a:hover { background: rgba(255,255,255,.24); color: #fff; }
   .ust-bar .orta { flex: 1; }
   .ust-bar .kampus { font-size: 13px; opacity: .9; }
   .ust-bar .kullanici { font-size: 13px; background: rgba(255,255,255,.12); padding: 5px 12px; border-radius: 999px; }
@@ -328,9 +331,12 @@
 <body>
 
 <div class="ust-bar">
-  <div class="marka">🤖 Bilfen Bilişim <span>AI</span></div>
+  <a class="marka" href="index.html" title="Portala dön" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px">🤖 Bilfen Bilişim <span>AI</span></a>
+  <nav class="panel-nav" aria-label="Panel gezinme" style="display:flex;gap:4px;align-items:center">
+    <a href="index.html" title="Etkinlik portalı">🏠 Etkinlikler</a>
+    <a href="kullanim-kilavuzu.html" title="Öğretmen kılavuzu">📘 Kılavuz</a>
+  </nav>
   <div class="orta" id="ustOrta"></div>
-  <a href="index.html" title="Portala dön">← Portala dön</a>
   <button id="cikisBtn" style="display:none" class="cikis">🚪 Çıkış</button>
 </div>
 <div class="baglanti-satiri" id="baglantiSatiri">

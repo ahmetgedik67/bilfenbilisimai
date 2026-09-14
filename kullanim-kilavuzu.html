@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bilfen Bilişim AI — Öğretmen Kullanım Kılavuzu</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap');
+  @import url('assets/fonts/fonts.css');
 
   :root {
     --primary: #6d4aff;
@@ -50,6 +50,27 @@
     .toc { page-break-after: always; }
     section { page-break-inside: avoid; }
   }
+
+  /* Üst gezinme çubuğu (yalnız ekran, yazdırmada gizli) */
+  .kilavuz-nav {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; gap: 16px;
+    padding: 10px 22px;
+    background: rgba(30, 27, 75, .92); backdrop-filter: blur(10px);
+    box-shadow: 0 2px 14px rgba(30,27,75,.25);
+  }
+  .kn-marka {
+    text-decoration: none; color: rgba(255,255,255,.92);
+    font-family: 'Baloo 2', 'Segoe UI', sans-serif; font-size: 17px; font-weight: 600;
+  }
+  .kn-marka b { color: #fbbf24; font-weight: 800; }
+  .kn-menu { display: flex; gap: 4px; margin: 0 auto; }
+  .kn-menu a {
+    text-decoration: none; color: rgba(255,255,255,.82); font-weight: 700; font-size: 13.5px;
+    padding: 7px 16px; border-radius: 999px; transition: background .15s, color .15s;
+  }
+  .kn-menu a:hover { background: rgba(255,255,255,.16); color: #fff; }
+  .kn-menu a.kn-aktif { background: #fff; color: #312e81; }
 
   /* Cover */
   .cover {
@@ -416,6 +437,15 @@
 </style>
 </head>
 <body>
+
+<nav class="kilavuz-nav no-print" aria-label="Site gezinmesi">
+  <a class="kn-marka" href="index.html" title="Portala dön">🤖 Bilfen <b>Bilişim AI</b></a>
+  <div class="kn-menu">
+    <a href="index.html">🏠 Etkinlikler</a>
+    <a href="panel.html">👤 Panel</a>
+    <a href="kullanim-kilavuzu.html" class="kn-aktif">📘 Kılavuz</a>
+  </div>
+</nav>
 
 <!-- ==================== KAPAK ==================== -->
 <div class="cover">

@@ -11,9 +11,7 @@
   Yeni etkinlik eklemek: games/<etkinlik>/index.html dosyasını ekle,
   bir önizleme görüntüsünü thumbnails/ klasörüne koy ve aşağıdaki
   ETKINLIKLER listesine tek bir satır ekle.-->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
 
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -39,8 +37,48 @@
     flex-direction: column;
   }
 
+  /* ---------- Üst navigasyon çubuğu ---------- */
+  .ust-nav {
+    position: relative; z-index: 10;
+    max-width: 1240px; margin: 0 auto; padding: 12px 18px;
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  }
+  .nav-marka {
+    display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
+    color: #fff; flex-shrink: 0;
+  }
+  .nav-robi { width: 40px; height: auto; filter: drop-shadow(0 3px 8px rgba(0,0,0,.3)); transition: transform .25s cubic-bezier(.34,1.56,.64,1); }
+  .nav-marka:hover .nav-robi { transform: rotate(-8deg) scale(1.08); }
+  .nav-marka-yazi {
+    font-family: 'Baloo 2', 'Segoe UI', system-ui, sans-serif;
+    font-size: 19px; font-weight: 600; letter-spacing: .3px; color: rgba(255,255,255,.92);
+  }
+  .nav-marka-yazi b { font-weight: 800; color: #ffd43b; }
+  .nav-menu {
+    display: flex; align-items: center; gap: 4px; margin: 0 auto;
+    background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22);
+    border-radius: 999px; padding: 4px; backdrop-filter: blur(8px);
+  }
+  .nav-link {
+    text-decoration: none; color: rgba(255,255,255,.85); font-weight: 700; font-size: 13.5px;
+    padding: 8px 18px; border-radius: 999px; transition: background .15s, color .15s;
+    white-space: nowrap;
+  }
+  .nav-link:hover { background: rgba(255,255,255,.16); color: #fff; }
+  .nav-link.nav-aktif { background: #fff; color: var(--murekkep); box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+  .nav-giris {
+    text-decoration: none; flex-shrink: 0;
+    background: linear-gradient(135deg, #ffd43b, #ff9f1c); color: #5c3300;
+    border: 2px solid #fff; border-radius: 999px; font-weight: 800; font-size: 13.5px;
+    padding: 8px 18px; box-shadow: 0 2px 0 #d98f14, 0 8px 18px rgba(47,42,107,.28);
+    transition: transform .16s cubic-bezier(.34,1.56,.64,1), box-shadow .16s;
+    max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .nav-giris:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 3px 0 #d98f14, 0 12px 24px rgba(47,42,107,.32); }
+  .nav-giris:active { transform: translateY(1px); box-shadow: 0 1px 0 #d98f14; }
+
   /* ---------- Üst bölüm ---------- */
-  header { position: relative; padding: 34px 18px 26px; color: #fff; }
+  header { position: relative; padding: 10px 18px 26px; color: #fff; }
   .hero {
     max-width: 1120px; margin: 0 auto;
     display: flex; align-items: center; justify-content: center; gap: clamp(12px, 3vw, 34px);
@@ -59,6 +97,7 @@
     padding: 2px 13px; border-radius: 999px;
   }
   .hero-text { text-align: center; }
+  .hero h1 { font-size: clamp(30px, 5.5vw, 54px); letter-spacing: .5px; line-height: 1.1; }
   .brand {
     display: inline-flex; align-items: center; gap: 9px;
     background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25);
@@ -656,6 +695,9 @@
     .pencere-baslik .ad { font-size: 14px; }
     .gok-nesne.n5, .gok-nesne.n6 { display: none; }
     .kartlar { grid-template-columns: 1fr; }
+    .ust-nav { gap: 10px; justify-content: center; }
+    .nav-menu { order: 3; width: 100%; justify-content: center; }
+    .nav-marka-yazi { font-size: 17px; }
   }
   /* --- Liderlik Tablosu --- */
   .liderlik-kutu { max-width: 1180px; margin: 0 auto 20px; padding: 0 18px; }
@@ -676,15 +718,26 @@
 <body>
 
 <header>
-  <a class="panel-btn" id="girisBtn" href="panel.html" title="Giriş yap — öğretmen/öğrenci paneli">🔐 Giriş Yap</a>
+  <nav class="ust-nav" aria-label="Ana gezinme">
+    <a class="nav-marka" href="index.html" title="Ana sayfa">
+      <img class="nav-robi" id="robiLogo" alt="Robi">
+      <span class="nav-marka-yazi">Bilfen <b>Bilişim AI</b></span>
+    </a>
+    <div class="nav-menu" role="menubar">
+      <a class="nav-link nav-aktif" href="index.html" role="menuitem">🏠 Etkinlikler</a>
+      <a class="nav-link" href="kullanim-kilavuzu.html" role="menuitem">📘 Kılavuz</a>
+      <a class="nav-link" href="panel.html" role="menuitem">👤 Panel</a>
+    </div>
+    <a class="nav-giris" id="girisBtn" href="panel.html" title="Giriş yap — öğretmen/öğrenci paneli">🔐 Giriş Yap</a>
+  </nav>
   <div class="hero">
     <div class="robi-wrap">
       <img class="robi" id="robiMaskot" alt="Robi" title="Robi">
       <span class="robi-tag">ROBİ</span>
     </div>
     <div class="hero-text">
-      <div class="brand"><img class="brand-robi" id="robiLogo" alt="Robi"> Bilfen Bilişim AI</div>
-      <p>Robi ile Kodla &amp; Keşfet! Bilişim Teknolojileri ve Yazılım dersi için hazırladığımız etkinlikler — 2 IPT’den 7 IPT’ye, tek çatı altında.</p>
+      <h1>Robi ile <span class="accent">Kodla &amp; Keşfet</span></h1>
+      <p>Bilişim Teknolojileri ve Yazılım dersi için hazırladığımız etkinlikler — 2 IPT’den 7 IPT’ye, tek çatı altında.</p>
     </div>
   </div>
   <div aria-hidden="true" class="gok-nesne n1">☁️</div>
@@ -1527,14 +1580,14 @@
     if (eski) eski.remove();
     if (!s || !s.kullaniciAdi) {
       btn.textContent = '🔐 Giriş Yap';
-      btn.className = 'panel-btn';
+      btn.className = 'nav-giris';
       btn.title = 'Giriş yap — öğretmen/öğrenci paneli';
       return;
     }
     var kisa = ilkAd(s.ad);
     var ikon = s.rol === 'ogretmen' ? '👩‍🏫' : (s.rol === 'admin' ? '🛡️' : (s.avatar || '🐣'));
     btn.textContent = ikon + ' ' + kisa;
-    btn.className = 'panel-btn maxi';
+    btn.className = 'nav-giris maxi';
     btn.title = 'Paneline git: @' + s.kullaniciAdi;
     oturumVerisi(s).then(function (v) {
       var sert = document.createElement('div');
