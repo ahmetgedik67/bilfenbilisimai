@@ -297,6 +297,7 @@
       </div>
     </div>
   </div>  <footer>
+  <span class="ipucu-pill">⌨️ WASD/ok tuşları → yürü · Boşluk → zıpla</span>
   <span class="ipucu-pill">🖱️ Sürükle → bak etrafına</span>
   <span class="ipucu-pill">🖲️ Tekerlek / kıstır → yakınlaş</span>
   <span class="ipucu-pill">✨ Parlayan noktalar → bilgi kartı</span>
@@ -542,11 +543,18 @@
   kutuEkle(0.2, 4, 12, duvarRenkleri[2], -6, 2, 0);   // batı (pencere duvarı)
   kutuEkle(0.2, 4, 12, duvarRenkleri[3], 6, 2, 0);    // doğu
 
-  /* ---- Akıllı tahta + kod editörü projeksiyonu (Bilişim sınıfı) ---- */
-  kutuEkle(7.6, 0.12, 0.1, [0.176, 0.314, 0.086], 0, 2.6, -5.86);   // yeşil yüzey
-  kutuEkle(7.8, 0.14, 0.16, [0.545, 0.361, 0.216], 0, 2.6, -5.82);  // ahşap çerçeve (arka plaka)
-  kutuEkle(7.8, 0.1, 0.12, [0.42, 0.28, 0.16], 0, 1.95, -5.84);     // tepsi
-  /* Ekranın solunda açık kod editörü — renkli kod satırları */
+  /* ---- AKILLI TAHTA — dokunmatik panel (parlak beyaz ekran, mavi başlık, mini kod editörü) ---- */
+  kutuEkle(8.0, 2.5, 0.14, [0.09, 0.11, 0.18], 0, 2.6, -5.87);       // koyu lacivert çerçeve (bezel)
+  kutuEkle(7.6, 2.1, 0.05, [0.965, 0.975, 1.0], 0, 2.6, -5.79);      // parlak beyaz ekran yüzeyi
+  /* Ekran üstü başlık çubuğu (mavi) + beyaz yazı bloğu */
+  kutuEkle(7.3, 0.3, 0.02, [0.23, 0.46, 0.85], 0, 3.4, -5.76);
+  kutuEkle(1.6, 0.14, 0.02, [1, 1, 1], -2.4, 3.4, -5.75);
+  /* Sol taraf: ders slaytı — renkli içerik satırları */
+  kutuEkle(2.7, 0.15, 0.02, [0.937, 0.325, 0.314], -2.05, 3.0, -5.76);
+  kutuEkle(3.3, 0.12, 0.02, [0.302, 0.565, 0.949], -1.9, 2.78, -5.76);
+  kutuEkle(2.9, 0.12, 0.02, [0.42, 0.71, 0.38], -2.0, 2.6, -5.76);
+  /* Sol alt: mini kod editörü penceresi (koyu) + renkli kod satırları */
+  kutuEkle(3.5, 1.15, 0.02, [0.12, 0.14, 0.22], -2.0, 1.95, -5.76);
   var kodSatirlari = [
     [0.937, 0.325, 0.314],
     [0.302, 0.565, 0.949],
@@ -557,15 +565,19 @@
     [0.976, 0.71, 0.184]
   ];
   kodSatirlari.forEach(function (r, i) {
-    kutuEkle(0.7 + (i % 3) * 1.0, 0.09, 0.02, r, -2.4 + (i % 2) * 0.9, 3.06 - i * 0.17, -5.79);
+    kutuEkle(0.7 + (i % 3) * 1.0, 0.08, 0.02, r, -3.1 + (i % 2) * 0.9, 2.35 - i * 0.14, -5.74);
   });
-  /* Tahtanın sağı: yeşil alanda "SINIF KURALLARI" başlık kartı (kurallar etkinliğini işaret eder) */
-  kutuEkle(1.7, 0.55, 0.06, [0.129, 0.412, 0.278], 2.9, 2.75, -5.84);
-  kutuEkle(0.015, 0.06, 1.2, [0.976, 0.71, 0.184], 2.95, 2.75, -5.8);
-
-  /* Beyaz perde + projeksiyon kutusu (akıllı tahtanın solunda) */
-  kutuEkle(2.6, 1.7, 0.05, [0.949, 0.949, 0.957], -4.35, 2.55, -5.85);
-  kutuEkle(2.7, 0.08, 0.1, [0.29, 0.29, 0.33], -4.35, 3.45, -5.85);
+  /* Sağ taraf: SINIF KURALLARI kartı (turuncu başlık + madde satırları) */
+  kutuEkle(2.9, 1.7, 0.02, [0.98, 0.94, 0.86], 2.3, 2.5, -5.76);     // krem kart
+  kutuEkle(2.9, 0.42, 0.02, [0.906, 0.435, 0.086], 2.3, 3.13, -5.75);// turuncu başlık
+  kutuEkle(2.2, 0.12, 0.02, [1, 1, 1], 2.1, 3.13, -5.74);            // başlık yazısı
+  for (var km = 0; km < 4; km++) {
+    kutuEkle(0.12, 0.1, 0.02, [0.302, 0.565, 0.949], 1.2, 2.78 - km * 0.3, -5.75); // madde noktası
+    kutuEkle(1.7, 0.09, 0.02, [0.35, 0.38, 0.45], 2.25, 2.78 - km * 0.3, -5.75);   // madde satırı
+  }
+  /* Alt dokunmatik şerit + güç LED'i */
+  kutuEkle(7.6, 0.12, 0.06, [0.16, 0.19, 0.28], 0, 1.42, -5.78);
+  kutuEkle(0.14, 0.06, 0.04, [0.42, 0.85, 0.44], 3.6, 1.42, -5.75);  // güç LED'i
 
   /* Öğretmen masası + bilgisayar */
   kutuEkle(2.4, 0.14, 1.1, [0.545, 0.361, 0.216], -4.2, 1.02, -4.9);          // masa üstü
@@ -576,9 +588,9 @@
   kutuEkle(0.7, 0.06, 0.4, [0.25, 0.26, 0.3], -4.2, 1.12, -4.75);             // klavye
 
   /* =========================================================
-     ÖĞRENCİ BİLGİSAYAR İSTASYONLARI — U DUVAR DÜZENİ
-     Masalar duvara yapışık, ortası boş: kuzey duvarda 2 sıra,
-     batı duvarında 1 sıra, doğu duvarında 1 sıra (toplam 12).
+     ÖĞRENCİ BİLGİSAYAR İSTASYONLARI — DÖRT DUVAR DÜZENİ
+     Masalar dört duvara yapışık, ortası boş: kuzey 4, batı 4,
+     doğu 4, güney 4 (toplam 16).
      Her istasyonda: monitör + klavye + fare + PC kasası.
      ========================================================= */
   var siraRenk = [0.545, 0.412, 0.078];
@@ -639,6 +651,11 @@
   yonluIstasyon(5.45, -1.5, 'doğu', 0, 0);
   yonluIstasyon(5.45, 0.5, 'doğu', 0, 0);
   yonluIstasyon(5.45, 2.5, 'doğu', 0, 0);
+  /* GÜNEY duvarı (kapının solunda, 1 sıra — duvara yapışık): z = 5.45 */
+  yonluIstasyon(-4.5, 5.45, 'guney', 0, 0);
+  yonluIstasyon(-2.25, 5.45, 'guney', 0, 0);
+  yonluIstasyon(0, 5.45, 'guney', 0, 0);
+  yonluIstasyon(2.0, 5.45, 'guney', 0, 0);
 
   /* Pencere — batı duvarında 3 adet (çerçeve + cam) */
   for (var p = 0; p < 3; p++) {
@@ -673,8 +690,11 @@
     kutuEkle(0.015, 0.045, 1.15, [0.28, 0.3, 0.34], panoX + 0.07, 2.62 - madde * 0.28, panoZ - 0.42);
   }
 
-  /* Robi maskotu — öğretmen masasının yanında (tam 3B: gövde + kafa + gözler + kollar + göğüs ekranı) */
-  var robiX = -3.6, robiZ = -3.7;
+  /* Robi maskotu — SINIFIN TAM ORTASINDA yuvarlak podyum üzerinde:
+     her yönden net görünür, kalabalığın içinde kaybolmaz. */
+  ekle(silindirGeometrisi(0.85, 1.0, 28, [0.42, 0.38, 0.62]), mat4Cevir(0, 0.5, 0));   // podyum gövdesi
+  ekle(silindirGeometrisi(0.92, 0.07, 28, [0.55, 0.5, 0.78]), mat4Cevir(0, 1.03, 0)); // podyum kapak
+  var robiX = 0, robiZ = 0;
   ekle(silindirGeometrisi(0.42, 0.85, 24, [0.55, 0.36, 0.93]), mat4Cevir(robiX, 1.45, robiZ));          // gövde
   ekle(silindirGeometrisi(0.3, 0.34, 20, [0.68, 0.51, 0.98]), mat4Cevir(robiX, 2.05, robiZ));           // kafa
   ekle(silindirGeometrisi(0.055, 0.05, 12, [1, 1, 1]), mat4Cevir(robiX - 0.1, 2.1, robiZ - 0.27));      // sol göz
@@ -709,8 +729,8 @@
     },
     {
       baslik: '💻 Bilgisayar İstasyonları',
-      metin: 'Bilişim sınıfının kalbi! Masalar duvara yapışık U düzeninde: 12 istasyonda monitör, klavye, fare ve PC kasası var — sınıfın ortası tamamen boş kalır. Bilgisayarları açmadan önce kabloları düzgün bağlamak, çıkarken de kapatmak bizim görevimiz.',
-      x: 0, y: 1.4, z: 0.5
+      metin: 'Bilişim sınıfının kalbi! Masalar dört duvara yapışık: 16 istasyonda monitör, klavye, fare ve PC kasası var — sınıfın ortasında Robi podyumunda durur. Bilgisayarları açmadan önce kabloları düzgün bağlamak, çıkarken de kapatmak bizim görevimiz.',
+      x: 2.2, y: 1.4, z: 2.2
     },
     {
       baslik: '📜 Sınıf Kuralları Panosu',
@@ -721,7 +741,7 @@
     {
       baslik: '🪑 Oturma Yerleri',
       metin: 'Sandalyeler duvardaki bilgisayarların önündedir, hepsi tahtaya bakar. Oturma planı çarkıyla burada kura çekilir! Ekranını başkasına gösterirken kibar olmayı unutma.',
-      x: 0, y: 1.3, z: 1.8
+      x: 3.6, y: 1.3, z: 0
     },
     {
       baslik: '🪟 Pencereler',
@@ -735,8 +755,8 @@
     },
     {
       baslik: '🤖 Robi',
-      metin: 'Bilişim sınıfının maskotu Robi! Kodlama etkinliklerinde sana eşlik eder, algoritma maceralarında rehberlik eder. Göğsündeki ekranda sana mesajları belirir.',
-      x: -3.6, y: 2.1, z: -3.7
+      metin: 'Bilişim sınıfının maskotu Robi! Sınıfın tam ortasındaki podyumda durur; her yönden görünür. Kodlama etkinliklerinde sana eşlik eder, algoritma maceralarında rehberlik eder. Göğsündeki ekranda sana mesajları belirir.',
+      x: 0, y: 2.6, z: 0
     },
     {
       baslik: '🇹🇷 Türk Bayrağı',
@@ -759,9 +779,9 @@
   /* =========================================================
      4) Kamera kontrolü (orbit) + etkileşim
      ========================================================= */
-  var aci = { theta: -0.4, phi: 0.12 };    /* yatay / dikey açı — tahtaya çapraz bakış */
-  var mesafe = 4.6;                        /* merkezden uzaklık — sınıfın İÇİNDE kalır (güney duvar 5.9) */
-  var MESAFE_MIN = 3.2, MESAFE_MAX = 10.5;
+  var aci = { theta: -0.4, phi: 0.16 };    /* yatay / dikey açı — Robi'ye çapraz bakış */
+  var mesafe = 4.3;                        /* merkezden uzaklık — sınıfın İÇİNDE kalır */
+  var MESAFE_MIN = 2.6, MESAFE_MAX = 8.5;
   var merkez = [0, 1.6, 0];
 
   var surukleniyor = false;
@@ -1089,12 +1109,77 @@
 
   function kameraKonumuHesapla() {
     var yatay = Math.cos(aci.phi) * mesafe;
+    /* Kamera her zaman sınıfın İÇİNDE kalır (duvar dışına çıkamaz) */
     return [
-      merkez[0] + Math.sin(aci.theta) * yatay,
-      merkez[1] + Math.sin(aci.phi) * mesafe,
-      merkez[2] + Math.cos(aci.theta) * yatay
+      Math.max(-5.6, Math.min(5.6, merkez[0] + Math.sin(aci.theta) * yatay)),
+      Math.max(0.6, Math.min(3.8, merkez[1] + Math.sin(aci.phi) * mesafe)),
+      Math.max(-5.6, Math.min(5.6, merkez[2] + Math.cos(aci.theta) * yatay))
     ];
   }
+
+  /* =========================================================
+     KLAVYE İLE GEZİNME — WASD/ok tuşları yürür, Boşluk zıplar
+     ========================================================= */
+  var tuslar = {};
+  var ziplaHiz = 0;
+  var adimZamani = 0;
+  var YURUYUS = 3.3;        /* birim/sn */
+  var YERDEKI_Y = 1.6;      /* merkez göz yüksekliği (zıplama çıkışı buraya döner) */
+
+  function tusBasili() {
+    return !!(tuslar['w'] || tuslar['a'] || tuslar['s'] || tuslar['d'] ||
+              tuslar['arrowup'] || tuslar['arrowdown'] || tuslar['arrowleft'] || tuslar['arrowright'] || tuslar[' ']);
+  }
+
+  function gezinmeAdimi(dt) {
+    /* Dönüş: sol/sağ ok tuşları */
+    if (tuslar['arrowleft']) aci.theta -= 1.9 * dt;
+    if (tuslar['arrowright']) aci.theta += 1.9 * dt;
+    /* Yürüme: W/S + yukarı/aşağı = ileri-geri, A/D = yan adım */
+    var ileri = 0, yan = 0;
+    if (tuslar['w'] || tuslar['arrowup']) ileri += 1;
+    if (tuslar['s'] || tuslar['arrowdown']) ileri -= 1;
+    if (tuslar['d']) yan += 1;
+    if (tuslar['a']) yan -= 1;
+    if (ileri === 0 && yan === 0) { adimZamani = 0.18; return; }
+    var eyn = Math.sin(aci.theta), eyz = Math.cos(aci.theta);
+    var dx = (-eyn * ileri + eyz * yan) * YURUYUS * dt;
+    var dz = (-eyz * ileri - eyn * yan) * YURUYUS * dt;
+    var nx = Math.max(-4.6, Math.min(4.6, merkez[0] + dx));
+    var nz = Math.max(-4.6, Math.min(4.6, merkez[2] + dz));
+    /* Robi'nin podyumuna girilmez: disk dışına itilir */
+    var pd = Math.hypot(nx, nz);
+    if (pd < 1.45) {
+      if (pd < 0.001) { nx = 1.45; nz = 0; }
+      else { nx = nx / pd * 1.45; nz = nz / pd * 1.45; }
+    }
+    merkez[0] = nx;
+    merkez[2] = nz;
+    /* Hafif adım sesi */
+    adimZamani += dt;
+    if (adimZamani >= 0.27) {
+      bipFrekans(150 + Math.random() * 50, 0.04, 'square', 0.016);
+      adimZamani = 0;
+    }
+  }
+
+  window.addEventListener('keydown', function (e) {
+    var k = (e.key || '').toLowerCase();
+    if (k === 'f') {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) tamEkranAc();
+      else tamEkranKapat();
+      return;
+    }
+    if (k === ' ' || k.indexOf('arrow') === 0) e.preventDefault();
+    if (k === 'spacebar') k = ' ';
+    if (k === ' ' && !tuslar[' '] && merkez[1] <= YERDEKI_Y + 0.01) ziplaHiz = 3.2;   /* Boşluk: zıpla */
+    tuslar[k] = true;
+  });
+  window.addEventListener('keyup', function (e) {
+    var k = (e.key || '').toLowerCase();
+    if (k === 'spacebar') k = ' ';
+    tuslar[k] = false;
+  });
 
   function boyutlandir() {
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1128,8 +1213,17 @@
     /* Sıcak nokta nabzı */
     var nabiz = (Math.sin(zaman * 0.004) * 0.5 + 0.5) * (0.35 + 0.25 * Math.sin(zaman * 0.011));
 
-    /* Gezgin kamera sesi: yavaş dönüşte hafif adım tıkırtısı */
-    if (!surukleniyor) {
+    /* Gezgin kamera: tuş yokken hafif salınım, tuş varken yürüme */
+    var dt = Math.min(0.05, (zaman - sonZaman) / 1000 || 0.016);
+    sonZaman = zaman;
+    gezinmeAdimi(dt);
+    /* Zıplama fiziği: Boşluk ile havalan, yerçekimiyle in */
+    if (ziplaHiz !== 0 || merkez[1] > YERDEKI_Y) {
+      ziplaHiz -= 9.5 * dt;
+      merkez[1] += ziplaHiz * dt;
+      if (merkez[1] <= YERDEKI_Y) { merkez[1] = YERDEKI_Y; ziplaHiz = 0; }
+    }
+    if (!surukleniyor && !tusBasili()) {
       /* boşta hafif salınım: sahneyi canlı tutar */
       aci.theta += 0.00035;
     }
@@ -1158,19 +1252,7 @@
   ciz(0);                    /* İlk kareyi beklemeden çiz: yavaş cihazlarda da anında açılır */
   requestAnimationFrame(ciz);
 
-  /* Klavye erişilebilirliği: ok tuşlarıyla da gez */
-  window.addEventListener('keydown', function (e) {
-    var adim = 0.06;
-    if (e.key === 'ArrowLeft') aci.theta -= adim;
-    else if (e.key === 'ArrowRight') aci.theta += adim;
-    else if (e.key === 'ArrowUp') aci.phi = Math.min(0.85, aci.phi + adim * 0.6);
-    else if (e.key === 'ArrowDown') aci.phi = Math.max(-0.15, aci.phi - adim * 0.6);
-    /* F / f: tam ekranı aç-kapa (yazı alanı yok, güvenli) */
-    else if (e.key === 'f' || e.key === 'F') {
-      if (!document.fullscreenElement && !document.webkitFullscreenElement) tamEkranAc();
-      else tamEkranKapat();
-    }
-  });
+  /* (Klavye gezinmesi yukarıdaki birleşik tuş işleyicisinde: WASD/oklar + Boşluk + F) */
 
   /* ---- Tam ekran ---- */
   function tamEkranAc() {
