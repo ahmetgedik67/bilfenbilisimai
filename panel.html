@@ -334,7 +334,7 @@
   <a class="marka" href="index.html" title="Portala dön" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px">🤖 Bilfen Bilişim <span>AI</span></a>
   <nav class="panel-nav" aria-label="Panel gezinme" style="display:flex;gap:4px;align-items:center">
     <a href="index.html" title="Etkinlik portalı">🏠 Etkinlikler</a>
-    <a href="kullanim-kilavuzu.html" title="Öğretmen kılavuzu">📘 Kılavuz</a>
+    <a href="kullanim-kilavuzu.html" id="navKilavuz" title="Öğretmen kılavuzu (yalnız öğretmen/yönetici)" style="display:none">📘 Kılavuz</a>
   </nav>
   <div class="orta" id="ustOrta"></div>
   <button id="cikisBtn" style="display:none" class="cikis">🚪 Çıkış</button>
@@ -3290,6 +3290,9 @@
     $('ogretmenIcerik').style.display = oturum.rol === 'ogretmen' ? '' : 'none';
     $('ogrenciIcerik').style.display = oturum.rol === 'ogrenci' ? '' : 'none';
     $('adminIcerik').style.display = oturum.rol === 'admin' ? '' : 'none';
+    // Kılavuz bağlantısı yalnızca öğretmen + yönetici için görünür (öğrenci göremez)
+    var klavuzLink = document.getElementById('navKilavuz');
+    if (klavuzLink) klavuzLink.style.display = (oturum.rol === 'ogretmen' || oturum.rol === 'admin') ? '' : 'none';
     if (oturum.rol === 'admin') adminYukle();
     else if (oturum.rol === 'ogretmen') ogretmenYukle();
     else ogrenciYukle();

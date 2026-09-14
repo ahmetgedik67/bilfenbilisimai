@@ -438,6 +438,15 @@
 </head>
 <body>
 
+<!-- Kılavuz korumalıdır: yalnızca öğretmen/yönetici oturumuyla görülebilir (aşağıdaki script) -->
+<div id="kilavuzKilit" style="display:none;min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:30px;background:linear-gradient(180deg,#e7f2ff,#f4ecff);">
+  <div style="font-size:64px;filter:drop-shadow(0 10px 16px rgba(49,46,129,.2))">🔒</div>
+  <h1 style="font-family:'Baloo 2','Segoe UI',sans-serif;color:#312e81;font-size:26px">Bu kılavuz öğretmenlere özel</h1>
+  <p style="color:#5a5690;max-width:420px;line-height:1.6">Öğretmen Kullanım Kılavuzu'nı görmek için <b>öğretmen</b> veya <b>yönetici</b> hesabıyla panele giriş yapmalısın.</p>
+  <a href="panel.html" style="text-decoration:none;background:linear-gradient(135deg,#6d4aff,#a855f7);color:#fff;font-weight:800;padding:12px 26px;border-radius:999px;box-shadow:0 2px 0 #4c2fd0,0 8px 18px rgba(109,74,255,.25)">🔐 Panele Git ve Giriş Yap</a>
+</div>
+
+<div id="kilavuzIcerik" style="display:none">
 <nav class="kilavuz-nav no-print" aria-label="Site gezinmesi">
   <a class="kn-marka" href="index.html" title="Portala dön">🤖 Bilfen <b>Bilişim AI</b></a>
   <div class="kn-menu">
@@ -1970,12 +1979,26 @@ Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
   </div>
 </section>
 
-</div>
+</div><!-- /kilavuzIcerik -->
 
 <!-- Print button -->
-<button class="print-btn no-print" onclick="window.print()">
+<button class="print-btn no-print" id="yazdirBtn" onclick="window.print()" style="display:none">
   🖨️ PDF olarak kaydet
 </button>
+
+<script>
+(function () {
+  'use strict';
+  // Kılavuz yalnızca öğretmen + yönetici oturumunda açılır.
+  // Öğrenciler ve giriş yapmamış kullanıcılar kilit ekranı görür.
+  var oturum = null;
+  try { oturum = JSON.parse(localStorage.getItem('bt_oturum') || 'null'); } catch (e) { oturum = null; }
+  var izinli = oturum && (oturum.rol === 'ogretmen' || oturum.rol === 'admin');
+  document.getElementById('kilavuzKilit').style.display = izinli ? 'none' : 'flex';
+  document.getElementById('kilavuzIcerik').style.display = izinli ? '' : 'none';
+  document.getElementById('yazdirBtn').style.display = izinli ? '' : 'none';
+})();
+</script>
 
 </body>
 </html>

@@ -725,7 +725,7 @@
     </a>
     <div class="nav-menu" role="menubar">
       <a class="nav-link nav-aktif" href="index.html" role="menuitem">🏠 Etkinlikler</a>
-      <a class="nav-link" href="kullanim-kilavuzu.html" role="menuitem">📘 Kılavuz</a>
+      <a class="nav-link" href="kullanim-kilavuzu.html" id="navKilavuz" role="menuitem" style="display:none" title="Öğretmen kılavuzu (öğretmen girişi gerekir)">📘 Kılavuz</a>
       <a class="nav-link" href="panel.html" role="menuitem">👤 Panel</a>
     </div>
     <a class="nav-giris" id="girisBtn" href="panel.html" title="Giriş yap — öğretmen/öğrenci paneli">🔐 Giriş Yap</a>
@@ -1582,6 +1582,8 @@
       btn.textContent = '🔐 Giriş Yap';
       btn.className = 'nav-giris';
       btn.title = 'Giriş yap — öğretmen/öğrenci paneli';
+      var klavuzLink0 = document.getElementById('navKilavuz');
+      if (klavuzLink0) klavuzLink0.style.display = 'none'; // oturum yok → kılavuz gizli
       return;
     }
     var kisa = ilkAd(s.ad);
@@ -1589,6 +1591,9 @@
     btn.textContent = ikon + ' ' + kisa;
     btn.className = 'nav-giris maxi';
     btn.title = 'Paneline git: @' + s.kullaniciAdi;
+    // Kılavuz bağlantısı yalnızca öğretmen + yönetici oturumunda görünür
+    var klavuzLink = document.getElementById('navKilavuz');
+    if (klavuzLink) klavuzLink.style.display = (s.rol === 'ogretmen' || s.rol === 'admin') ? '' : 'none';
     oturumVerisi(s).then(function (v) {
       var sert = document.createElement('div');
       sert.className = 'oturum-sert';
