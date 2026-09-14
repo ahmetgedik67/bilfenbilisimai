@@ -1959,6 +1959,29 @@
     $('oeOynat').classList.add('acik');
     document.body.style.overflow = 'hidden';
   }
+  /* 🔗 Onaylı özel etkinliğin kalıcı portal adresi (ders planına eklenebilir).
+     Portal, özel etkinlikleri id'siyle yükler: index.html#etkinlik=ozel_<id> */
+  function ozelKaliciAdres(id) {
+    return new URL('index.html#etkinlik=ozel_' + encodeURIComponent(id), location.href).href;
+  }
+  function adresKopyala(metin, btn, tamamMetni) {
+    var eski = btn ? btn.textContent : '';
+    var yaz = function () {
+      if (!btn) return;
+      btn.textContent = tamamMetni || '✓ Kopyalandı';
+      setTimeout(function () { btn.textContent = eski; }, 2000);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(metin).then(yaz).catch(function () { eskiKopyalaYontemi(metin); yaz(); });
+    } else { eskiKopyalaYontemi(metin); yaz(); }
+  }
+  function eskiKopyalaYontemi(metin) {
+    var ta = document.createElement('textarea');
+    ta.value = metin; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    ta.remove();
+  }
   function ozelOynatKapat() {
     $('oeOynat').classList.remove('acik');
     $('oeOynatCerceve').srcdoc = '';
@@ -1978,6 +2001,7 @@
           '<td><span class="tip-rozet">' + kaynakEtiketi(o.tip) + '</span></td>' +
           '<td><button class="btn ikincil kucuk" data-oe-goster="' + esc(o.id) + '">👁 Görüntüle</button> ' +
           '<button class="btn ikincil kucuk" data-oe-indir="' + esc(o.id) + '">📥 İndir</button>' +
+          (o.durum === 'onaylandi' && o.tip !== 'drive' ? '<button class="btn ikincil kucuk" data-oe-baglanti="' + esc(o.id) + '" title="Ders planına ekleyebileceğiniz kalıcı bağlantıyı kopyalar">🔗 Bağlantı</button> ' : '') +
           duzenleBtn +
           (o.durum === 'onaylandi' ? '' : ' <button class="btn kirmizi kucuk" data-oe-sil="' + esc(o.id) + '">🗑 Sil</button>') +
           '</td></tr>';
@@ -2009,6 +2033,11 @@
           document.body.appendChild(a);
           a.click();
           setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+        };
+      });
+      Array.prototype.forEach.call(kutu.querySelectorAll('[data-oe-baglanti]'), function (b) {
+        b.onclick = function () {
+          adresKopyala(ozelKaliciAdres(b.getAttribute('data-oe-baglanti')), b);
         };
       });
       Array.prototype.forEach.call(kutu.querySelectorAll('[data-oe-sil]'), function (b) {
@@ -2427,6 +2456,7 @@
           '<td style="white-space:nowrap">' +
           '<button class="btn ikincil kucuk" data-onay-goster="' + esc(o.id) + '">👁 Görüntüle</button> ' +
           '<button class="btn ikincil kucuk" data-onay-indir="' + esc(o.id) + '">📥 İndir</button> ' +
+          (o.durum === 'onaylandi' && o.tip !== 'drive' ? '<button class="btn ikincil kucuk" data-onay-baglanti="' + esc(o.id) + '" title="Ders planına ekleyebileceğiniz kalıcı bağlantıyı kopyalar">🔗 Bağlantı</button> ' : '') +
           (o.durum === 'bekliyor'
             ? '<button class="btn yesil kucuk" data-onayla="' + esc(o.id) + '">✅ Onayla</button> ' +
               '<button class="btn kirmizi kucuk" data-reddet="' + esc(o.id) + '">❌ Reddet</button>'
@@ -2450,7 +2480,6 @@
             if (icerik) window.open(icerik, '_blank');
             return;
           }
-          var dosyaAdi = (o.ad || 'etkinlik').replace(/[^a-zA-Z0-9ığüşöçİĞÜŞÖÇ\s]/g, '').replace(/\s+/g, '_') + '.html';
           var blob = new Blob([icerik], { type: 'text/html;charset=utf-8' });
           var a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
@@ -2458,6 +2487,11 @@
           document.body.appendChild(a);
           a.click();
           setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+        };
+      });
+      Array.prototype.forEach.call(kutu.querySelectorAll('[data-onay-baglanti]'), function (b) {
+        b.onclick = function () {
+          adresKopyala(ozelKaliciAdres(b.getAttribute('data-onay-baglanti')), b);
         };
       });
       Array.prototype.forEach.call(kutu.querySelectorAll('[data-onayla]'), function (b) {
