@@ -1098,7 +1098,14 @@
     });
   }
   $('baglantiYenile').addEventListener('click', baglantiDurumGoster);
-  baglantiDurumGoster();
+  // Bağlantı durumu şeridi YALNIZCA admin oturumunda görünür — öğretmen ve öğrenci görmez.
+  // Giriş ekranında da gizlidir; admin paneline geçişte paneliGoster() içinde çağrılır.
+  var _oturumBaslangic = oturumOku();
+  if (_oturumBaslangic && _oturumBaslangic.rol === 'admin') {
+    baglantiDurumGoster();
+  } else {
+    $('baglantiSatiri').style.display = 'none';
+  }
 
   /* ---------- Yönetici: şema / bağlantı derin kontrolü (eksik tablo & kolon listesi) ---------- */
   var SEMA_BEKLENEN = {
@@ -2843,7 +2850,12 @@
     try { sessionStorage.setItem('bt_yedek_uyari_gizle', '1'); } catch (e) {}
     $('yedekUyari').style.display = 'none';
   };
-  yedekUyarisiniGoster();
+  // Yedek hatırlatıcısı da yalnızca admin oturumunda gösterilir.
+  if (_oturumBaslangic && _oturumBaslangic.rol === 'admin') {
+    yedekUyarisiniGoster();
+  } else {
+    $('yedekUyari').style.display = 'none';
+  }
 
   /* ---------- Yönetici: Supabase bağlantı ayarları (bu cihazda kayıtlı) ---------- */
   function supBaglantiGoster() {
@@ -3290,6 +3302,14 @@
     $('ogretmenIcerik').style.display = oturum.rol === 'ogretmen' ? '' : 'none';
     $('ogrenciIcerik').style.display = oturum.rol === 'ogrenci' ? '' : 'none';
     $('adminIcerik').style.display = oturum.rol === 'admin' ? '' : 'none';
+    // Sistem şeritleri (bağlantı durumu + yedek hatırlatıcısı) yalnız admin'de görünür
+    if (oturum.rol === 'admin') {
+      baglantiDurumGoster();
+      yedekUyarisiniGoster();
+    } else {
+      $('baglantiSatiri').style.display = 'none';
+      $('yedekUyari').style.display = 'none';
+    }
     // Kılavuz bağlantısı yalnızca öğretmen + yönetici için görünür (öğrenci göremez)
     var klavuzLink = document.getElementById('navKilavuz');
     if (klavuzLink) klavuzLink.style.display = (oturum.rol === 'ogretmen' || oturum.rol === 'admin') ? '' : 'none';
