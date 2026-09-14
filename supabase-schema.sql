@@ -5,12 +5,21 @@
 
 create extension if not exists "pgcrypto";
 
--- ---------- Kampüsler (öğretmen kayıt olunca oluşur) ----------
+-- ---------- Kampüsler (standart liste; uygulama açılışta eksikleri ekler) ----------
 create table if not exists campus (
   id uuid primary key default gen_random_uuid(),
   ad text not null,
   olusturma_tarihi timestamptz not null default now()
 );
+
+-- Standart kampüs listesi (20 kampüs) — benzersiz ad; tekrar çalıştırmaya uygun
+create unique index if not exists campus_ad_unique on campus (lower(ad));
+insert into campus (ad) values
+  ('Çamlıca'), ('Ataşehir'), ('Koşuyolu'), ('Sancaktepe'), ('Yenişehir'),
+  ('Esenşehir'), ('Kurtköy'), ('Halkalı'), ('Maslak'), ('Bahçeşehir'),
+  ('Florya'), ('Çayyolu'), ('Bornova'), ('Güzelbahçe'), ('Bursa'),
+  ('Antalya'), ('Kayseri'), ('Çukurambar'), ('Oran'), ('İskenderun')
+on conflict (lower(ad)) do nothing;
 
 -- ---------- Profiller (öğretmen + öğrenciler) ----------
 -- Giriş: basit kullanıcı adı + şifre (şifreler PBKDF2-SHA256 ile tuzlanır)

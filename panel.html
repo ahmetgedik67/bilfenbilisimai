@@ -1333,6 +1333,18 @@
       // Kampüs listesi sabittir; yeni kampüs eklenemez.
       throw new Error('Kampüs listesi standarttır; yeni kampüs eklenemez.');
     },
+    /* Standart listeden eksik kampüsleri oluşturur (admin açılışında çalışır) */
+    kampusleriGarantiEt: async function () {
+      var mevcut = await sb('campus?select=ad');
+      var adlar = (mevcut || []).map(function (c) { return c.ad; });
+      var eksikler = KAMPUS_LISTESI.filter(function (ad) {
+        return !adlar.some(function (x) { return x.toLowerCase() === ad.toLowerCase(); });
+      });
+      for (var i = 0; i < eksikler.length; i++) {
+        await sb('campus', { method: 'POST', body: { ad: eksikler[i] } });
+      }
+      return eksikler.length;
+    },
     kampusGuncelle: async function (id, ad) {
       await sb('campus?id=eq.' + encodeURIComponent(id), { method: 'PATCH', body: { ad: ad } });
     },
@@ -1613,6 +1625,18 @@
     kampusEkle: async function (ad) {
       // Kampüs listesi sabittir; yeni kampüs eklenemez.
       throw new Error('Kampüs listesi standarttır; yeni kampüs eklenemez.');
+    },
+    /* Standart listeden eksik kampüsleri oluşturur (admin açılışında çalışır) */
+    kampusleriGarantiEt: async function () {
+      var ks = dGet(DK.campus);
+      var eksikler = KAMPUS_LISTESI.filter(function (ad) {
+        return !ks.some(function (c) { return c.ad.toLowerCase() === ad.toLowerCase(); });
+      });
+      eksikler.forEach(function (ad) {
+        ks.push({ id: dId(), ad: ad });
+      });
+      if (eksikler.length) dSet(DK.campus, ks);
+      return eksikler.length;
     },
     kampusGuncelle: async function (id, ad) {
       var ks = dGet(DK.campus);
@@ -2361,7 +2385,12 @@
   /* ---------- Yönetici ---------- */
   function adminYukle() {
     $('ustOrta').innerHTML = '<div class="kampus">🛡️ Sistem Yönetimi</div><div class="kullanici">🛡️ ' + esc(oturum.ad) + ' · @' + esc(oturum.kullaniciAdi) + '</div>';
-    kampuslariCiz(); // kampüs + öğretmen + öğrenci listelerini birlikte tazeler
+    // Standart kampüs listesini garanti altına al: eksikler oluşturulur, sonra liste çizilir
+    if (API.kampusleriGarantiEt) {
+      API.kampusleriGarantiEt().catch(function () {}).then(function () { kampuslariCiz(); });
+    } else {
+      kampuslariCiz();
+    }
     etkinlikOnayCiz();
     yedekDepoNotuYaz();
     yedekDurumCiz();
