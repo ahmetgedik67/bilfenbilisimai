@@ -1838,11 +1838,13 @@
       <h2 style="margin:0 0 8px;color:#1e293b;font-size:22px">Tebrikler!</h2>
       <p style="margin:0 0 6px;color:#475569;font-size:15px"><b>"' + ad + '"</b> etkinliği başarıyla ' + islem + '.</p>
       <p style="margin:0 0 20px;color:#94a3b8;font-size:13px">' + (duzenleModu ? 'Değişiklikleriniz hemen yansıdı.' : 'Yönetici onayı bekleniyor. Onaylanınca tüm kampüslerde yayına girecek.') + '</p>
-      <button onclick="this.closest('#basariModal').remove()" style="background:#4f46e5;color:#fff;border:none;border-radius:12px;padding:12px 32px;font-size:16px;font-weight:600;cursor:pointer">Tamam</button>
+      <button id="basariModalKapat" style="background:#4f46e5;color:#fff;border:none;border-radius:12px;padding:12px 32px;font-size:16px;font-weight:600;cursor:pointer">Tamam</button>
     </div>
     <style>@keyframes modalIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}</sty'+'le>';
     modal.addEventListener('click', function (e) { if (e.target === modal) modal.remove(); });
     document.body.appendChild(modal);
+    var kapatBtn = document.getElementById('basariModalKapat');
+    if (kapatBtn) kapatBtn.onclick = function () { modal.remove(); };
     setTimeout(function () { if (modal.parentNode) modal.remove(); }, 6000);
   }
 
