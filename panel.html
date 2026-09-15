@@ -1824,6 +1824,28 @@
   function hataGoster(el, msg) { el.textContent = msg; el.style.display = msg ? '' : 'none'; }
   function bilgiGoster(el, msg) { el.textContent = msg; el.style.display = msg ? '' : 'none'; }
 
+  /* ---------- Başarı modalı (kaydetme sonrası) ---------- */
+  function basariModalGoster(ad, duzenleModu) {
+    /* Confetti patlat */
+    if (typeof confettiTamamla === 'function') confettiTamamla();
+    /* Modal oluştur */
+    var modal = document.createElement('div');
+    modal.id = 'basariModal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px)';
+    var islem = duzenleModu ? 'güncellendi' : 'kaydedildi';
+    modal.innerHTML = '<div style="background:#fff;border-radius:20px;padding:40px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:modalIn 0.3s ease">
+      <div style="font-size:64px;margin-bottom:16px">🎉</div>
+      <h2 style="margin:0 0 8px;color:#1e293b;font-size:22px">Tebrikler!</h2>
+      <p style="margin:0 0 6px;color:#475569;font-size:15px"><b>"' + ad + '"</b> etkinliği başarıyla ' + islem + '.</p>
+      <p style="margin:0 0 20px;color:#94a3b8;font-size:13px">' + (duzenleModu ? 'Değişiklikleriniz hemen yansıdı.' : 'Yönetici onayı bekleniyor. Onaylanınca tüm kampüslerde yayına girecek.') + '</p>
+      <button onclick="this.closest('#basariModal').remove()" style="background:#4f46e5;color:#fff;border:none;border-radius:12px;padding:12px 32px;font-size:16px;font-weight:600;cursor:pointer">Tamam</button>
+    </div>
+    <style>@keyframes modalIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}</style>';
+    modal.addEventListener('click', function (e) { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+    setTimeout(function () { if (modal.parentNode) modal.remove(); }, 6000);
+  }
+
   var oturum = null;
 
   /* ---------- Özel etkinlik oluşturucu (öğretmen) ---------- */
@@ -2005,7 +2027,7 @@
       if (!ozeller.length) { kutu.innerHTML = '<div class="bos">Henüz etkinlik oluşturmadın. Üstteki formla ekle.</div>'; return; }
       var h = '<table><tr><th>Etkinlik</th><th>Konu &amp; Tema</th><th>Kullanım yeri</th><th>Kaynak</th><th>İşlem</th></tr>';      ozeller.forEach(function (o) {
         var redBanner = (o.redNedeni && o.durum === 'reddedildi') ? '<div style="background:#fee2e2;border-left:4px solid #ef4444;padding:6px 10px;margin-top:6px;border-radius:4px;font-size:12px;color:#991b1b">❌ Red nedeni: ' + esc(o.redNedeni) + '</div>' : '';
-        var duzenleBtn = (o.durum !== 'onaylandi') ? ' <button class="btn ikincil kucuk" data-oe-duzenle="' + esc(o.id) + '">✏️ Düzenle</button>' : '';
+        var duzenleBtn = ' <button class="btn ikincil kucuk" data-oe-duzenle="' + esc(o.id) + '">✏️ Düzenle</button>';
         h += '<tr class="satir"><td><b>' + esc(o.ad) + '</b><br>' + durumRozeti(o) + redBanner + '</td>' +
           '<td>' + esc(o.konu || '') + '</td>' +
           '<td>' + esc(secimEtiketList(o.secim) || '—') + '</td>' +
@@ -3852,10 +3874,9 @@
         oeFormuTemizle();
         oe.duzenleId = null;
         $('oeKaydetBtn').textContent = '💾 Etkinliği Kaydet';
-        bilgiGoster($('oeBilgi'), duzenleModu ? '✏️ Etkinlik güncellendi: ' + ad + ' — yöneticiye yeniden gönderildi.' : '📨 Etkinlik yönetici onayına gönderildi: ' + ad);
+        bilgiGoster($('oeBilgi'), '');
         ozelListeCiz();
-        confettiPuan();
-        setTimeout(function () { bilgiGoster($('oeBilgi'), ''); }, 6000);
+        basariModalGoster(ad, duzenleModu);
         /* Arka planda html2canvas ile gerçek screenshot almaya çalış */
         if (oe.tip !== 'drive') {
           gorselCek(icerik).then(function (realGorsel) {
