@@ -1824,28 +1824,31 @@
   function hataGoster(el, msg) { el.textContent = msg; el.style.display = msg ? '' : 'none'; }
   function bilgiGoster(el, msg) { el.textContent = msg; el.style.display = msg ? '' : 'none'; }
 
-  /* ---------- Başarı modalı (kaydetme sonrası) ---------- */
   function basariModalGoster(ad, duzenleModu) {
-    /* Confetti patlat */
     if (typeof confettiTamamla === 'function') confettiTamamla();
-    /* Modal oluştur */
     var modal = document.createElement('div');
     modal.id = 'basariModal';
-    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px)';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(4px)';
     var islem = duzenleModu ? 'güncellendi' : 'kaydedildi';
-    modal.innerHTML = '<div style="background:#fff;border-radius:20px;padding:40px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:modalIn 0.3s ease">
-      <div style="font-size:64px;margin-bottom:16px">🎉</div>
-      <h2 style="margin:0 0 8px;color:#1e293b;font-size:22px">Tebrikler!</h2>
-      <p style="margin:0 0 6px;color:#475569;font-size:15px"><b>"' + ad + '"</b> etkinliği başarıyla ' + islem + '.</p>
-      <p style="margin:0 0 20px;color:#94a3b8;font-size:13px">' + (duzenleModu ? 'Değişiklikleriniz hemen yansıdı.' : 'Yönetici onayı bekleniyor. Onaylanınca tüm kampüslerde yayına girecek.') + '</p>
-      <button id="basariModalKapat" style="background:#4f46e5;color:#fff;border:none;border-radius:12px;padding:12px 32px;font-size:16px;font-weight:600;cursor:pointer">Tamam</button>
-    </div>
-    <style>@keyframes modalIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}</sty'+'le>';
+    var not = duzenleModu ? 'Değişiklikleriniz hemen yansıdı.' : 'Yönetici onayından sonra tüm kampüslerde yayına girecek.';
+    var kutu = document.createElement('div');
+    kutu.style.cssText = 'background:#fff;border-radius:20px;padding:40px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:basariIn .3s ease';
+    kutu.innerHTML = '<div style="font-size:64px;margin-bottom:12px">🎉</div>'
+      + '<h2 style="margin:0 0 8px;color:#1e293b;font-size:22px">Tebrikler!</h2>'
+      + '<p style="margin:0 0 6px;color:#475569;font-size:15px"><b>"' + ad + '"</b> adlı etkinlik başarıyla ' + islem + '.</p>'
+      + '<p style="margin:0 0 22px;color:#94a3b8;font-size:13px">' + not + '</p>';
+    var btn = document.createElement('button');
+    btn.textContent = 'Tamam';
+    btn.style.cssText = 'background:#4f46e5;color:#fff;border:none;border-radius:12px;padding:12px 36px;font-size:16px;font-weight:600;cursor:pointer';
+    kutu.appendChild(btn);
+    modal.appendChild(kutu);
     modal.addEventListener('click', function (e) { if (e.target === modal) modal.remove(); });
+    btn.onclick = function () { modal.remove(); };
     document.body.appendChild(modal);
-    var kapatBtn = document.getElementById('basariModalKapat');
-    if (kapatBtn) kapatBtn.onclick = function () { modal.remove(); };
-    setTimeout(function () { if (modal.parentNode) modal.remove(); }, 6000);
+    var st = document.createElement('style');
+    st.textContent = '@keyframes basariIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}';
+    document.head.appendChild(st);
+    setTimeout(function () { if (modal.parentNode) modal.remove(); }, 8000);
   }
 
   var oturum = null;
