@@ -184,6 +184,39 @@
 </footer>
 
 <!-- ============================================================
+     ETKİNLİK DETAY MODALI (amaç / kazanım / süre)
+     ============================================================ -->
+<div class="detay-pencere" id="detayPencere" role="dialog" aria-modal="true" aria-labelledby="detayBaslik">
+  <div class="detay-kutu">
+    <div class="detay-gorsel">
+      <img id="detayGorsel" alt="">
+      <button class="detay-kapat" id="detayKapatBtn" title="Kapat (Esc)" aria-label="Kapat">✕</button>
+      <div class="detay-baslik" id="detayBaslik"></div>
+    </div>
+    <div class="detay-govde">
+      <div class="detay-bilgiler" id="detayBilgiler"></div>
+      <div class="detay-bolum">
+        <h4>🎯 Amaç</h4>
+        <p id="detayAmac"></p>
+      </div>
+      <div class="detay-bolum" id="detayKazanimKutu">
+        <h4>✅ Kazanımlar</h4>
+        <ul id="detayKazanimlar"></ul>
+      </div>
+      <div class="detay-bolum" id="detayMateryalKutu">
+        <h4>🧰 Gerekli Materyaller</h4>
+        <ul id="detayMateryaller"></ul>
+      </div>
+      <div class="detay-etiketler" id="detayEtiketler"></div>
+      <div class="detay-aksiyon">
+        <button class="btn btn-birincil" id="detayBaslatBtn">▶ Etkinliği Başlat</button>
+        <button class="btn btn-ikincil" id="detayKapatBtn2">Vazgeç</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
      OYNATMA PENCERESİ (modal)
      ============================================================ -->
 <div class="oynat-pencere" id="pencere" role="dialog" aria-modal="true" aria-label="Etkinlik penceresi">
@@ -288,7 +321,15 @@
         'Çekilen öğrenci otomatik olarak listeden çıkar — böylece her turda sırada bekleyen bir isim seçilir.',
         'Yanlışlıkla çektiysen “Geri Al” ile geri getir; yeni bir etkinlik için “Sıfırla” ile baştan başla.',
         'Dönüş sesleri, konfeti ve Robi kazananı kutlar; sınıf sessizse sağ üstteki 🔊/🔇 ile sesi kapat.'
-      ]
+      ],
+      amac: 'Ders yılının ilk günlerinde tanışma ve sınıf topluluğu oluşturma; her öğrencinin adının eşit şansla seçilmesini sağlamak.',
+      kazanimlar: [
+        'Sınıf arkadaşlarının adlarını öğrenir.',
+        'Rastgelelik ve eşit olasılık kavramını günlük örnek üzerinden deneyimler.',
+        'Sıra bekleme ve kurallara uyma davranışlarını pekiştirir.'
+      ],
+      sure: '10–15 dk',
+      materyaller: ['Akıllı tahta / projeksiyon', 'Öğrenci isim listesi']
     },
     {
       id: 'sanal-sinif-turu',
@@ -304,7 +345,15 @@
         '✨ Bir ışına tıkladığında o köşeyi anlatan bilgi kartı açılır ve keşif rozeti kazanılır.',
         '📜 Kurallar panosuna tıklayınca Bilişim Sınıfı Kuralları listesi açılır; “Kuralları Etkinlikle Öğren” ile 6 soruluk Doğru/Yanlış etkinliği başlar — etkinliği bitiren kural rozetini kazanır.',
         'Bütün sıcak noktaları keşfettiğinde tur tamamlanır; sağ üstteki 🔊/🔇 ile sesleri açıp kapatabilirsin. Ok tuşlarıyla da gezinebilirsin!'
-      ]
+      ],
+      amac: 'Öğrencilere bilgisayar sınıfının fiziksel düzenini, donanım istasyonlarını ve bilişim sınıfı kurallarını keşfederek tanıtmak.',
+      kazanimlar: [
+        'Bilgisayar sınıfındaki istasyonların (masaüstü, akıllı tahta, kurallar panosu) işlevlerini ayırt eder.',
+        'Bilişim sınıfı kurallarını doğru/yanlış sorularıyla pekiştirir.',
+        '3B ortamda yön bulma ve keşif becerilerini kullanır.'
+      ],
+      sure: '15–20 dk',
+      materyaller: ['Akıllı tahta / projeksiyon', 'Klavye ve fare (isteğe bağlı gezinme)']
     }
   ];
 
@@ -386,6 +435,10 @@
           kategoriler: coz.kategoriler, siniflar: coz.siniflar, ogretmen: coz.ogretmen,
           etiketler: ['Özel Etkinlik'], ozel: true, ozelTip: o.tip, ozelIcerik: o.icerik || '',
           nasil: ['Öğretmeniniz bu etkinliği oluşturdu.', '▶ Başlat ile açın.'],
+          amac: o.konu || 'Öğretmeninizin hazırladığı özel etkinlik.',
+          kazanimlar: [],
+          sure: '',
+          materyaller: [],
           _ozelId: o.id
         };
       });
@@ -596,7 +649,8 @@
     else if ((etkinlik.kategoriler || []).length >= KATEGORILER.length) vurgu = '#ff7a3d';
     else if ((etkinlik.kategoriler || [])[0]) vurgu = KATEGORI_RENK[(etkinlik.kategoriler[0] - 2) % KATEGORI_RENK.length];
     kart.style.setProperty('--kart-renk', vurgu);
-    kart.onclick = () => oynat(etkinlik);
+    /* Kart tıklaması → detay modalı; Başlat butonları → doğrudan oynatma */
+    kart.onclick = () => detayAc(etkinlik);
 
     const thumb = document.createElement('div');
     thumb.className = 'kart-thumb';
@@ -827,6 +881,61 @@
     }
     return html;
   }
+  /* ---------- Etkinlik detay modalı ----------
+     Kart tıklaması önce detayı gösterir; "Etkinliği Başlat" oynatır.
+     Detay verisi yoksa (özel etkinlikler) açıklama ile açılır. */
+  function detayAc(etkinlik) {
+    $('detayBaslik').textContent = etkinlik.ad;
+    var g = $('detayGorsel');
+    g.src = etkinlik.gorsel || etkinlik.onizlemeData || etkinlik.onizleme || '';
+    g.alt = etkinlik.ad + ' önizleme';
+
+    /* Bilgi pilleri: seviye + süre */
+    var tumSeviyeler = (etkinlik.kategoriler || []).length >= KATEGORILER.length;
+    var seviyeYazi = etkinlik.ogretmen ? '👩‍🏫 Öğretmen Aracı'
+      : tumSeviyeler ? '📚 Tüm Seviyeler'
+      : (etkinlik.kategoriler || []).map(n => n + ' IPT').join(' • ');
+    var piller = '<span class="detay-pill">🎓 ' + seviyeYazi + '</span>';
+    if (etkinlik.sure) piller += '<span class="detay-pill">⏱️ ' + etkinlik.sure + '</span>';
+    var siniflar = etkinlik.siniflar || [];
+    if (siniflar.length && !etkinlik.ogretmen) piller += '<span class="detay-pill">🏫 ' + siniflar.map(n => n + '. Sınıf').join(', ') + '</span>';
+    $('detayBilgiler').innerHTML = piller;
+
+    /* Amaç — yoksa açıklamayla değiştir */
+    var amac = etkinlik.amac || etkinlik.aciklama || 'Bu etkinlik için amaç metni hazırlanıyor.';
+    $('detayAmac').textContent = amac;
+
+    /* Kazanımlar */
+    var kaz = etkinlik.kazanimlar || [];
+    $('detayKazanimKutu').style.display = kaz.length ? '' : 'none';
+    $('detayKazanimlar').innerHTML = kaz.map(k => '<li>' + k + '</li>').join('');
+
+    /* Materyaller */
+    var mat = etkinlik.materyaller || [];
+    $('detayMateryalKutu').style.display = mat.length ? '' : 'none';
+    $('detayMateryaller').innerHTML = mat.map(m => '<li>' + m + '</li>').join('');
+
+    /* Etiketler */
+    var et = etkinlik.etiketler || [];
+    $('detayEtiketler').innerHTML = et.map(t => '<span class="etiket">' + t + '</span>').join('');
+
+    $('detayBaslatBtn').onclick = function () { detayKapat(); oynat(etkinlik); };
+    $('detayPencere').classList.add('acik');
+    document.body.style.overflow = 'hidden';
+    var kbtn = $('detayKapatBtn'); if (kbtn) kbtn.focus();
+  }
+  function detayKapat() {
+    $('detayPencere').classList.remove('acik');
+    document.body.style.overflow = '';
+  }
+  $('detayKapatBtn').onclick = detayKapat;
+  $('detayKapatBtn2').onclick = detayKapat;
+  $('detayPencere').addEventListener('click', e => { if (e.target.id === 'detayPencere') detayKapat(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && $('detayPencere').classList.contains('acik')) { detayKapat(); return; }
+    if (e.key === 'Escape') kapat();
+  });
+
   function oynat(etkinlik) {
     /* Öğretmen araçları giriş/atama kapısına takılmaz: herkese her zaman açıktır. */
     etkinlikAcikMi(etkinlik.id, !!etkinlik.ogretmen).then(function (sonuc) {
@@ -903,7 +1012,9 @@
     } else { eskiKopyala(adres); yaz(); }
   };
   $('pencere').addEventListener('click', e => { if (e.target.id === 'pencere') kapat(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') kapat(); });
+  /* Esc: detay açıksa önce detayı, değilse oynatma penceresini kapatır
+     (detay modalındaki handler zaten kendi penceresini yönetir) */
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('detayPencere').classList.contains('acik')) kapat(); });
 
   /* Pencere TTS butonu */
   var pencereTTSBtn = $('pencereTTS');
