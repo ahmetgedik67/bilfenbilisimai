@@ -742,7 +742,7 @@
   function kartYap(etkinlik, sira) {
     const kart = document.createElement('article');
     kart.className = 'kart';
-    kart.style.animationDelay = (sira * 60) + 'ms';
+    kart.style.animationDelay = (sira % 4) * 45 + (sira % 3) * 25 + 'ms';
     /* Kart vurgu rengi: öğretmen araçları → gök mavisi, tüm seviyeler → turuncu,
        aksi halde etkinliğin ilk kategorisinin gökkuşağı rengi */
     let vurgu = '#8b5cf6';
