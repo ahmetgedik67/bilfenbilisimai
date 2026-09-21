@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Etkinlik Detayı — Bilfen Bilişim AI</title>
+<!--
+  ETKİNLİK DETAY SAYFASI
+  ?id=<etkinlik-id> ile açılır: index.html#etkinlik=<id> yerine tam sayfa,
+  ders planına eklenebilir kalıcı bir bağlantı sunar (bağlantı bu sayfaya gider).
+  Amaç / kazanımlar / süre / materyaller portal-data.js'ten otomatik gelir.
+-->
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/portal.css">
+<link rel="stylesheet" href="assets/etkinlik-detay.css">
+<script>
+/* Tema FOUC önleyici */
+(function () { try { var t = localStorage.getItem('bt_tema'); if (t === 'koyu') document.documentElement.setAttribute('data-tema', 'koyu'); } catch (e) {} })();
+</script>
+</head>
+<body>
+
+<a class="atlama-baglanti" href="#detayGovde">İçeriğe atla</a>
+
+<!-- ÜST NAVİGASYON -->
+<nav class="ust-nav" id="ustNav" aria-label="Ana gezinme">
+  <a class="nav-marka" href="index.html" title="Ana sayfa">
+    <span class="nav-logo" aria-hidden="true"><img id="robiLogo" alt=""></span>
+    <span class="nav-marka-yazi">Bilfen <b>Bilişim AI</b></span>
+  </a>
+  <div class="nav-menu" id="navMenu" role="menubar" aria-label="Ana menü">
+    <a class="nav-link" href="index.html" role="menuitem">🏠 Ana Sayfa</a>
+    <a class="nav-link" href="index.html#icerik" role="menuitem">🧩 Etkinlikler</a>
+    <a class="nav-link" href="panel.html" role="menuitem">👤 Panel</a>
+  </div>
+  <div class="nav-sag">
+    <button type="button" class="tema-dugme" id="temaBtn" title="Koyu/açık tema" aria-label="Koyu temayı aç/kapat">🌙</button>
+    <a class="nav-giris" href="index.html" title="Etkinliklere dön">↩ Etkinliklere Dön</a>
+    <button type="button" class="nav-burger" id="navBurger" aria-label="Menüyü aç/kapat" aria-expanded="false" aria-controls="navMenu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- DETAY SAYFASI -->
+<main id="detayGovde">
+  <article class="detay-sayfa">
+
+    <div class="detay-yol">
+      <a href="index.html">🏠 Ana Sayfa</a> <span aria-hidden="true">›</span>
+      <a href="index.html#icerik">🧩 Etkinlikler</a> <span aria-hidden="true">›</span>
+      <span id="krumbaslik" class="detay-yol-aktif">Etkinlik</span>
+    </div>
+
+    <!-- Kapak -->
+    <header class="sayfa-kapak" id="sayfaKapak">
+      <div class="kapak-gorsel"><img id="detayGorsel" alt=""></div>
+      <div class="kapak-bilgi">
+        <span class="kapak-rozet" id="kapakRozet">ETKİNLİK</span>
+        <h1 id="detayBaslik">Yükleniyor…</h1>
+        <p class="kapak-aciklama" id="detayAciklama"></p>
+        <div class="detay-bilgiler" id="detayBilgiler"></div>
+        <div class="kapak-aksiyon">
+          <button class="btn btn-birincil btn-buyuk" id="baslatBtn">▶ Etkinliği Başlat</button>
+          <button class="btn btn-ikincil" id="linkKopyalaBtn" title="Ders planına ekleyebileceğiniz kalıcı bağlantıyı kopyala">🔗 Bağlantıyı Kopyala</button>
+          <button class="btn btn-ikincil btn-ses" id="ttsBtn" title="Etkinlik açıklamasını sesli oku">🔊 Dinle</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- İçerik ızgarası -->
+    <div class="detay-izgara">
+      <section class="detay-kart detay-ana" aria-label="Etkinlik bilgileri">
+        <div class="detay-bolum">
+          <h2>🎯 Amaç</h2>
+          <p id="amacMetin"></p>
+        </div>
+        <div class="detay-bolum" id="kazanimKutu">
+          <h2>✅ Kazanımlar</h2>
+          <ul class="isaretli" id="kazanimListe"></ul>
+        </div>
+        <div class="detay-bolum" id="nasilKutu">
+          <h2>🧭 Nasıl Kullanılır?</h2>
+          <ol class="numarali" id="nasilListe"></ol>
+        </div>
+        <div class="detay-bolum" id="materyalKutu">
+          <h2>🧰 Gerekli Materyaller</h2>
+          <ul class="isaretli" id="materyalListe"></ul>
+        </div>
+        <div class="detay-etiketler" id="etiketler"></div>
+      </section>
+
+      <aside class="detay-yan" aria-label="Hızlı bilgiler">
+        <div class="detay-kart yan-kart">
+          <h3>📌 Kısa Bilgi</h3>
+          <div class="yan-satir"><span class="yan-ikon">⏱️</span><div><b>Süre</b><span id="yanSure">—</span></div></div>
+          <div class="yan-satir"><span class="yan-ikon">🎓</span><div><b>Seviye</b><span id="yanSeviye">—</span></div></div>
+          <div class="yan-satir"><span class="yan-ikon">🏫</span><div><b>Sınıflar</b><span id="yanSiniflar">—</span></div></div>
+          <div class="yan-satir"><span class="yan-ikon">📚</span><div><b>Kategori</b><span id="yanKategori">—</span></div></div>
+        </div>
+        <div class="detay-kart yan-kart ogretmen-notu" id="ogretmenNotu" hidden>
+          <h3>👩‍🏫 Öğretmen Notu</h3>
+          <p>Bu etkinlik akıllı tahta / projeksiyon ile, öğretmen yönetiminde sınıfa uygulanır. Öğrenci girişi gerekmez.</p>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Alt aksiyon -->
+    <section class="detay-cta">
+      <h2>🚀 Hazır mısın?</h2>
+      <p>Etkinliği tam ekran ya da yeni sekmede aç, sınıfta birlikte keşfet.</p>
+      <div class="cta-butonlar">
+        <button class="btn btn-birincil btn-buyuk" id="baslatBtn2">▶ Etkinliği Başlat</button>
+        <a class="btn btn-ikincil" id="yeniSekmeBtn" href="#" target="_blank" rel="noopener">↗ Yeni sekmede aç</a>
+      </div>
+    </section>
+  </article>
+</main>
+
+<footer class="site-footer" aria-label="Site bilgileri">
+  <div class="footer-izgara">
+    <div class="footer-marka">
+      <a class="nav-marka" href="index.html">
+        <span class="nav-logo" aria-hidden="true"><img src="" alt="" id="footerRobi"></span>
+        <span class="nav-marka-yazi">Bilfen <b>Bilişim AI</b></span>
+      </a>
+      <p>Bilfen Bilişim Teknolojileri ve Yazılım dersi için hazırlanan etkinlik platformu. Öğrenciler keşfeder, kodlar ve üretir; öğretmenler tek yerden yönetir.</p>
+    </div>
+    <nav class="footer-baglantilar" aria-label="Alt bilgi bağlantıları">
+      <h4>Keşfet</h4>
+      <a href="index.html#icerik">🧩 Etkinlikler</a>
+      <a href="index.html#siniflar">🎓 Sınıflar</a>
+      <a href="panel.html">👩‍🏫 Öğretmen</a>
+    </nav>
+    <div class="footer-hakkinda">
+      <h4>Bilfen Bilişim Zümresi</h4>
+      <p class="zumre">🎓 Bilfen Bilişim Zümresi</p>
+      <p class="mini">Etkinlikler saf HTML + CSS + JavaScript ile hazırlanır — internet gerekmez, tarayıcıda çalışır.</p>
+    </div>
+  </div>
+  <div class="footer-alt">
+    <span class="kurs">Bilişim Teknolojileri ve Yazılım Dersi</span>
+    <span>© <span id="yil">2026</span> Bilfen Bilişim AI · Tüm hakları saklıdır.</span>
+  </div>
+</footer>
+
+<script src="assets/portal-data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* Robi görseli: portal-data.js window.__ROBI_DATA__ ile paylaşılan maskot */
+  function robiDoldur() {
+    ['robiLogo', 'footerRobi'].forEach(function (id) {
+      var img = $(id);
+      if (!img) return;
+      img.src = window.__ROBI_DATA__ || '';
+    });
+  }
+  robiDoldur();
+
+  /* Yıl */
+  var yilEl = $('yil'); if (yilEl) yilEl.textContent = String(new Date().getFullYear());
+
+  /* Tema */
+  var temaBtn = $('temaBtn');
+  function temaUygula(tema) {
+    if (tema === 'koyu') document.documentElement.setAttribute('data-tema', 'koyu');
+    else document.documentElement.removeAttribute('data-tema');
+    if (temaBtn) {
+      temaBtn.textContent = tema === 'koyu' ? '☀️' : '🌙';
+      temaBtn.title = tema === 'koyu' ? 'Açık temaya geç' : 'Koyu temaya geç';
+      temaBtn.setAttribute('aria-label', temaBtn.title);
+    }
+    try { localStorage.setItem('bt_tema', tema); } catch (e) {}
+  }
+  if (temaBtn) {
+    temaBtn.textContent = document.documentElement.getAttribute('data-tema') === 'koyu' ? '☀️' : '🌙';
+    temaBtn.addEventListener('click', function () {
+      var koyu = document.documentElement.getAttribute('data-tema') === 'koyu';
+      temaUygula(koyu ? 'acik' : 'koyu');
+    });
+  }
+
+  /* Burger menü */
+  var burger = $('navBurger'), menu = $('navMenu');
+  if (burger && menu) {
+    burger.addEventListener('click', function () {
+      var acik = menu.classList.toggle('acik');
+      burger.setAttribute('aria-expanded', acik ? 'true' : 'false');
+    });
+  }
+
+  /* TTS */
+  var ttsBtn = $('ttsBtn'), ttsMetin = '', ttsCalisiyor = false;
+  function ttsDurdur() { try { speechSynthesis.cancel(); } catch (e) {} ttsCalisiyor = false; }
+  if (ttsBtn) {
+    ttsBtn.addEventListener('click', function () {
+      if (ttsCalisiyor) { ttsDurdur(); ttsBtn.textContent = '🔊 Dinle'; ttsBtn.classList.remove('calisiyor'); return; }
+      if (!ttsMetin) return;
+      ttsCalisiyor = true;
+      ttsBtn.textContent = '⏹️ Durdur'; ttsBtn.classList.add('calisiyor');
+      var u = new SpeechSynthesisUtterance(ttsMetin);
+      u.lang = 'tr-TR';
+      u.onend = u.onerror = function () { ttsCalisiyor = false; ttsBtn.textContent = '🔊 Dinle'; ttsBtn.classList.remove('calisiyor'); };
+      speechSynthesis.speak(u);
+    });
+  }
+
+  /* Kopyala */
+  function kopyala(metin, btn, eskiYazi) {
+    function yaz() {
+      btn.textContent = '✓ Kopyalandı';
+      btn.classList.add('basarili');
+      setTimeout(function () { btn.textContent = eskiYazi; btn.classList.remove('basarili'); }, 2000);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(metin).then(yaz).catch(function () {
+        var ta = document.createElement('textarea'); ta.value = metin;
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        ta.remove(); yaz();
+      });
+    } else {
+      var ta = document.createElement('textarea'); ta.value = metin;
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      ta.remove(); yaz();
+    }
+  }
+
+  /* ---------- Etkinliği bul ---------- */
+  var id = '';
+  try { id = decodeURIComponent((location.search || '').match(/[?&]id=([^&]+)/) ? RegExp.$1 : ''); } catch (e) {}
+  if (!id) { var m = (location.hash || '').match(/^#etkinlik=(.+)$/); if (m) id = decodeURIComponent(m[1]); }
+
+  var hepsi = (window.ETKINLIKLER || []).concat(window.OZEL_ETKINLIKLER || []);
+  var etkinlik = null;
+  for (var i = 0; i < hepsi.length; i++) { if (hepsi[i].id === id) { etkinlik = hepsi[i]; break; } }
+
+  var KATEGORILER = window.KATEGORILER || [];
+  var KATEGORI_RENK = window.KATEGORI_RENK || [];
+
+  if (!etkinlik) {
+    document.title = 'Etkinlik bulunamadı — Bilfen Bilişim AI';
+    $('detayBaslik').textContent = 'Etkinlik bulunamadı 🤔';
+    $('detayAciklama').textContent = 'Bağlantı eksik veya etkinlik kaldırılmış olabilir. Etkinlikler sayfasından dilediğinizi seçebilirsiniz.';
+    $('sayfaKapak').classList.add('bulunamadi');
+    $('baslatBtn').disabled = $('baslatBtn2').disabled = true;
+    $('linkKopyalaBtn').hidden = true;
+    var yS = $('yeniSekmeBtn'); if (yS) yS.hidden = true;
+    return;
+  }
+
+  /* Başlat: portalın derin bağlantısına gider (oynatma penceresi, kapı kontrolü, TTS korunur) */
+  function baslatUrl() { return 'index.html#etkinlik=' + encodeURIComponent(etkinlik.id); }
+  $('baslatBtn').onclick = function () { location.href = baslatUrl(); };
+  $('baslatBtn2').onclick = function () { location.href = baslatUrl(); };
+
+  /* Özel kod/dosya etkinlikleri: içerik direkt açılamaz — portala yönlendir */
+  var ozelIcerikli = etkinlik.ozel && (etkinlik.ozelTip === 'kod' || etkinlik.ozelTip === 'dosya') && etkinlik.ozelIcerik;
+  if (!ozelIcerikli) {
+    var ys = $('yeniSekmeBtn');
+    if (ys) ys.href = baslatUrl();
+  } else {
+    var ys2 = $('yeniSekmeBtn'); if (ys2) ys2.hidden = true;
+  }
+
+  /* Kalıcı bağlantı: bu sayfanın adresi (ders planına eklenebilir) */
+  var kalici = location.origin !== 'null' && location.href.indexOf('?id=') > -1
+    ? location.href
+    : new URL('etkinlik.html?id=' + encodeURIComponent(etkinlik.id), location.href).href;
+  $('linkKopyalaBtn').addEventListener('click', function () { kopyala(kalici, this, '🔗 Bağlantıyı Kopyala'); });
+
+  /* Başlık + meta */
+  document.title = etkinlik.ad + ' — Bilfen Bilişim AI';
+  $('detayBaslik').textContent = etkinlik.ad;
+  $('krumbaslik').textContent = etkinlik.ad;
+  $('detayAciklama').textContent = etkinlik.aciklama || '';
+
+  /* Görsel */
+  var g = $('detayGorsel');
+  g.src = etkinlik.gorsel || etkinlik.onizlemeData || etkinlik.onizleme || '';
+  g.alt = etkinlik.ad + ' önizleme';
+
+  /* Rozet */
+  var rozet = $('kapakRozet');
+  if (etkinlik.ogretmen) rozet.textContent = '👩‍🏫 ÖĞRETMEN ARACI';
+  else if ((etkinlik.kategoriler || []).length >= KATEGORILER.length && KATEGORILER.length) rozet.textContent = 'TÜM SEVİYELER';
+  else rozet.textContent = 'ETKİNLİK';
+  if (etkinlik.ozel) rozet.textContent = 'ÖZEL ETKİNLİK · ' + rozet.textContent;
+  $('ogretmenNotu').hidden = !etkinlik.ogretmen;
+
+  /* Bilgi pilleri (kapak) */
+  var tumSeviyeler = (etkinlik.kategoriler || []).length >= KATEGORILER.length;
+  var seviyeYazi = etkinlik.ogretmen ? '👩‍🏫 Öğretmen Aracı'
+    : tumSeviyeler ? '📚 Tüm Seviyeler'
+    : (etkinlik.kategoriler || []).map(function (n) { return n + ' IPT'; }).join(' • ');
+  var piller = '<span class="detay-pill">🎓 ' + seviyeYazi + '</span>';
+  if (etkinlik.sure) piller += '<span class="detay-pill">⏱️ ' + etkinlik.sure + '</span>';
+  var siniflar = etkinlik.siniflar || [];
+  if (siniflar.length && !etkinlik.ogretmen) piller += '<span class="detay-pill">🏫 ' + siniflar.map(function (n) { return n + '. Sınıf'; }).join(', ') + '</span>';
+  if (etkinlik.ozel && etkinlik.ozelTip) {
+    var tipAd = etkinlik.ozelTip === 'kod' ? 'Kod Etkinliği' : etkinlik.ozelTip === 'dosya' ? 'HTML Dosyası' : 'Drive Bağlantısı';
+    piller += '<span class="detay-pill">📄 ' + tipAd + '</span>';
+  }
+  $('detayBilgiler').innerHTML = piller;
+
+  /* Amaç */
+  $('amacMetin').textContent = etkinlik.amac || etkinlik.aciklama || 'Bu etkinlik için amaç metni hazırlanıyor.';
+
+  /* Kazanımlar */
+  var kaz = etkinlik.kazanimlar || [];
+  $('kazanimKutu').style.display = kaz.length ? '' : 'none';
+  $('kazanimListe').innerHTML = kaz.map(function (k) { return '<li>' + k + '</li>'; }).join('');
+
+  /* Nasıl kullanılır */
+  var nasil = etkinlik.nasil || [];
+  $('nasilKutu').style.display = nasil.length ? '' : 'none';
+  $('nasilListe').innerHTML = nasil.map(function (n) { return '<li>' + n + '</li>'; }).join('');
+
+  /* Materyaller */
+  var mat = etkinlik.materyaller || [];
+  $('materyalKutu').style.display = mat.length ? '' : 'none';
+  $('materyalListe').innerHTML = mat.map(function (m) { return '<li>' + m + '</li>'; }).join('');
+
+  /* Etiketler */
+  var et = etkinlik.etiketler || [];
+  $('etiketler').innerHTML = et.map(function (t) { return '<span class="etiket">' + t + '</span>'; }).join('');
+
+  /* Yan kart */
+  $('yanSure').textContent = etkinlik.sure || '—';
+  $('yanSeviye').textContent = seviyeYazi.replace(/<[^>]+>/g, '');
+  $('yanSiniflar').textContent = etkinlik.ogretmen ? 'Tümü (tahta)' : (siniflar.length ? siniflar.map(function (n) { return n + '.'; }).join(', ') : '—');
+  $('yanKategori').textContent = etkinlik.ogretmen ? 'Öğretmen Aracı' : (tumSeviyeler ? 'Tüm IPT' : ((etkinlik.kategoriler || []).map(function (n) { return n + ' IPT'; }).join(', ') || '—'));
+
+  /* TTS metni */
+  ttsMetin = etkinlik.ad + '. ' + (etkinlik.aciklama || '') + (etkinlik.amac ? ' Amaç: ' + etkinlik.amac : '');
+})();
+</script>
+</body>
+</html>
