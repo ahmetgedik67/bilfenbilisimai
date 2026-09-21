@@ -70,13 +70,19 @@
   <div class="hero">
     <div class="hero-text">
       <span class="hero-badge"><span class="badge-nokta" aria-hidden="true"></span>BİLFEN BİLİŞİM TEKNOLOJİLERİ</span>
-      <h1>Robi ile <span class="accent">Kodla.<br>Keşfet.<br>Üret.</span></h1>
-      <p>Bilişim Teknolojileri ve Yazılım dersindeki etkinlikleri keşfet, kodla ve kendi dijital projelerini oluştur. 2 IPT'den 7 IPT'ye kadar tüm seviyeler tek çatı altında.</p>
-      <div class="hero-cta">
-        <a class="btn btn-birincil" href="#icerik">🚀 Etkinliklere Başla</a>
-        <a class="btn btn-ikincil" href="#nasil">Nasıl Çalışıyor?</a>
+      <h1>Bilişim Teknolojilerini <span class="accent">Keşfet</span></h1>
+      <p class="hero-slogan">Öğren, kodla, üret ve kendi projenle geliştir.</p>
+      <div class="hero-arama" role="search">
+        <span class="arama-ikon" aria-hidden="true">🔍</span>
+        <input type="search" id="aramaKutu" class="arama-girdi" placeholder="Etkinlik ara — “robotik”, “6. sınıf”, “yapay zeka”…" aria-label="Etkinlik ara" autocomplete="off" spellcheck="false">
+        <button type="button" id="aramaTemizle" class="arama-temizle" aria-label="Aramayı temizle" title="Aramayı temizle" hidden>✕</button>
+        <div class="arama-oneri" id="aramaOneri" role="listbox" aria-label="Arama önerileri" hidden></div>
       </div>
-      <span class="hero-ipucu">✓ Giriş gerekmez · ✓ Tarayıcıda çalışır · ✓ Öğrenci ve öğretmen dostu</span>
+      <div class="arama-sonuc" id="aramaSonuc" role="status" aria-live="polite" hidden></div>
+      <div class="hero-cta">
+        <a class="btn btn-birincil" href="#icerik">🧩 Etkinliklere göz at</a>
+        <a class="btn btn-ikincil" href="panel.html">👩‍🏫 Öğretmen Girişi</a>
+      </div>
     </div>
 
     <div class="hero-gorsel" aria-hidden="true">
@@ -492,6 +498,14 @@
     aktifFiltre = deger;
     secimKaynagi = kaynak || 'menu';
     menuKapat();
+    /* Arama yapılıyorsa temizle — filtre seçimi aramayı devre dışı bırakır */
+    var _ak = document.getElementById('aramaKutu');
+    if (_ak && _ak.value) {
+      _ak.value = '';
+      var _at = document.getElementById('aramaTemizle'); if (_at) _at.hidden = true;
+      var _as = document.getElementById('aramaSonuc'); if (_as) _as.hidden = true;
+      var _ao = document.getElementById('aramaOneri'); if (_ao) _ao.hidden = true;
+    }
     render();
   }
   function seviyeListeCiz() {
@@ -542,6 +556,213 @@
   function confettiSiralama() { if (typeof confetti === 'undefined') return; confetti({ particleCount: 40, spread: 60, startVelocity: 30, origin: { y: 0.7 }, colors: ['#fbbf24','#c084fc','#38bdf8'] }); }
   function confettiHosGeldin() { if (typeof confetti === 'undefined') return; confetti({ particleCount: 25, spread: 40, startVelocity: 20, gravity: 0.8, origin: { y: 0.3 }, colors: ['#6366f1','#a78bfa','#c4b5fd'] }); }
   function confettiPuan() { if (typeof confetti === 'undefined') return; confetti({ particleCount: 35, spread: 50, startVelocity: 25, origin: { y: 0.6 }, shapes: ['circle'], colors: ['#fbbf24','#f59e0b','#eab308'] }); }
+
+  /* ---------- Akıllı arama ----------
+     Sadece başlık değil: açıklama, etiket, sınıf ("6. sınıf"), seviye ("6 ipt"),
+     konu alanı ve eş anlamlılar (kod→programlama, robotik→robi vb.) aranır.
+     Sonuçlar canlı olarak listelenir ve "N etkinlik bulundu" şeridi gösterilir. */
+  const ARAMA_ES_ANLAM = {
+    'yapay zeka': 'yapay zeka ai zeka robot',
+    'ai': 'yapay zeka ai zeka',
+    'oyun': 'etkilesim zeka cark carkifelek bilisim',
+    'kodlama': 'kodlama kod programlama yazilim algoritma',
+    'kod': 'kodlama kod programlama yazilim',
+    'programlama': 'programlama kodlama kod yazilim',
+    'yazilim': 'yazilim kodlama kod programlama',
+    'robot': 'robot robotik robi',
+    'robotik': 'robotik robot robi',
+    'robi': 'robi robot robotik',
+    'cark': 'cark carkifelek cevir isim secme',
+    'carkifelek': 'carkifelek cark isim secme tanisma',
+    'tanisma': 'tanisma karsilasma isim cark sinif turu',
+    'sinif': 'sinif siniflar sinif turu seviye',
+    'bilgisayar': 'bilgisayar donanim tekno tur sanal sinif',
+    'donanim': 'donanim bilgisayar teknoloji',
+    'internet': 'internet guvenlik dijital',
+    'guvenlik': 'guvenlik internet sifre dijital',
+    'algoritma': 'algoritma kodlama mantik problem',
+    'matematik': 'matematik sayi islem mantik',
+    'ingilizce': 'ingilizce kelime dil',
+    'tasarim': 'tasarim cizim dijital sanat',
+    'etkinlik': 'etkinlik aktivite calisma',
+    'ara': 'etkinlik aktivite'
+  };
+  /* Türkçe küçük harf normalizasyonu (ı/i/ş/ğ/ü/ö/ç). */
+  function metinNormallestir(s) {
+    return (s || '')
+      .toLocaleLowerCase('tr')
+      .replace(/[ıİ]/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g')
+      .replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c')
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ').trim();
+  }
+  /* Sınıf deseni: "6. sınıf", "6 sinif", "6.sinif", "6. sınıftaki" → sınıf filtresi */
+  function sinifTespit(norm) {
+    var m = norm.match(/(?:^|\s)([1-7])(?:\s*(?:\.|:)|\s+(?:sinif|sinifta|siniflar|sinifinda|ci|si|cu|cu|inci|nci|uncu))\b/);
+    return m ? parseInt(m[1], 10) : null;
+  }
+  /* IPT deseni: "6 ipt", "ipt 6" → IPT filtresi */
+  function iptTespit(norm) {
+    var m = norm.match(/(?:^|\s)(?:ipt|ivr)(?:\s*|\s)([1-7])\b/) || norm.match(/(?:^|\s)([1-7])\s*ipt\b/);
+    return m ? parseInt(m[1], 10) : null;
+  }
+  /* Etkinliğin aranabilir düz metni (önbelleklenir). */
+  function aramaMetni(e) {
+    if (e.__arama) return e.__arama;
+    var parcalar = [
+      e.ad || '', e.aciklama || '', (e.etiketler || []).join(' ')
+    ];
+    (e.kazanimlar || []).forEach(k => parcalar.push(k));
+    (e.materyaller || []).forEach(m => parcalar.push(m));
+    if (e.amac) parcalar.push(e.amac);
+    if (e.ogretmen) parcalar.push('ogretmen ogretmen araci tahta akilli tahta sinif yonetimi');
+    (e.kategoriler || []).forEach(n => parcalar.push(n + ' ipt ' + n + '. sinif'));
+    (e.siniflar || []).forEach(n => parcalar.push(n + '. sinif'));
+    if ((e.kategoriler || []).length >= KATEGORILER.length) parcalar.push('tum seviyeler butun siniflar');
+    var metin = metinNormallestir(parcalar.join(' '));
+    e.__arama = metin;
+    return metin;
+  }
+  function etkinligiAra(sorgu) {
+    var norm = metinNormallestir(sorgu);
+    if (!norm) return null;
+    var tum = ETKINLIKLER.concat(OZEL_ETKINLIKLER);
+    var sinif = sinifTespit(norm), ipt = iptTespit(norm);
+    /* Sorgu + eş anlamlı genişletmeleri */
+    var terimler = [norm];
+    Object.keys(ARAMA_ES_ANLAM).forEach(function (anahtar) {
+      if (norm.indexOf(anahtar) !== -1) terimler.push(ARAMA_ES_ANLAM[anahtar]);
+    });
+    var terimListesi = terimler.join(' ').split(' ').filter(Boolean);
+    var sonuc = tum.filter(function (e) {
+      var metin = ' ' + aramaMetni(e) + ' ';
+      /* Sınıf/IPT eşleşmesi (varsa şart) */
+      if (sinif && !((e.siniflar || []).includes(sinif) || (e.kategoriler || []).includes(sinif) || (e.kategoriler || []).length >= KATEGORILER.length)) return false;
+      if (ipt && !((e.kategoriler || []).includes(ipt) || (e.kategoriler || []).length >= KATEGORILER.length)) return false;
+      /* En az bir terim geçmelidir */
+      return terimListesi.some(function (t) { return t.length >= 2 && metin.indexOf(t) !== -1; });
+    });
+    return { sonuc: sonuc, sinif: sinif, ipt: ipt, toplam: tum.length };
+  }
+
+  var aramaDurumu = { sorgu: '' };
+  const aramaGirdi = $('aramaKutu');
+  const aramaTemizleBtn = $('aramaTemizle');
+  const aramaSonucKutu = $('aramaSonuc');
+  const aramaOneriKutu = $('aramaOneri');
+
+  function aramaDurumYazi(bulunan, toplam, sinif, ipt) {
+    var ek = [];
+    if (sinif) ek.push(sinif + '. sınıf');
+    if (ipt) ek.push(ipt + ' IPT');
+    var kapsam = ek.length ? ' (' + ek.join(' · ') + ')' : '';
+    if (!bulunan) {
+      /* Sınıf arandıysa net cevap ver: o sınıf için etkinlik yok (yanlış kelime değil) */
+      if (sinif) return '🎓 ' + sinif + '. sınıf için henüz etkinlik yok — öğretmenin bu sınıfa yüklediği etkinlikler burada listelenecek.';
+      if (ipt) return '🗂️ ' + ipt + ' IPT için henüz etkinlik yok — öğretmenin yüklediği etkinlikler burada listelenecek.';
+      return '⛔ "' + aramaDurumu.sorgu.trim() + '" için etkinlik bulunamadı — başka bir kelime dene (örn. “robotik”, “kodlama”, “bilgisayar”).';
+    }
+    return '✅ <b>' + bulunan + ' etkinlik bulundu</b>' + kapsam + ' — <a href="#icerik" id="aramaIncele">Etkinliklere göz at →</a>';
+  }
+  function aramaUygula() {
+    var sorgu = aramaGirdi.value || '';
+    aramaDurumu.sorgu = sorgu;
+    aramaTemizleBtn.hidden = !sorgu;
+    if (!sorgu.trim()) {
+      aramaSonucKutu.hidden = true;
+      aramaOneriKutu.hidden = true;
+      aktifFiltre = 'tumu'; secimKaynagi = 'menu';
+      render();
+      return;
+    }
+    var r = etkinligiAra(sorgu);
+    if (!r) return;
+    aramaSonucKutu.innerHTML = aramaDurumYazi(r.sonuc.length, r.toplam, r.sinif, r.ipt);
+    aramaSonucKutu.hidden = false;
+    aramaOneriKutu.hidden = true;
+    /* Sonuçları canlı listele: tek bölüm, bulunanlar sırayla */
+    aktifFiltre = '__arama'; secimKaynagi = 'arama';
+    var icerik = $('icerik');
+    icerik.innerHTML = '';
+    if (r.sonuc.length) {
+      var bolum = document.createElement('section');
+      bolum.className = 'sinifli';
+      var baslik = document.createElement('div');
+      baslik.className = 'sinif-baslik';
+      var seviye = document.createElement('span');
+      seviye.className = 'seviye';
+      seviye.style.background = 'linear-gradient(135deg, #6366f1, #a855f7)';
+      seviye.textContent = '🔍 Arama';
+      var h2 = document.createElement('h2');
+      h2.textContent = 'Arama Sonuçları';
+      var cizgi = document.createElement('span');
+      cizgi.className = 'cizgi';
+      baslik.append(seviye, h2, cizgi);
+      var kartlar = document.createElement('div');
+      kartlar.className = 'kartlar';
+      r.sonuc.forEach(function (o, i) { kartlar.appendChild(kartYap(o, i)); });
+      bolum.append(baslik, kartlar);
+      icerik.appendChild(bolum);
+      setTimeout(function () { gsapKartGiris(); gsapKartHover(); }, 100);
+    } else {
+      var bos = document.createElement('div');
+      bos.className = 'bos-kart';
+      bos.style.minHeight = '220px';
+      bos.innerHTML = '<div class="buyuk">🔍</div><p>Aradığın etkinliği bulamadık. <b>Robotik</b>, <b>bilgisayar</b> ya da <b>çarkıfelek</b> gibi kelimelerle tekrar dene! 🚀</p>';
+      icerik.appendChild(bos);
+    }
+  }
+  /* Dropdown önerileri: etkinlik adları + sınıf desenleri */
+  function onerilerCiz(sorgu) {
+    var norm = metinNormallestir(sorgu);
+    if (!norm || norm.length < 2) { aramaOneriKutu.hidden = true; return; }
+    var r = etkinligiAra(sorgu);
+    if (!r) { aramaOneriKutu.hidden = true; return; }
+    var oneriler = [];
+    if (r.sinif) oneriler.push({ yazi: r.sinif + '. sınıf etkinlikleri', sorgu: r.sinif + '. sınıf', ikon: '🎓' });
+    if (r.ipt) oneriler.push({ yazi: r.ipt + ' IPT etkinlikleri', sorgu: r.ipt + ' ipt', ikon: '🗂️' });
+    r.sonuc.slice(0, 5).forEach(function (e) {
+      oneriler.push({ yazi: e.ad, sorgu: e.ad, ikon: e.ogretmen ? '👩‍🏫' : '🧩' });
+    });
+    if (!oneriler.length) oneriler.push({ yazi: 'Sonuç yok — öner: robotik, kodlama, yapay zeka', sorgu: '', ikon: '💡', pasif: true });
+    aramaOneriKutu.innerHTML = '';
+    oneriler.slice(0, 7).forEach(function (o) {
+      var d = document.createElement('button');
+      d.type = 'button';
+      d.className = 'arama-oneri-item' + (o.pasif ? ' pasif' : '');
+      d.setAttribute('role', 'option');
+      d.innerHTML = '<span class="oi-ikon" aria-hidden="true">' + o.ikon + '</span>' + o.yazi + (o.pasif ? '' : ' <span class="oi-ok" aria-hidden="true">→</span>');
+      d.onclick = function () {
+        if (o.pasif) return;
+        aramaGirdi.value = o.sorgu;
+        aramaUygula();
+        aramaSonucKutu.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      };
+      aramaOneriKutu.appendChild(d);
+    });
+    aramaOneriKutu.hidden = false;
+  }
+  if (aramaGirdi) {
+    var _aramaZaman;
+    aramaGirdi.addEventListener('input', function () {
+      clearTimeout(_aramaZaman);
+      _aramaZaman = setTimeout(function () {
+        var _uzunluk = (aramaGirdi.value || '').trim().length;
+        if (_uzunluk >= 2) onerilerCiz(aramaGirdi.value);
+        else { aramaOneriKutu.hidden = true; }
+        /* Her durumda uygula: kutu temizlenince normal liste geri gelsin */
+        aramaUygula();
+      }, 140);
+    });
+    aramaGirdi.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); aramaOneriKutu.hidden = true; aramaUygula(); if ((aramaGirdi.value || '').trim()) aramaSonucKutu.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      if (e.key === 'Escape') { aramaGirdi.value = ''; aramaUygula(); aramaGirdi.blur(); }
+    });
+    aramaGirdi.addEventListener('focus', function () { if ((aramaGirdi.value || '').trim().length >= 2) onerilerCiz(aramaGirdi.value); });
+    document.addEventListener('click', function (e) { if (!e.target.closest('.hero-arama')) aramaOneriKutu.hidden = true; });
+  }
+  if (aramaTemizleBtn) aramaTemizleBtn.addEventListener('click', function () { aramaGirdi.value = ''; aramaUygula(); aramaGirdi.focus(); });
+  if (aramaSonucKutu) aramaSonucKutu.addEventListener('click', function (e) { if (e.target.id === 'aramaIncele') { aramaSonucKutu.hidden = true; } });
 
   /* ===== GSAP Animations ===== */
   var gsapReady = typeof gsap !== 'undefined';
@@ -804,6 +1025,12 @@
 
   /* ---------- Bölümler ---------- */
   function render() {
+    /* Arama modu: sonuçlar zaten aramaUygula tarafından çizildi —
+       burada yalnız filtre vurgularını tazele ve çık. */
+    if (aktifFiltre === '__arama') {
+      ogretmenDugme.classList.toggle('secili', false);
+      return;
+    }
     seviyeListeCiz();
     numaralarCiz();
     ogretmenDugme.classList.toggle('secili', aktifFiltre === 'ogretmen');
@@ -818,7 +1045,8 @@
        - IPT kategorileri (2 IPT – 7 IPT) ya da seçilen sınıfın bölümü */
     let bolumler;
     if (aktifFiltre === 'tumu') {
-      bolumler = [{ ogretmen: true }].concat(KATEGORILER.map(k => ({ no: k.no, ad: k.ad })));
+      /* 1. Sınıf bölümü: IPT kategorisi yoktur ama sınıfa özel etkinlikler (öğretmen yüklemeleri) burada listelenir */
+      bolumler = [{ ogretmen: true }, { no: 1, ad: '1. Sınıf' }].concat(KATEGORILER.map(k => ({ no: k.no, ad: k.ad })));
     } else if (aktifFiltre === 'ogretmen') {
       bolumler = [{ ogretmen: true }];
     } else {
