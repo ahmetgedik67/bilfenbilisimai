@@ -577,7 +577,7 @@
     if (r.sinif) oneriler.push({ yazi: r.sinif + '. sınıf etkinlikleri', sorgu: r.sinif + '. sınıf', ikon: '🎓' });
     if (r.ipt) oneriler.push({ yazi: r.ipt + ' IPT etkinlikleri', sorgu: r.ipt + ' ipt', ikon: '🗂️' });
     r.sonuc.slice(0, 5).forEach(function (e) {
-      oneriler.push({ yazi: e.ad, sorgu: e.ad, ikon: e.ogretmen ? '👩‍🏫' : '🧩' });
+      oneriler.push({ yazi: e.ad, sorgu: e.ad, ikon: e.ogretmen ? '👩‍🏫' : '🧩', etkinlik: e });
     });
     if (!oneriler.length) oneriler.push({ yazi: 'Sonuç yok — öner: robotik, kodlama, yapay zeka', sorgu: '', ikon: '💡', pasif: true });
     aramaOneriKutu.innerHTML = '';
@@ -589,6 +589,13 @@
       d.innerHTML = '<span class="oi-ikon" aria-hidden="true">' + o.ikon + '</span>' + o.yazi + (o.pasif ? '' : ' <span class="oi-ok" aria-hidden="true">→</span>');
       d.onclick = function () {
         if (o.pasif) return;
+        /* Etkinlik adına tıklandı → etkinliği doğrudan aç (detay modalı) */
+        if (o.etkinlik) {
+          aramaOneriKutu.hidden = true;
+          detayAc(o.etkinlik);
+          return;
+        }
+        /* Sınıf / IPT önerisi → aramayı uygula ve sonuçlara kaydır */
         aramaGirdi.value = o.sorgu;
         aramaUygula();
         aramaSonucKutu.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -610,7 +617,17 @@
       }, 140);
     });
     aramaGirdi.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { e.preventDefault(); aramaOneriKutu.hidden = true; aramaUygula(); if ((aramaGirdi.value || '').trim()) aramaSonucKutu.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        aramaOneriKutu.hidden = true;
+        /* Tam isim eşleşmesi varsa etkinliği doğrudan aç */
+        var _q = (aramaGirdi.value || '').trim();
+        var _r = _q ? etkinligiAra(_q) : null;
+        var _tam = _r ? (_r.sonuc || []).find(function (x) { return metinNormallestir(x.ad) === metinNormallestir(_q); }) : null;
+        if (_tam) { detayAc(_tam); return; }
+        aramaUygula();
+        if (_q) aramaSonucKutu.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       if (e.key === 'Escape') { aramaGirdi.value = ''; aramaUygula(); aramaGirdi.blur(); }
     });
     aramaGirdi.addEventListener('focus', function () { if ((aramaGirdi.value || '').trim().length >= 2) onerilerCiz(aramaGirdi.value); });
