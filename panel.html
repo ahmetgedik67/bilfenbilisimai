@@ -483,6 +483,29 @@
             <div><label>Etkinlik adı</label><input id="oeAd" placeholder="örn. Algoritma Macerası"></div>
             <div><label>Konu &amp; Tema</label><input id="oeKonu" placeholder="örn. Algoritma — Uzay Teması"></div>
           </div>
+          <div style="margin-top:14px">
+            <label>📚 Müfredat teması — seçince Konu &amp; Tema dolar, sınıf seçenekleri otomatik işaretlenir</label>
+            <select id="oeTema">
+              <option value="">— Tema seç (isteğe bağlı) —</option>
+              <optgroup label="İlkokul Temaları">
+                <option value="ilk|Teknoloji Yolculuğum Başlıyor!">Teknoloji Yolculuğum Başlıyor!</option>
+                <option value="ilk|Dijital Vatandaşlık">Dijital Vatandaşlık</option>
+                <option value="ilk|Bilgi İşlemsel Düşünme ve Kodlama">Bilgi İşlemsel Düşünme ve Kodlama</option>
+                <option value="ilk|Yapay Zekâ Okuryazarlığı">Yapay Zekâ Okuryazarlığı</option>
+                <option value="ilk|Yaratıcı Tasarım">Yaratıcı Tasarım</option>
+                <option value="ilk|Üretkenlik">Üretkenlik</option>
+                <option value="ilk|Keşfet, Öğren, Eğlen!">Keşfet, Öğren, Eğlen!</option>
+              </optgroup>
+              <optgroup label="Ortaokul Temaları">
+                <option value="orta|Bilgi İşlemsel Düşünme ve Kodlama">Bilgi İşlemsel Düşünme ve Kodlama</option>
+                <option value="orta|Günlük Yaşam ve Teknoloji">Günlük Yaşam ve Teknoloji</option>
+                <option value="orta|Ad's Up">Ad's Up</option>
+                <option value="orta|Dijital Vatandaşlık">Dijital Vatandaşlık</option>
+                <option value="orta|Yaratıcı Tasarım">Yaratıcı Tasarım</option>
+                <option value="orta|Yapay Zeka Okuryazarlığı">Yapay Zeka Okuryazarlığı</option>
+              </optgroup>
+            </select>
+          </div>
           <label style="margin-top:14px">Kullanılacağı yerler — bir veya birden fazla seçebilirsin</label>
           <div id="oeSeviyeler"></div>
           <div class="hata" id="oeHata"></div>
@@ -1981,6 +2004,19 @@
     grup('👩‍🏫 Kullanım', [chipYap('Öğretmen Aracı (öğrenciler görmez, tahtada uygulanır)', 'arac')]);
   }
 
+  /* Müfredat teması: Konu & Tema alanını doldur + sınıf çiplerini otomatik işaretle.
+     İlkokul → 1-4. sınıf, Ortaokul → 5-7. sınıf. IPT ve Kullanım çiplerine dokunulmaz. */
+  $('oeTema').addEventListener('change', function () {
+    var v = $('oeTema').value;
+    if (!v) return;
+    var p = v.split('|');
+    $('oeKonu').value = p[1];
+    oe.secim = oe.secim.filter(function (t) { return t.charAt(0) !== 's'; });
+    var siniflar = p[0] === 'ilk' ? [1, 2, 3, 4] : [5, 6, 7];
+    siniflar.forEach(function (n) { oe.secim.push('s' + n); });
+    seviyeCipsCiz();
+  });
+
   function oeKaynakGoster(tip) {
     oe.tip = tip;
     $('oeKaynakDosya').style.display = tip === 'dosya' ? '' : 'none';
@@ -2126,6 +2162,10 @@
           oe.duzenleId = id;
           $('oeAd').value = o.ad || '';
           $('oeKonu').value = o.konu || '';
+          /* Kayıtlı konu bir müfredat temasıyla eşleşiyorsa seçim kutusunu da geri getir */
+          var temaDeger = '';
+          Array.prototype.some.call($('oeTema').options, function (op) { if (op.value.split('|')[1] === (o.konu || '')) { temaDeger = op.value; return true; } return false; });
+          $('oeTema').value = temaDeger;
           oe.tip = o.tip || 'dosya';
           oe.secim = (o.secim || []).slice();
           if (o.tip === 'kod') { kodEditorAyarla(o.icerik || ''); oeKaynakGoster('kod'); }
@@ -2166,7 +2206,7 @@
   function oeFormuTemizle() {
     oe.secim = []; oe.dosyaMetin = ''; oe.gorsel = ''; oe.duzenleId = null;
     $('oeKaydetBtn').textContent = '\ud83d\udcbe Etkinli\u011fi Kaydet';
-    $('oeAd').value = ''; $('oeKonu').value = ''; kodEditorTemizle(); $('oeDrive').value = '';
+    $('oeAd').value = ''; $('oeKonu').value = ''; $('oeTema').value = ''; kodEditorTemizle(); $('oeDrive').value = '';
     $('oeDosya').value = ''; $('oeDosyaAdi').textContent = '';
     $('oeGorsel').value = ''; $('oeGorselOnizle').style.display = 'none';
     $('oeGorselDurum').textContent = '';
