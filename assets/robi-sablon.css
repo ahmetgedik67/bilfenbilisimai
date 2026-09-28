@@ -1,0 +1,336 @@
+/* ============================================================
+   ROBİNİN PUZZLE DÜNYASI ŞABLON KATMANI
+   Referans: bilfen.github.io/Robinin-Puzzle-Dunyasi
+   ------------------------------------------------------------
+   Portalın işlevselliğine (arama, filtre, modal, oynatma,
+   koyu tema) dokunmadan yalnız GÖRSEL DİLİNİ şablona çevirir:
+   · Palet: --ink #172554 · --muted #52627f · --blue #2563eb
+     --cyan #06b6d4 · --yellow #facc15 · --coral #fb7185 · --mint #34d399
+   · Gövde: gökyüzü ışıması + sarı ışıma + açık mavi→sarı gradyan
+   · Hero: mavi→cyan→teal gradyanlı yuvarlak köşeli banner + beyaz
+     kalın çerçeveli dairesel Robi yörüngesi
+   · Kartlar: beyaz %93 + yumuşak mavi gölge + 22px yarıçap
+   · Butonlar: 14px yarıçap, mavi→mor gradyan birincil
+   ============================================================ */
+
+/* ---------- Şablon paleti (Puzzle Dünyası tokens) ---------- */
+:root {
+  --rp-ink: #172554;
+  --rp-muted: #52627f;
+  --rp-blue: #2563eb;
+  --rp-blue-dark: #1d4ed8;
+  --rp-cyan: #06b6d4;
+  --rp-yellow: #facc15;
+  --rp-coral: #fb7185;
+  --rp-mint: #34d399;
+  --rp-sky: #eff6ff;
+  --rp-line: #dbeafe;
+  --rp-golge: 0 18px 45px rgba(30, 64, 175, .13);
+  --rp-btn-yaricap: 14px;
+
+  /* Portal değişkenlerini şablona bağla (koyu tema bunları yine geçersiz kılar) */
+  --murekkep: var(--rp-ink);
+  --yazi-ince: var(--rp-muted);
+  --cizgi: var(--rp-line);
+  --mavi: var(--rp-blue);
+  --turkuaz: var(--rp-cyan);
+  --vurgu-grad: linear-gradient(135deg, var(--rp-blue), #7c3aed);
+  --golge-kucuk: 0 8px 18px rgba(30, 64, 175, .09);
+  --golge-orta: 0 11px 28px rgba(30, 64, 175, .12);
+  --golge-buyuk: 0 18px 45px rgba(30, 64, 175, .18);
+  --gecis-yay: .18s ease;
+}
+
+/* ---------- Gövde: gökyüzü + sarı ışımalı zemin ---------- */
+body {
+  font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(125, 211, 252, .55), transparent 28%),
+    radial-gradient(circle at 94% 14%, rgba(253, 224, 71, .42), transparent 25%),
+    linear-gradient(135deg, #f8fbff 0%, #eef6ff 46%, #fefce8 100%);
+  background-attachment: fixed;
+}
+html[data-tema='koyu'] body { background-attachment: fixed; }
+
+/* ---------- Seçim & odak renkleri ---------- */
+::selection { background: rgba(14, 165, 233, .22); }
+:focus-visible { outline: 4px solid rgba(14, 165, 233, .3); outline-offset: 2px; }
+
+/* ---------- Nav: şablon topbar'ı gibi düz beyaz ---------- */
+.ust-nav {
+  background: rgba(255, 255, 255, .94);
+  border-bottom: 1px solid var(--rp-line);
+  box-shadow: 0 8px 18px rgba(30, 64, 175, .07);
+}
+.nav-logo {
+  border: 3px solid #fff; border-radius: 16px;
+  background: linear-gradient(145deg, #0ea5e9, var(--rp-blue) 64%, #7c3aed);
+  box-shadow: 0 9px 20px rgba(37, 99, 235, .26);
+}
+.nav-link { border-radius: var(--rp-btn-yaricap); }
+.nav-link:hover { background: var(--rp-sky); }
+.nav-link.nav-aktif { background: var(--rp-sky); color: var(--rp-blue-dark); }
+.nav-giris {
+  border-radius: var(--rp-btn-yaricap);
+  background: linear-gradient(135deg, var(--rp-blue), #7c3aed);
+  box-shadow: 0 9px 18px rgba(37, 99, 235, .22);
+}
+
+/* ---------- HERO: şablonun gradyan banner'ı ---------- */
+.hero-alan {
+  padding: 0 0 8px;
+  background: transparent;
+}
+.hero-desen { display: none; }
+.gok-nesne { display: none; }
+.hero {
+  width: min(1180px, calc(100% - 28px));
+  padding: clamp(24px, 5vw, 46px);
+  margin: 18px auto 0;
+  gap: 20px;
+  min-height: 245px;
+  border: 1px solid rgba(255, 255, 255, .8);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 84% 25%, rgba(255, 255, 255, .28), transparent 25%),
+    linear-gradient(120deg, #1d4ed8, #0891b2 62%, #14b8a6);
+  box-shadow: var(--rp-golge);
+}
+.hero::after {
+  content: "";
+  position: absolute; right: -55px; bottom: -100px;
+  width: 310px; height: 230px;
+  border: 28px solid rgba(255, 255, 255, .15);
+  border-radius: 50%;
+  transform: rotate(-12deg);
+  pointer-events: none;
+}
+.hero-text { gap: 14px; }
+.hero-badge {
+  background: rgba(255, 255, 255, .16);
+  border: 1px solid rgba(255, 255, 255, .35);
+  color: #cffafe;
+  box-shadow: none;
+  letter-spacing: .12em;
+}
+.badge-nokta { background: var(--rp-yellow); }
+.hero h1 {
+  color: #fff;
+  font-size: clamp(1.85rem, 5vw, 3.4rem);
+  line-height: .98; letter-spacing: -.05em;
+}
+.hero h1 .accent {
+  background: linear-gradient(92deg, #fde68a, var(--rp-yellow) 55%, #fef3c7);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero-slogan { color: #e0f2fe; font-weight: 700; }
+.hero p { color: #e0f2fe; }
+.hero-ipucu { color: #bae6fd; }
+
+/* Hero Robi → şablonun dairesel yörünge görseli */
+.hero-gorsel { min-height: clamp(230px, 26vw, 300px); }
+.robi-halka { display: none; }
+.robi-wrap { gap: 0; }
+.robi {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center;
+  border-radius: 50%;
+  animation: none;
+}
+.robi-wrap {
+  justify-self: center;
+  width: min(270px, 100%);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 7px solid rgba(255, 255, 255, .95);
+  border-radius: 50%;
+  background: #fef3c7;
+  box-shadow: 0 18px 32px rgba(14, 45, 111, .35);
+}
+.robi-tag { display: none; }
+.hero-kart {
+  background: rgba(255, 255, 255, .95);
+  border: 1px solid rgba(255, 255, 255, .86);
+  border-radius: 14px;
+  box-shadow: 0 8px 18px rgba(30, 64, 175, .09);
+}
+
+/* Arama kutusu — şablonun beyaz panel dilinde */
+.hero-arama { border-radius: var(--rp-btn-yaricap); border-color: var(--rp-line); }
+.arama-oneri { border-radius: 18px; }
+
+/* CTA butonları — şablon .primary-button / .secondary-button */
+.btn { border-radius: var(--rp-btn-yaricap); }
+.btn-birincil {
+  background: linear-gradient(135deg, var(--rp-blue), #7c3aed);
+  box-shadow: 0 9px 18px rgba(37, 99, 235, .22);
+}
+.btn-birincil:hover { box-shadow: 0 12px 24px rgba(37, 99, 235, .3); }
+.btn-ikincil {
+  background: rgba(255, 255, 255, .95);
+  box-shadow: 0 8px 18px rgba(30, 64, 175, .08);
+  border-color: var(--rp-line);
+}
+.btn-ikincil:hover { border-color: var(--rp-blue); color: var(--rp-blue-dark); }
+
+/* ---------- NASIL ÇALIŞIR: beyaz panel şeridi ---------- */
+.nasil-seridi { background: rgba(255, 255, 255, .88); border-block: 1px solid var(--rp-line); }
+.nasil-no {
+  background: linear-gradient(135deg, var(--rp-blue), #7c3aed);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, .25);
+}
+
+/* ---------- FİLTRE ÇUBUĞU: şablon .level-picker paneli ---------- */
+.filtre-bar {
+  position: static;
+  padding: 0 16px;
+  background: transparent;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  border-bottom: none;
+}
+.filtre-kutu {
+  width: min(1180px, calc(100% - 28px));
+  margin: 18px auto 0;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid rgba(255, 255, 255, .86);
+  border-radius: 20px;
+  box-shadow: var(--rp-golge);
+}
+.filtre-ayrac { background: var(--rp-line); }
+.numara {
+  border: 2px solid #c7d2fe;
+  background: #eef2ff;
+  color: var(--rp-ink);
+  border-radius: var(--rp-btn-yaricap);
+  box-shadow: none;
+}
+.numara:hover { border-color: var(--rp-blue); background: #dbeafe; transform: translateY(-2px); }
+.numara.secili {
+  color: #fff;
+  border-color: #6d28d9;
+  background: linear-gradient(120deg, #7c3aed, var(--rp-blue));
+  box-shadow: 0 8px 18px rgba(37, 99, 235, .3);
+}
+.dd-dugme {
+  border: 2px solid #c7d2fe;
+  background: #eef2ff;
+  color: var(--rp-ink);
+  border-radius: var(--rp-btn-yaricap);
+  box-shadow: none;
+}
+.dd-dugme:hover { border-color: var(--rp-blue); }
+.dd-secenek:hover { background: var(--rp-sky); }
+
+/* ---------- KARTLAR: şablon .activity-card ---------- */
+.kart {
+  border: 1px solid rgba(255, 255, 255, .86);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, .93);
+  box-shadow: 0 11px 28px rgba(30, 64, 175, .1);
+}
+.kart:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, .95);
+  box-shadow: 0 16px 35px rgba(30, 64, 175, .18);
+}
+.kart-thumb { background: var(--rp-line); border-radius: 0; }
+.kart-thumb::after { height: 5px; }
+.oyna-overlay span { border-radius: var(--rp-btn-yaricap); }
+.oynat-btn {
+  border-radius: var(--rp-btn-yaricap);
+  background: linear-gradient(135deg, var(--rp-blue), #7c3aed);
+  box-shadow: 0 9px 18px rgba(37, 99, 235, .22);
+}
+.dinle-btn { border-radius: var(--rp-btn-yaricap); border-color: var(--rp-line); }
+.etiket { border-radius: 999px; border-color: var(--rp-line); background: var(--rp-sky); }
+
+/* ---------- SINIF BAŞLIKLARI: mini-count pili ---------- */
+.sinif-baslik .seviye {
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #075985;
+  box-shadow: none;
+}
+.sinif-baslik .seviye[style*="--sev"] { }
+
+/* ---------- MODAL + OYNATMA PENCERESİ ---------- */
+.detay-kutu { border-radius: 26px; box-shadow: 0 25px 80px rgba(15, 23, 42, .3); }
+.pencere-kutu { border-radius: 24px; }
+
+/* ---------- REHBER / BOŞ DURUM ---------- */
+.rehber {
+  border-radius: 22px;
+  background: rgba(255, 255, 255, .93);
+  border-color: var(--rp-line);
+  box-shadow: var(--rp-golge);
+}
+.bos-kart {
+  border-radius: 22px;
+  background: rgba(255, 255, 255, .8);
+  border-color: var(--rp-line);
+}
+
+/* ---------- FOOTER: şablonun hafif tek satır alt bilgisi ---------- */
+.site-footer { background: transparent; color: #64748b; }
+.footer-izgara {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 28px;
+  padding: 22px 24px 8px;
+}
+.footer-marka p, .footer-baglantilar, .footer-hakkinda { display: none; }
+.footer-marka .nav-marka-yazi { color: var(--rp-muted); }
+.footer-marka .nav-marka-yazi b { color: var(--rp-blue); }
+.footer-marka .nav-logo { width: 30px; height: 30px; border-width: 2px; }
+.footer-marka .nav-logo img { width: 22px; }
+.site-footer h4 { display: none; }
+.footer-alt {
+  border-top: none;
+  display: block; text-align: center;
+  color: #64748b;
+  padding: 10px 24px 26px;
+}
+.footer-alt .kurs { color: var(--rp-blue); }
+
+/* ============================================================
+   KOYU TEMA — şablonun sıcak açık temasının gece karşılığı
+   (portalın mevcut koyu değişkenleriyle uyumlu, palet izleri mavi)
+   ============================================================ */
+html[data-tema='koyu'] body {
+  background:
+    radial-gradient(circle at 8% 8%, rgba(14, 165, 233, .12), transparent 30%),
+    radial-gradient(circle at 94% 14%, rgba(250, 204, 21, .07), transparent 26%),
+    linear-gradient(135deg, #0b1220 0%, #0d1526 50%, #101828 100%);
+  background-attachment: fixed;
+}
+html[data-tema='koyu'] body { background-color: #0b1220; }
+html[data-tema='koyu'] .ust-nav { background: rgba(13, 21, 38, .94); border-bottom-color: var(--kutu-kenar); }
+html[data-tema='koyu'] .hero {
+  background:
+    radial-gradient(circle at 84% 25%, rgba(255, 255, 255, .12), transparent 25%),
+    linear-gradient(120deg, #1e3a8a, #0e7490 62%, #0f766e);
+}
+html[data-tema='koyu'] .hero::after { border-color: rgba(255, 255, 255, .09); }
+html[data-tema='koyu'] .robi-wrap { border-color: rgba(255, 255, 255, .85); background: #1e293b; }
+html[data-tema='koyu'] .hero-kart { background: rgba(13, 21, 38, .92); border-color: var(--kutu-kenar); color: var(--lacivert-2); }
+html[data-tema='koyu'] .filtre-kutu { background: var(--yuzey); border-color: var(--kutu-kenar); }
+html[data-tema='koyu'] .numara, html[data-tema='koyu'] .dd-dugme {
+  background: var(--kutu-zemin); border-color: var(--kutu-kenar); color: var(--murekkep);
+}
+html[data-tema='koyu'] .numara:hover, html[data-tema='koyu'] .dd-dugme:hover { border-color: var(--mavi-acik); }
+html[data-tema='koyu'] .kart {
+  background: var(--yuzey); border-color: var(--kutu-kenar);
+  box-shadow: 0 11px 28px rgba(0, 0, 0, .35);
+}
+html[data-tema='koyu'] .kart:hover { border-color: color-mix(in srgb, var(--kart-renk) 45%, var(--kutu-kenar)); }
+html[data-tema='koyu'] .nasil-seridi { background: rgba(13, 21, 38, .7); border-color: var(--kutu-kenar); }
+html[data-tema='koyu'] .site-footer { background: transparent; }
+html[data-tema='koyu'] .footer-marka .nav-marka-yazi { color: #94a3c4; }
+html[data-tema='koyu'] .footer-marka .nav-marka-yazi b { color: #7fb0ff; }
+html[data-tema='koyu'] .footer-alt { color: #7f8fb4; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; }
+  .robi-wrap { width: min(210px, 70%); margin-top: 6px; }
+  .filtre-kutu { padding: 12px; }
+}
