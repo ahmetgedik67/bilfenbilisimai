@@ -27,7 +27,17 @@
 
 Öğrenci, `ozel_etkinlik_ogrenci` güvenli görünümünden yalnız
 `durum='onaylandi'` **ve** `acilis <= now() < kapanis` koşulunu sağlayan
-etkinlikleri görebilir. Tarih zorlaması istemciye güvenmez.
+etkinlikleri görebilir. Tarih zorlaması istemciye güvenmez: kapalı,
+tarihi gelmemiş veya süresi dolmuş etkinlik listeye hiç düşmez; derin
+bağlantıyla (`#etkinlik=…`) erişilmeye çalışılırsa `etkinlik_atama`
+satırı üzerinden sunucudan yeniden doğrulanır ve engellenir.
+
+Öğrenci ayrıca **seviye kilidi** ile kısıtlıdır: kapıdan seçilen sınıfın
+(`s1…s7` / `i2…i7`) dışındaki etkinlikler listede gösterilmez, aramada
+bulunmaz ve başlatılamaz; detay sayfasında da kilitlidir. Seviye seçimi
+yapılmamış etkinlikler bütün sınıflara açıktır. `etkinlik_atama` tablosu
+v2.1'de `oyun_id` birincil anahtarıyla etkinlik-bazlıdır (kampüs sütunu
+isteğe bağlıdır); panel upsert aynı satırı günceller.
 
 ## 4. Roller
 

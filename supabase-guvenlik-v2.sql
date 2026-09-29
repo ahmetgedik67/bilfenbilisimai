@@ -142,6 +142,24 @@ $$;
 grant execute on function public.kodlari_oku() to anon, authenticated;
 
 -- ------------------------------------------------------------
+-- 3c) KOD GEÇERLİLİK BİLGİSİ — kapı ekranı, doğrulama sonrası
+--     kodun süresinin dolup dolmadığını da buradan sorar; dolmuş
+--     kod kapıyı AÇMAZ (yanıt: gecerli=false).
+-- ------------------------------------------------------------
+create or replace function public.kod_sure_bilgisi(p_seviye text)
+returns table (gecerli boolean, gecerlilik timestamptz)
+language sql
+security definer
+set search_path = public
+as $$
+  select (e.gecerlilik >= now()) as gecerli, e.gecerlilik
+  from public.erisim_kod e
+  where e.seviye = lower(p_seviye);
+$$;
+
+grant execute on function public.kod_sure_bilgisi(text) to anon, authenticated;
+
+-- ------------------------------------------------------------
 -- 4) ERİŞİM KODU TABLOSUNA DOĞRUDAN ERİŞİM TAMAMEN KAPALI
 --    (hash bile okunamaz; doğrulama yalnız RPC ile)
 -- ------------------------------------------------------------
@@ -162,6 +180,8 @@ drop policy if exists "profil_public_all" on public.profil;
 drop policy if exists "anon ogrenci profili okur" on public.profil;
 drop policy if exists "anon profil okur" on public.profil;
 
+-- TEKRAR ÇALIŞTIRMA KORUMASI (idempotent):
+drop policy if exists "profil_anon_okur" on public.profil;
 create policy "profil_anon_okur" on public.profil
   for select to anon using (true);
 
@@ -187,6 +207,8 @@ drop policy if exists "anon tamamlanan okur" on public.tamamlanan;
 drop policy if exists "anon tamamlanan yazar" on public.tamamlanan;
 drop policy if exists "anon tamamlanan siler" on public.tamamlanan;
 
+-- TEKRAR ÇALIŞTIRMA KORUMASI (idempotent):
+drop policy if exists "tamamlanan_anon_okur" on public.tamamlanan;
 create policy "tamamlanan_anon_okur" on public.tamamlanan
   for select to anon using (true);
 
@@ -198,7 +220,7 @@ create policy "tamamlanan_anon_okur" on public.tamamlanan
 create or replace view public.ozel_etkinlik_ogrenci
 with (security_invoker = false) as
 select o.id, o.ad, o.konu, o.seviyeler, o.tip, o.gorsel,
-       o.olusturma_tarihi
+       o.olusturma_tarihi, o.icerik
 from public.ozel_etkinlik o
 where o.durum = 'onaylandi'
   and exists (
@@ -210,6 +232,15 @@ where o.durum = 'onaylandi'
   );
 
 grant select on public.ozel_etkinlik_ogrenci to anon;
+-- NOT: Görünüme RLS policy verilemez (PostgreSQL); erişim yalnız GRANT ile:
+-- anon yalnız OKUYABİLİR (yazma izni hiç verilmedi).
+--
+-- Öğrenci portalı özel etkinlikleri YALNIZ bu görünümden okur
+-- (assets/portal-data.js → ozel_etkinlik_ogrenci). Ham ozel_etkinlik tablosu
+-- anon'a kapalı DEĞİLDİR çünkü panel (onay ekranı, görüntüle, yedek indir)
+-- aynı anahtarla okur; bu bilinen sınır KVKK-UYUM.md'de belgelenmiştir.
+-- Öğrenciye asla listelenmeyenler: bekleyen/reddedilenler, kapalı ve
+-- tarihi gelmemiş/dolmuş etkinlikler — bunlar görünümden dönmez.
 
 -- Dış etkinlik atamaları için aktif (içinde zaman aralığı olan) görünüm:
 create or replace view public.etkinlik_atama_aktif as

@@ -1480,14 +1480,21 @@
       });
     },
     atamaListesi: async function (s) {
-      var rows = (await sb('etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&select=*')) || [];
+      /* (v2) Atamalar etkinlik bazlıdır; yönetici oturumunda kampüs yoktur.
+         Eski kampüsle eşlenmiş satırlar da listede döner; hesaplamalar
+         yalnız campus_id boş olanları esas alır. */
+      var rows = (await sb('etkinlik_atama?select=*')) || [];
       return rows.map(function (r) { r.etkinlik_id = r.oyun_id; return r; });
     },
     atamaKaydet: async function (s, etkinlikId, aktif, acilis, kapanis) {
-      await sb('etkinlik_atama', {
+      /* (v2) Atama satırı etkinlik bazlıdır (campus sütunu boş kalır): v2 RLS yalnız
+         oyun_id eşitliğinde yazmaya izin verir; öğrenci tarafındaki ozel_etkinlik_ogrenci
+         ve etkinlik_atama_aktif görünümleri de kampüstan bağımsız etkinlik satırına bakar.
+         on_conflict: tekrar Kaydet aynı satırı günceller (çift satır açmaz). */
+      await sb('etkinlik_atama?on_conflict=oyun_id', {
         method: 'POST',
         prefer: 'resolution=merge-duplicates,return=representation',
-        body: { campus_id: s.campusId, oyun_id: etkinlikId, aktif: !!aktif, acilis: acilis, kapanis: kapanis }
+        body: { oyun_id: etkinlikId, aktif: !!aktif, acilis: acilis, kapanis: kapanis }
       });
     },
     tamamlananlar: async function (s) {
@@ -2199,6 +2206,7 @@
   }
 
   /* Seviye listesi ve seçili seviye */
+  var atamalarOzet = []; // son çizimdeki atama satırları (toplu işlemler için)
   var SEVIYELER = [];
   for (var sn = 1; sn <= 7; sn++) SEVIYELER.push({ kod: 's' + sn, ad: sn + '. Sınıf', tur: 'sinif' });
   for (var in_ = 2; in_ <= 7; in_++) SEVIYELER.push({ kod: 'i' + in_, ad: in_ + ' IPT', tur: 'ipt' });
@@ -2221,9 +2229,11 @@
   }
 
   function etkinlikYonetiminiCiz() {
-    API.atamaListesi(oturum).then(function (atamalar) {
+    API.atamaListesi(oturum).then(function (atamalar) { atamalarOzet = atamalar;
       var ogrenciler = [];
         katalogGetir('ogretmen').then(function (katalog) {
+          /* (v2.1) Atamalar etkinlik bazlıdır (oyun_id birincil anahtar); eski
+             kampüsle eşlenmiş satırlar da aynı anahtarla yönetilir. */
           var byId = {};
           atamalar.forEach(function (a) { byId[a.etkinlik_id] = a; });
 
@@ -3200,6 +3210,18 @@
   }
 
   /* ---------- Olaylar ---------- */
+  /* (v2) Etkinlik yönetimini YÖNETİCİYE de aç: admin oturumunda öğretmen
+     yönetim paneli de yüklenir ve doğrudan 🎮 Etkinlik Yönetimi sekmesi gösterilir. */
+  var _paneliGosterAsil = paneliGoster;
+  paneliGoster = function () {
+    _paneliGosterAsil();
+    if (oturum && oturum.rol === 'admin') {
+      ogretmenYukle();
+      var ekran = $('ogretmenIcerik'); if (ekran) ekran.style.display = '';
+      var sekmeBtn = $('sekmeEtkinlik'); if (sekmeBtn) sekmeBtn.click();
+    }
+  };
+
   $('girisBtn').onclick = function () {
     var k = $('gKullanici').value.trim();
     var s = $('gSifre').value;
@@ -3382,6 +3404,10 @@
     return katalogGetir('ogretmen').then(function (katalog) {
       var hedefler = katalog.filter(function (e) {
         if (e.ozel && aracMi(e.ozel.secim)) return false;
+        /* (v2.1) Toplu işlem yalnız daha önce ayarlanmış (atama satırı olan)
+           etkinliklere dokunur; hiç ayarlanmamışlar panelde zaten Açık görünür. */
+        var _mevcut = atamalarOzet.filter(function (a) { return a.etkinlik_id === e.id; });
+        if (!_mevcut.length) return false;
         if (seviyeFiltresi && seviyeFiltresi !== 'hepsi') {
           var sv = secimNorm(e.ozel ? e.ozel.secim : []);
           return sv.indexOf(seviyeFiltresi) >= 0;

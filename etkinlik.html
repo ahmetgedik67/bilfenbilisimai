@@ -254,10 +254,37 @@
     return;
   }
 
-  /* Başlat: portalın derin bağlantısına gider (oynatma penceresi, kapı kontrolü, TTS korunur) */
+  /* Başlat: portalın derin bağlantısına gider (oynatma penceresi, kapı kontrolü, TTS korunur)
+     (v2) Portal seviye kilidi açıkken: öğrenci yalnız kendi sınıfının etkinliğini başlatabilir;
+     başka sınıfın etkinliği detay sayfasında da kilitlenir. */
   function baslatUrl() { return 'index.html#etkinlik=' + encodeURIComponent(etkinlik.id); }
-  $('baslatBtn').onclick = function () { location.href = baslatUrl(); };
-  $('baslatBtn2').onclick = function () { location.href = baslatUrl(); };
+  function seviyeIzniVar() {
+    var _og = window.ogrenciSeviyesi ? window.ogrenciSeviyesi() : null;
+    if (!_og || etkinlik.ogretmen || etkinlik.herkese === true) return true;
+    var n = parseInt(_og.slice(1), 10) || 0;
+    return _og.charAt(0) === 's'
+      ? (etkinlik.siniflar || []).indexOf(n) >= 0
+      : (etkinlik.kategoriler || []).indexOf(n) >= 0;
+  }
+  function kilitUygula() {
+    var izin = seviyeIzniVar();
+    $('baslatBtn').disabled = $('baslatBtn2').disabled = !izin;
+    var ust = $('baslatBtn').closest('.detay-aksiyon') || $('baslatBtn').parentElement;
+    var kutu = document.getElementById('seviyeKilitNotu');
+    if (!izin && !kutu) {
+      kutu = document.createElement('p');
+      kutu.id = 'seviyeKilitNotu';
+      kutu.style.cssText = 'margin:10px 0 0;font-weight:700;color:#b91c1c';
+      kutu.textContent = '🔒 Bu etkinlik senin sınıfına ait değil — öğretmenin senin sınıfın için hazırladığı etkinlikleri dene.';
+      ust.insertBefore(kutu, ust.firstChild);
+    } else if (izin && kutu) {
+      kutu.remove();
+    }
+  }
+  kilitUygula();
+  document.addEventListener('kapi-acildi', kilitUygula);
+  $('baslatBtn').onclick = function () { if (seviyeIzniVar()) location.href = baslatUrl(); };
+  $('baslatBtn2').onclick = function () { if (seviyeIzniVar()) location.href = baslatUrl(); };
 
   /* Özel kod/dosya etkinlikleri: içerik direkt açılamaz — portala yönlendir */
   var ozelIcerikli = etkinlik.ozel && (etkinlik.ozelTip === 'kod' || etkinlik.ozelTip === 'dosya') && etkinlik.ozelIcerik;

@@ -75,6 +75,10 @@ var ETKINLIKLER = [
 ];
 
 /* ---------- Supabase'den onaylı özel etkinlikleri çek ---------- */
+/* Supabase'den onaylı özel etkinlikler burada birikir (ozelEtkinlikleriYukle doldurur).
+   Başlangıçta boş: kod kapısıyla girilse bile render bu diziyi güvenle okur. */
+var OZEL_ETKINLIKLER = [];
+
 function seviyeleriCoz(seviyeler) {
   var s = [], k = [], arac = false;
   try { var arr = typeof seviyeler === 'string' ? JSON.parse(seviyeler) : (seviyeler || []); } catch (e) { var arr = []; }
@@ -140,7 +144,10 @@ function ozelOnizlemeSvg(ad, tip, konu) {
 
 function ozelEtkinlikleriYukle() {
   if (!SUPABASE_CONFIG.url) return Promise.resolve();
-  return fetch(SUPABASE_CONFIG.url + '/rest/v1/ozel_etkinlik?durum=eq.onaylandi&select=*&order=olusturma_tarihi', {
+  /* (v2) Öğrenci tarafı güvenli görünümden okur: yalnız onaylı + aktif ataması
+     olan (acilis <= simdi < kapanis) etkinlikler döner. Ham ozel_etkinlik
+     tablosu okunmaz; kapalı/tarihli etkinlik listeye hiç gelmez. */
+  return fetch(SUPABASE_CONFIG.url + '/rest/v1/ozel_etkinlik_ogrenci?select=*&order=olusturma_tarihi', {
     headers: { apikey: SUPABASE_CONFIG.anon, Authorization: 'Bearer ' + SUPABASE_CONFIG.anon }
   }).then(function (r) { return r.json(); }).then(function (rows) {
     OZEL_ETKINLIKLER = (rows || []).map(function (o) {
@@ -152,6 +159,8 @@ function ozelEtkinlikleriYukle() {
         onizlemeData: null,
         gorsel: o.gorsel || '',
         kategoriler: coz.kategoriler, siniflar: coz.siniflar, ogretmen: coz.ogretmen,
+        /* Öğretmen hiçbir seviye seçmediyse etkinlik bütün seviyelere açıktır */
+        herkese: !(coz.siniflar.length || coz.kategoriler.length || coz.ogretmen),
         etiketler: ['Özel Etkinlik'], ozel: true, ozelTip: o.tip, ozelIcerik: o.icerik || '',
         nasil: ['Öğretmeniniz bu etkinliği oluşturdu.', '▶ Başlat ile açın.'],
         amac: o.konu || 'Öğretmeninizin hazırladığı özel etkinlik.',

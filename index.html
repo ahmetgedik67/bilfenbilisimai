@@ -339,6 +339,10 @@
      (1. sınıfın IPT kategorisi yoktur; orada yalnız sınıf bazlı etkinlikler görünür).
      Başlık, seçimin kaynağına göre yazılır: çipten “N. Sınıf”, IPT menüsünden “N IPT”. */
   function secimYap(deger, kaynak) {
+    /* (v2) Kod kapısıyla girildiyse seviye kilidi: başka sınıf/IPT seçilemez,
+       öğrenci yalnız kendi seviyesinin (ve herkese açığın) etkinliklerini görür. */
+    var _og = window.ogrenciSeviyesi ? window.ogrenciSeviyesi() : null;
+    if (_og && deger !== 'tumu' && deger !== '__arama' && parseInt(deger, 10) !== parseInt(_og.slice(1), 10)) return;
     aktifFiltre = deger;
     secimKaynagi = kaynak || 'menu';
     menuKapat();
@@ -473,7 +477,17 @@
   function etkinligiAra(sorgu) {
     var norm = metinNormallestir(sorgu);
     if (!norm) return null;
-    var tum = ETKINLIKLER.concat(OZEL_ETKINLIKLER);
+    /* Arama da öğrenci seviyesi filtresine tabidir: başka sınıfın etkinlikleri aranmaz */
+    var _ogSeviye = window.ogrenciSeviyesi ? window.ogrenciSeviyesi() : null;
+    var _ogNo = _ogSeviye ? (parseInt(_ogSeviye.slice(1), 10) || 0) : 0;
+    var tum = ETKINLIKLER.concat(OZEL_ETKINLIKLER).filter(function (o) {
+      if (o.ogretmen) return false;
+      if (!_ogSeviye) return true;
+      if (o.herkese === true) return true;
+      return _ogSeviye.charAt(0) === 's'
+        ? (o.siniflar || []).indexOf(_ogNo) >= 0
+        : (o.kategoriler || []).indexOf(_ogNo) >= 0;
+    });
     var sinif = sinifTespit(norm), ipt = iptTespit(norm);
     /* Sorgu + eş anlamlı genişletmeleri */
     var terimler = [norm];
@@ -784,10 +798,10 @@
     no.textContent = 'ETKİNLİK ' + (sira + 1);
     const rozet = document.createElement('span');
     rozet.className = 'rozet';
-    const tumSeviyeler = (etkinlik.kategoriler || []).length >= KATEGORILER.length;
+    const tumSeviyeler = (etkinlik.kategoriler || []).length >= KATEGORILER.length || etkinlik.herkese === true;
     rozet.textContent = tumSeviyeler
       ? 'TÜM SEVİYELER'
-      : (etkinlik.kategoriler || []).map(n => n + ' IPT').join(' • ');
+      : (etkinlik.kategoriler || []).map(n => n + ' IPT').join(' • ') || (etkinlik.siniflar || []).map(n => n + '. SINIF').join(' • ');
     ust.append(no, rozet);
 
     const h3 = document.createElement('h3');
@@ -858,14 +872,29 @@
     numaralarCiz();
     const icerik = $('icerik');
     icerik.innerHTML = '';
-    var tumEtkinlikler = ETKINLIKLER.concat(OZEL_ETKINLIKLER).filter(function (o) { return !o.ogretmen; });
+    /* (v2) Öğrenci seviyesi: kapıdan seçilen sınıf dışındaki etkinlikler listelenmez.
+       Seviye seçilmemiş özel etkinlikler (herkese) bütün seviyelere açıktır. */
+    var ogSeviye = window.ogrenciSeviyesi ? window.ogrenciSeviyesi() : null;
+    var ogNo = ogSeviye ? (parseInt(ogSeviye.slice(1), 10) || 0) : 0;
+    var tumEtkinlikler = ETKINLIKLER.concat(OZEL_ETKINLIKLER).filter(function (o) {
+      if (o.ogretmen) return false;
+      if (!ogSeviye) return true;
+      if (o.herkese === true) return true;
+      return ogSeviye.charAt(0) === 's'
+        ? (o.siniflar || []).indexOf(ogNo) >= 0
+        : (o.kategoriler || []).indexOf(ogNo) >= 0;
+    });
 
     let gorunenEtkinlikSayaci = 0;
 
     /* Görüntülenecek bölümler: IPT kategorileri (2-7) ya da seçilen sınıf.
-       Öğretmen araçları portaldan çıkarıldı (v2): panel → 👩‍🏫 Tahta Etkinlikleri. */
+       Öğretmen araçları portaldan çıkarıldı (v2): panel → 👩‍🏫 Tahta Etkinlikleri.
+       (v2) Kod kapısıyla girildiyse YALNIZ öğrencinin sınıf bölümü gösterilir:
+       başka sınıfın boş bölümleri bile listelenmez. */
     let bolumler;
-    if (aktifFiltre === 'tumu') {
+    if (ogSeviye) {
+      bolumler = [{ no: ogNo, ad: ogSeviye.charAt(0) === 's' ? ogNo + '. Sınıf' : (KATEGORILER.find(x => x.no === ogNo) || { ad: ogNo + ' IPT' }).ad }];
+    } else if (aktifFiltre === 'tumu') {
       bolumler = [{ no: 1, ad: '1. Sınıf' }].concat(KATEGORILER.map(k => ({ no: k.no, ad: k.ad })));
     } else {
       const n = parseInt(aktifFiltre, 10);
@@ -946,7 +975,9 @@
   }
   /* ---------- Etkinlik detay modalı ----------
      Kart tıklaması önce detayı gösterir; "Etkinliği Başlat" oynatır.
-     Detay verisi yoksa (özel etkinlikler) açıklama ile açılır. */
+     Detay verisi yoksa (özel etkinlikler) açıklama ile açılır.
+     Başlat'ta kapı kontrolü zorunludur: öğrencinin seviyesi dışındaki,
+     kapalı veya tarihli (süresi gelmemiş/dolmuş) etkinlikler açılamaz. */
   function detayAc(etkinlik) {
     $('detayBaslik').textContent = etkinlik.ad;
     var g = $('detayGorsel');
@@ -954,13 +985,13 @@
     g.alt = etkinlik.ad + ' önizleme';
 
     /* Bilgi pilleri: seviye + süre */
-    var tumSeviyeler = (etkinlik.kategoriler || []).length >= KATEGORILER.length;
+    var tumSeviyeler = (etkinlik.kategoriler || []).length >= KATEGORILER.length || etkinlik.herkese === true;
     var seviyeYazi = tumSeviyeler ? '📚 Tüm Seviyeler'
-      : (etkinlik.kategoriler || []).map(n => n + ' IPT').join(' • ');
+      : ((etkinlik.kategoriler || []).map(n => n + ' IPT').join(' • ') || (etkinlik.siniflar || []).map(n => n + '. Sınıf').join(' • '));
     var piller = '<span class="detay-pill">🎓 ' + seviyeYazi + '</span>';
     if (etkinlik.sure) piller += '<span class="detay-pill">⏱️ ' + etkinlik.sure + '</span>';
     var siniflar = etkinlik.siniflar || [];
-    if (siniflar.length) piller += '<span class="detay-pill">🏫 ' + siniflar.map(n => n + '. Sınıf').join(', ') + '</span>';
+    if (siniflar.length && (etkinlik.kategoriler || []).length) piller += '<span class="detay-pill">🏫 ' + siniflar.map(n => n + '. Sınıf').join(', ') + '</span>';
     $('detayBilgiler').innerHTML = piller;
 
     /* Amaç — yoksa açıklamayla değiştir */
@@ -1001,9 +1032,23 @@
   });
 
   function oynat(etkinlik) {
+    /* Atama anahtarı: panel etkinlik_atama satırlarını 'ozel:<uuid>' (iki nokta) yazar;
+       portal nesne id'si ise 'ozel_<uuid>' (alt çizgi). Kapı kontrolü DB anahtarıyla yapılır —
+       eşleşme yanlış olsaydı kapalı etkinlik hiçbir zaman engellenemezdi. */
+    var atamaId = (etkinlik.ozel && etkinlik._ozelId) ? ('ozel:' + etkinlik._ozelId) : etkinlik.id;
     /* Öğretmen araçları giriş/atama kapısına takılmaz: herkese her zaman açıktır. */
-    etkinlikAcikMi(etkinlik.id, !!etkinlik.ogretmen).then(function (sonuc) {
+    etkinlikAcikMi(atamaId, !!etkinlik.ogretmen).then(function (sonuc) {
       if (!sonuc.ok) { alert(sonuc.msg); return; }
+      /* (v2) Seviye kilidi: öğrenci yalnız kendi sınıfının etkinliklerini açar.
+         Kapıdan seçilen seviye dışındaki etkinlikler detaydan bile başlayamaz. */
+      var ogSeviye = window.ogrenciSeviyesi ? window.ogrenciSeviyesi() : null;
+      if (ogSeviye && !etkinlik.ogretmen) {
+        var ogNo = parseInt(ogSeviye.slice(1), 10) || 0;
+        var izinli = ogSeviye.charAt(0) === 's'
+          ? (etkinlik.siniflar || []).indexOf(ogNo) >= 0 || etkinlik.herkese === true
+          : (etkinlik.kategoriler || []).indexOf(ogNo) >= 0 || etkinlik.herkese === true;
+        if (!izinli) { alert('🔒 Bu etkinlik senin sınıfına ait değil. Öğretmenin senin sınıfın için hazırladığı etkinlikleri dene.'); return; }
+      }
       $('etkinlikAdi').textContent = etkinlik.ad;
       aktifEtkinlikId = etkinlik.id;
       pencereTTSMetin = etkinlik.ad + '. ' + (etkinlik.aciklama || '');
@@ -1118,6 +1163,24 @@
       if (hepsi[i].id === aranan) { oynat(hepsi[i]); return; }
     }
   }
+  /* (v2) Sınıf değiştirilip yeni kodla girilince listeyi ve filtreleri yeniden çiz:
+     eski sınıf filtresi ve eski arama, yeni seviyeye uymayabilir. */
+  document.addEventListener('kapi-acildi', function (olay) {
+    try {
+      if (aktifFiltre !== 'tumu' && aktifFiltre !== '__arama') {
+        var sv = olay && olay.detail ? olay.detail.seviye : null;
+        if (sv && aktifFiltre !== sv.slice(1)) { aktifFiltre = 'tumu'; secimKaynagi = 'menu'; }
+      }
+    } catch (e) {}
+    if (aramaGirdi.value) {
+      aramaGirdi.value = '';
+      aramaTemizleBtn.hidden = true;
+      aramaSonucKutu.hidden = true;
+      aramaOneriKutu.hidden = true;
+    }
+    render();
+  });
+
   window.addEventListener('hashchange', derseHazirAcilis);
   ozelEtkinlikleriYukle().then(function () { render(); derseHazirAcilis(); }).catch(function () { render(); derseHazirAcilis(); });
 })();
@@ -1173,7 +1236,15 @@
     if (!CONFIG.url) {
       return Promise.resolve(BT_DEMO_KODLARI[seviye] === String(kod).trim() ? seviye : null);
     }
-    return sbRpc('kod_dogrula', { p_seviye: seviye, p_kod: String(kod).trim() });
+    /* kod_dogrula süresi dolan kodda da seviye adını döndürür; burada
+       yanıt süreyi doğrulamaz. Sunucuda ayrıca kod_sure_bilgisi RPC'si
+       (güvenlik-v2) süreyi kontrol eder: dolmuş kod kapıyı açmaz. */
+    return sbRpc('kod_dogrula', { p_seviye: seviye, p_kod: String(kod).trim() }).then(function (sonuc) {
+      if (String(sonuc) !== String(seviye)) return null;
+      return sbRpc('kod_sure_bilgisi', { p_seviye: seviye }).then(function (bilgi) {
+        return (bilgi && bilgi.gecerli === false) ? null : seviye;
+      }).catch(function () { return seviye; });
+    });
   }
 
   var KAPI_HTML =
@@ -1247,18 +1318,18 @@
 
   /* ---- Yayın zamanı kontrolü (sunucu verisiyle) ---- */
   function durumKontrol(a) {
-    if (!a || !a.aktif) return { ok: false, msg: '🔒 Bu etkinlik şu an kapalı.' };
+    if (!a || !a.aktif) return { ok: false, msg: '🔒 Bu etkinlik şu an kapalı. Öğretmenin açması gerek.' };
     var now = Date.now();
     if (a.acilis && now < new Date(a.acilis).getTime()) {
       var t;
-      try { t = new Date(a.acilis).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }); } catch (e) { t = a.acilis; }
-      return { ok: false, msg: '📅 Bu etkinlik ' + t + ' tarihinde açılacak.' };
+      try { t = new Date(a.acilis).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }); } catch (e) { t = a.acilis; }
+      return { ok: false, msg: '📅 Bu etkinlik ' + t + ' tarihinde açılacak — o gün tekrar gel!' };
     }
     if (a.kapanis && now > new Date(a.kapanis).getTime()) return { ok: false, msg: '⏰ Bu etkinliğin süresi doldu.' };
     return { ok: true };
   }
 
-  window.etkinlikAcikMi = function (etkinlikId, herkeseAcik) {
+  window.etkinlikAcikMi = function (etkinlikId, herkeseAcik) {  // herkeseAcik: öğretmen araçları kapıya takılmaz
     return Promise.resolve().then(function () {
       if (!kapiOku()) return { ok: false, msg: '🔒 Önce haftalık kodu girmelisin.' };
       if (!CONFIG.url) return { ok: true };
@@ -1269,6 +1340,12 @@
         return durumKontrol(rows[0]);
       }).catch(function () { return { ok: true }; });
     });
+  };
+
+  /* (v2) Öğrenci seviyesi yardımcıları — portal listesi ve başlatma kontrolü kullanır */
+  window.ogrenciSeviyesi = function () {
+    var k = kapiOku();
+    return k && k.seviye ? k.seviye : null;   // 's1'..'s7' | 'i2'..'i7' | null (kapı kapalı)
   };
 
   var kapi = kapiOku();
