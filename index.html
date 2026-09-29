@@ -40,14 +40,13 @@
     <a class="nav-link nav-aktif" href="index.html" role="menuitem" aria-current="page">🏠 Ana Sayfa</a>
     <a class="nav-link" href="#icerik" role="menuitem">🧩 Etkinlikler</a>
     <a class="nav-link" href="#siniflar" role="menuitem">🎓 Sınıflar</a>
-    <a class="nav-link" href="#ogretmenDugme" id="navOgretmen" role="menuitem" title="Öğretmen tahta etkinliklerini göster">👩‍🏫 Öğretmen</a>
     <a class="nav-link" href="kullanim-kilavuzu.html" id="navKilavuz" role="menuitem" style="display:none" title="Öğretmen kılavuzu (öğretmen girişi gerekir)">📘 Kılavuz</a>
-    <a class="nav-link" href="panel.html" role="menuitem">👤 Panel</a>
+    <a class="nav-link" href="panel.html" role="menuitem">🔐 Giriş</a>
   </div>
 
   <div class="nav-sag">
     <button type="button" class="tema-dugme" id="temaBtn" title="Koyu/açık tema" aria-label="Koyu temayı aç/kapat">🌙</button>
-    <a class="nav-giris" id="girisBtn" href="panel.html" title="Giriş yap — öğretmen/öğrenci paneli">🔐 Giriş Yap</a>
+    <a class="nav-giris" id="girisBtn" href="panel.html" title="Öğretmen girişi">👩‍🏫 Öğretmen</a>
     <button type="button" class="nav-burger" id="navBurger" aria-label="Menüyü aç/kapat" aria-expanded="false" aria-controls="navMenu">
       <span></span><span></span><span></span>
     </button>
@@ -120,8 +119,8 @@
     <div class="nasil-adim">
       <span class="nasil-no" aria-hidden="true">3</span>
       <div>
-        <h3>Puanını ve rozetini topla</h3>
-        <p>Giriş yaptığında tamamladığın etkinlikler puan olur; rozetlerini ve kampüs sıralamanı yükseltir.</p>
+        <h3>Keşfet ve üret</h3>
+        <p>Etkinliği bitirdiğinde yeni birini dene; istersen tahtada arkadaşlarınla birlikte çöz.</p>
       </div>
     </div>
   </div>
@@ -150,10 +149,8 @@
     </div>
     <div class="filtre-ayrac" aria-hidden="true"></div>
     <div class="filtre-grup">
-      <span class="grup-etiket">Araçlar</span>
-      <button type="button" class="ogretmen-dugme" id="ogretmenDugme" title="Öğretmen araçları ve tahta etkinlikleri">
-        👩‍🏫 Öğretmen
-      </button>
+      <span class="grup-etiket">Kod</span>
+      <button type="button" class="ogretmen-dugme" id="kapiYenile" title="Farklı sınıf veya yeni haftalık koduyla gir">🔑 Kod Değiştir</button>
     </div>
   </div>
 </section>
@@ -271,14 +268,7 @@
   menu.addEventListener('click', function (e) { if (e.target.closest('.nav-link')) menuKapat(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') menuKapat(); });
 
-  /* Nav'daki Öğretmen bağlantısı → filtre çubuğundaki öğretmen düğmesini tetikler */
-  document.addEventListener('click', function (e) {
-    var o = e.target.closest('#navOgretmen');
-    if (!o) return;
-    e.preventDefault();
-    var d = document.getElementById('ogretmenDugme');
-    if (d) d.click();
-  });
+  /* Nav'daki bağlantılar — v2'de öğretmen düğmesi yok */
 
   /* ===== Koyu / açık tema ===== */
   var temaBtn = document.getElementById('temaBtn');
@@ -336,7 +326,6 @@
   let secimKaynagi = 'menu'; // 'sinif' → çiplerden (N. Sınıf), 'menu' → IPT açılır menüsünden (N IPT)
   const seviyeDugme = $('seviyeDugme');
   const seviyeListe = $('seviyeListe');
-  const ogretmenDugme = $('ogretmenDugme');
 
   function menuKapat() {
     seviyeListe.classList.remove('acik');
@@ -393,9 +382,12 @@
     }
   }
   seviyeDugme.addEventListener('click', menuAcKapat);
-  ogretmenDugme.addEventListener('click', () =>
-    secimYap(aktifFiltre === 'ogretmen' ? 'tumu' : 'ogretmen', 'ogretmen')
-  );
+  /* 🔑 Kod Değiştir — kapıyı tekrar aç (farklı sınıf / yeni haftalık kod) */
+  var kapiYenileBtn = document.getElementById('kapiYenile');
+  if (kapiYenileBtn) kapiYenileBtn.addEventListener('click', function () {
+    if (window.kapiSilGlobal) window.kapiSilGlobal();
+    location.reload();
+  });
   document.addEventListener('click', e => { if (!e.target.closest('.dd')) menuKapat(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') menuKapat(); });
 
@@ -577,7 +569,7 @@
     if (r.sinif) oneriler.push({ yazi: r.sinif + '. sınıf etkinlikleri', sorgu: r.sinif + '. sınıf', ikon: '🎓' });
     if (r.ipt) oneriler.push({ yazi: r.ipt + ' IPT etkinlikleri', sorgu: r.ipt + ' ipt', ikon: '🗂️' });
     r.sonuc.slice(0, 5).forEach(function (e) {
-      oneriler.push({ yazi: e.ad, sorgu: e.ad, ikon: e.ogretmen ? '👩‍🏫' : '🧩', etkinlik: e });
+      oneriler.push({ yazi: e.ad, sorgu: e.ad, ikon: '🧩', etkinlik: e });
     });
     if (!oneriler.length) oneriler.push({ yazi: 'Sonuç yok — öner: robotik, kodlama, yapay zeka', sorgu: '', ikon: '💡', pasif: true });
     aramaOneriKutu.innerHTML = '';
@@ -793,11 +785,9 @@
     const rozet = document.createElement('span');
     rozet.className = 'rozet';
     const tumSeviyeler = (etkinlik.kategoriler || []).length >= KATEGORILER.length;
-    rozet.textContent = etkinlik.ogretmen
-      ? '👩‍🏫 ÖĞRETMEN'
-      : tumSeviyeler
-        ? 'TÜM SEVİYELER'
-        : (etkinlik.kategoriler || []).map(n => n + ' IPT').join(' • ');
+    rozet.textContent = tumSeviyeler
+      ? 'TÜM SEVİYELER'
+      : (etkinlik.kategoriler || []).map(n => n + ' IPT').join(' • ');
     ust.append(no, rozet);
 
     const h3 = document.createElement('h3');
@@ -857,70 +847,26 @@
     return bos;
   }
 
-  /* Öğretmen araçları için mini kullanım rehberi (giriş gerekmez). */
-  function rehberYap() {
-    const araclar = ETKINLIKLER.filter(o => o.ogretmen);
-    if (!araclar.length) return null;
-    const d = document.createElement('details');
-    d.className = 'rehber';
-    const ozet = document.createElement('summary');
-    ozet.textContent = '📖 Nasıl kullanılır? (giriş gerekmez)';
-    const govde = document.createElement('div');
-    govde.className = 'rehber-icerik';
-    const not = document.createElement('p');
-    not.className = 'rehber-not';
-    not.textContent = 'Bu araçlar sınıfta projeksiyon / akıllı tahta üzerinden kullanılır; öğretmen ya da öğrenci girişi gerekmez.';
-    govde.appendChild(not);
-    araclar.forEach(arac => {
-      const adimSayi = (arac.nasil || []).length;
-      const adimlar = adimSayi ? arac.nasil : [
-        'Aracı ▶ Başlat ile tam ekran aç.',
-        'Ekrandaki yönergeleri izle.',
-        'Bittiğinde ✕ (kapat) düğmesiyle geri dön.'
-      ];
-      if (araclar.length > 1) {
-        const adP = document.createElement('p');
-        adP.textContent = '🎯 ' + arac.ad;
-        govde.appendChild(adP);
-      }
-      const ol = document.createElement('ol');
-      adimlar.forEach(adim => {
-        const li = document.createElement('li');
-        li.textContent = adim;
-        ol.appendChild(li);
-      });
-      govde.appendChild(ol);
-    });
-    d.append(ozet, govde);
-    return d;
-  }
+  /* (v2) Öğretmen araçları portaldan çıkarıldı — rehber artık kullanılmıyor. */
+  function rehberYap() { return null; }
 
   /* ---------- Bölümler ---------- */
   function render() {
-    /* Arama modu: sonuçlar zaten aramaUygula tarafından çizildi —
-       burada yalnız filtre vurgularını tazele ve çık. */
-    if (aktifFiltre === '__arama') {
-      ogretmenDugme.classList.toggle('secili', false);
-      return;
-    }
+    /* Arama modu: sonuçlar zaten aramaUygula tarafından çizildi. */
+    if (aktifFiltre === '__arama') return;
     seviyeListeCiz();
     numaralarCiz();
-    ogretmenDugme.classList.toggle('secili', aktifFiltre === 'ogretmen');
     const icerik = $('icerik');
     icerik.innerHTML = '';
-    var tumEtkinlikler = ETKINLIKLER.concat(OZEL_ETKINLIKLER);
+    var tumEtkinlikler = ETKINLIKLER.concat(OZEL_ETKINLIKLER).filter(function (o) { return !o.ogretmen; });
 
     let gorunenEtkinlikSayaci = 0;
 
-    /* Görüntülenecek bölümler:
-       - Öğretmen kategorisi: tahtada yalnız öğretmenin uyguladığı etkinlikler (öğretmen: true)
-       - IPT kategorileri (2 IPT – 7 IPT) ya da seçilen sınıfın bölümü */
+    /* Görüntülenecek bölümler: IPT kategorileri (2-7) ya da seçilen sınıf.
+       Öğretmen araçları portaldan çıkarıldı (v2): panel → 👩‍🏫 Tahta Etkinlikleri. */
     let bolumler;
     if (aktifFiltre === 'tumu') {
-      /* 1. Sınıf bölümü: IPT kategorisi yoktur ama sınıfa özel etkinlikler (öğretmen yüklemeleri) burada listelenir */
-      bolumler = [{ ogretmen: true }, { no: 1, ad: '1. Sınıf' }].concat(KATEGORILER.map(k => ({ no: k.no, ad: k.ad })));
-    } else if (aktifFiltre === 'ogretmen') {
-      bolumler = [{ ogretmen: true }];
+      bolumler = [{ no: 1, ad: '1. Sınıf' }].concat(KATEGORILER.map(k => ({ no: k.no, ad: k.ad })));
     } else {
       const n = parseInt(aktifFiltre, 10);
       const k = KATEGORILER.find(x => x.no === n);
@@ -932,10 +878,7 @@
     }
 
     bolumler.forEach((bl) => {
-      const ogretmenBolumu = !!bl.ogretmen;
-      const etkinlikler = ogretmenBolumu
-        ? tumEtkinlikler.filter(o => o.ogretmen)
-        : tumEtkinlikler.filter(o =>
+      const etkinlikler = tumEtkinlikler.filter(o =>
             (o.kategoriler || []).includes(bl.no) || (o.siniflar || []).includes(bl.no)
           );
 
@@ -946,13 +889,11 @@
       baslik.className = 'sinif-baslik';
       const seviye = document.createElement('span');
       seviye.className = 'seviye';
-      seviye.textContent = ogretmenBolumu ? '👩‍🏫 Öğretmen' : bl.ad;
+      seviye.textContent = bl.ad;
       const renkIdx = Math.max(0, bl.no - 2) % KATEGORI_RENK.length;
-      seviye.style.background = ogretmenBolumu
-        ? 'linear-gradient(135deg, #22d3ee, #4f46e5)'
-        : 'linear-gradient(135deg, ' + KATEGORI_RENK[renkIdx] + ', #ef4444)';
+      seviye.style.background = 'linear-gradient(135deg, ' + KATEGORI_RENK[renkIdx] + ', #ef4444)';
       const h2 = document.createElement('h2');
-      h2.textContent = ogretmenBolumu ? 'Öğretmen Araçları' : 'Bilişim Etkinlikleri';
+      h2.textContent = 'Bilişim Etkinlikleri';
       const cizgi = document.createElement('span');
       cizgi.className = 'cizgi';
       baslik.append(seviye, h2, cizgi);
@@ -965,13 +906,10 @@
         /* GSAP kart giriş animasyonu */
         setTimeout(function() { gsapKartGiris(); gsapKartHover(); }, 100);
       } else {
-        kartlar.appendChild(bosKartYap(ogretmenBolumu ? 'Öğretmen' : bl.ad));
+        kartlar.appendChild(bosKartYap(bl.ad));
       }
 
-      /* Öğretmen bölümünde: giriş gerektirmeyen mini kullanım rehberi */
-      const rehber = ogretmenBolumu ? rehberYap() : null;
-      if (rehber) bolum.append(baslik, rehber, kartlar);
-      else bolum.append(baslik, kartlar);
+      bolum.append(baslik, kartlar);
       icerik.appendChild(bolum);
     });
 
@@ -1017,13 +955,12 @@
 
     /* Bilgi pilleri: seviye + süre */
     var tumSeviyeler = (etkinlik.kategoriler || []).length >= KATEGORILER.length;
-    var seviyeYazi = etkinlik.ogretmen ? '👩‍🏫 Öğretmen Aracı'
-      : tumSeviyeler ? '📚 Tüm Seviyeler'
+    var seviyeYazi = tumSeviyeler ? '📚 Tüm Seviyeler'
       : (etkinlik.kategoriler || []).map(n => n + ' IPT').join(' • ');
     var piller = '<span class="detay-pill">🎓 ' + seviyeYazi + '</span>';
     if (etkinlik.sure) piller += '<span class="detay-pill">⏱️ ' + etkinlik.sure + '</span>';
     var siniflar = etkinlik.siniflar || [];
-    if (siniflar.length && !etkinlik.ogretmen) piller += '<span class="detay-pill">🏫 ' + siniflar.map(n => n + '. Sınıf').join(', ') + '</span>';
+    if (siniflar.length) piller += '<span class="detay-pill">🏫 ' + siniflar.map(n => n + '. Sınıf').join(', ') + '</span>';
     $('detayBilgiler').innerHTML = piller;
 
     /* Amaç — yoksa açıklamayla değiştir */
@@ -1186,223 +1123,157 @@
 })();
 </script>
 <script>
-/* ===== Panel / oturum yardımcıları (index.html) ===== */
+/* ===== KVKK DOSTU ERİŞİM MİMARİSİ v2 =====
+   Öğrenci hesabı YOK · Sınıf + haftalık kod kapısı ·
+   Yayın zamanı sunucuda zorlanır · Hiçbir öğrenci verisi saklanmaz. */
 (function () {
   'use strict';
-  /* Supabase ayarları panel.html ile aynı olmalı; boşsa demo modu (bu cihaz). */
-  /* Supabase bağlantısı: kod sabiti + paneldeki '🔌 Supabase Bağlantısı'
-     kartıyla bu cihaza kaydedilen değer (önceliklidir). */
+  /* bt_supabase_url hiç yazılmamışsa (null) canlı adres; '' yazılmışsa yerel demo modu */
+  var LS_URL = localStorage.getItem('bt_supabase_url');
   var CONFIG = {
-    url: localStorage.getItem('bt_supabase_url') || 'https://zvqwhesibqntcnpqoytm.supabase.co',
+    url: LS_URL === null ? 'https://zvqwhesibqntcnpqoytm.supabase.co' : LS_URL,
     anon: localStorage.getItem('bt_supabase_anon') || 'sb_publishable_hU6il_Kq9_E_57WqaOT8BA_iLtDPpuM'
   };
+  var KAPI_KEY = 'bt_kapi';
+  var GECELIK_SAAT = 6 * 3600 * 1000; // kapı 6 saat açık kalır, sonra tekrar kod ister
 
-  function oturumOku() {
-    try { return JSON.parse(localStorage.getItem('bt_oturum') || 'null'); } catch (e) { return null; }
+  function kapiOku() {
+    try {
+      var k = JSON.parse(localStorage.getItem(KAPI_KEY) || 'null');
+      if (k && k.saat && (Date.now() - k.saat) < GECELIK_SAAT) return k;
+    } catch (e) {}
+    return null;
   }
+  function kapiYaz(seviye) {
+    try { localStorage.setItem(KAPI_KEY, JSON.stringify({ seviye: seviye, saat: Date.now() })); } catch (e) {}
+  }
+  window.kapiSilGlobal = function () { try { localStorage.removeItem(KAPI_KEY); } catch (e) {} };
+
+  function sbRpc(fn, args) {
+    return fetch(CONFIG.url + '/rest/v1/rpc/' + fn, {
+      method: 'POST',
+      headers: { apikey: CONFIG.anon, Authorization: 'Bearer ' + CONFIG.anon, 'Content-Type': 'application/json' },
+      body: JSON.stringify(args)
+    }).then(function (r) { return r.text().then(function (tx) { return { durum: r.status, metin: tx }; }); }).then(function (x) {
+      var j = null;
+      try { j = JSON.parse(x.metin); } catch (e) {}
+      if (x.durum >= 400 || (j && j.message && j.code)) {
+        var hata = new Error(String((j && (j.message || j.error_description)) || ('Hata: ' + x.durum)).replace(/"/g, ''));
+        hata.durum = x.durum;
+        throw hata;
+      }
+      return j !== null ? j : String(x.metin).replace(/"/g, '');
+    });
+  }
+
+  /* Supabase yoksa (yerel demo): kapı yerelde doğrulanır. */
+  var BT_DEMO_KODLARI = { s1: '1234', s2: '2345', s3: '3456', s4: '4567', s5: '5678', s6: '6789', s7: '7890' };
+
+  function kodDogrula(seviye, kod) {
+    if (!CONFIG.url) {
+      return Promise.resolve(BT_DEMO_KODLARI[seviye] === String(kod).trim() ? seviye : null);
+    }
+    return sbRpc('kod_dogrula', { p_seviye: seviye, p_kod: String(kod).trim() });
+  }
+
+  var KAPI_HTML =
+    '<div class="kapi-kart">' +
+    '  <div class="kapi-robi" aria-hidden="true">🤖</div>' +
+    '  <h1>Bilfen Bilişim AI</h1>' +
+    '  <p class="kapi-alt">Etkinliklere girmek için sınıfını seç ve öğretmeninin verdiği <b>haftalık kodu</b> gir.</p>' +
+    '  <div class="kapi-form">' +
+    '    <div class="kapi-alan"><label for="kapiSeviye">Sınıfın</label>' +
+    '      <select id="kapiSeviye">' +
+    '        <option value="">Sınıf seç…</option>' +
+    '        <option value="s1">1. Sınıf</option>' +
+    '        <option value="s2">2. Sınıf</option>' +
+    '        <option value="s3">3. Sınıf</option>' +
+    '        <option value="s4">4. Sınıf</option>' +
+    '        <option value="s5">5. Sınıf</option>' +
+    '        <option value="s6">6. Sınıf</option>' +
+    '        <option value="s7">7. Sınıf</option>' +
+    '      </select></div>' +
+    '    <div class="kapi-alan"><label for="kapiKod">Haftalık kod</label>' +
+    '      <input id="kapiKod" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off"></div>' +
+    '    <button class="btn btn-birincil kapi-btn" id="kapiGir">🚪 Etkinliklere Gir</button>' +
+    '    <div class="kapi-hata" id="kapiHata" role="alert" hidden></div>' +
+    '  </div>' +
+    '  <p class="kapi-not">🔒 Ad, e-posta veya şifre istemiyoruz. Kod her hafta değişir.<br>' +
+    '  <a href="panel.html">Öğretmen misin? Buradan giriş yap →</a></p>' +
+    '</div>';
+
+  function kapigoster() {
+    document.body.classList.add('kapi-modu');
+    var overlay = document.createElement('div');
+    overlay.id = 'kapi';
+    overlay.className = 'kapi';
+    overlay.innerHTML = KAPI_HTML;
+    document.body.appendChild(overlay);
+    var sel = overlay.querySelector('#kapiSeviye'),
+        kod = overlay.querySelector('#kapiKod'),
+        btn = overlay.querySelector('#kapiGir'),
+        hata = overlay.querySelector('#kapiHata');
+    function hataGoster(m) { hata.textContent = m; hata.hidden = !m; }
+    btn.onclick = function () {
+      var sv = sel.value, kd = (kod.value || '').trim();
+      if (!sv) { hataGoster('Lütfen sınıfını seç.'); return; }
+      if (!/^\d{4}$/.test(kd)) { hataGoster('Kod 4 haneli olmalı.'); return; }
+      btn.disabled = true; btn.textContent = '⏳ Kontrol ediliyor…';
+      kodDogrula(sv, kd).then(function (sonuc) {
+        if (String(sonuc) === sv) {
+          kapiYaz(sv);
+          portalAc(sv);
+        } else {
+          hataGoster('❌ Kod hatalı veya süresi dolmuş. Öğretmenine danı.');
+          btn.disabled = false; btn.textContent = '🚪 Etkinliklere Gir';
+        }
+      }).catch(function (e) {
+        var hazirDegil = e && (e.durum === 404 || e.durum === 403);
+        hataGoster(hazirDegil
+          ? '🔧 Sistem hazırlanıyor — haftalık kod servisi henüz açık değil. Öğretmeninize haber verin.'
+          : 'Bağlantı hatası — tekrar dene.');
+        btn.disabled = false; btn.textContent = '🚪 Etkinliklere Gir';
+      });
+    };
+    kod.addEventListener('keydown', function (e) { if (e.key === 'Enter') btn.click(); });
+    kod.addEventListener('input', function () { kod.value = kod.value.replace(/\D/g, '').slice(0, 4); });
+  }
+
+  function portalAc(seviye) {
+    document.body.classList.remove('kapi-modu');
+    var mevcut = document.getElementById('kapi'); if (mevcut) mevcut.remove();
+    document.dispatchEvent(new CustomEvent('kapi-acildi', { detail: { seviye: seviye } }));
+  }
+
+  /* ---- Yayın zamanı kontrolü (sunucu verisiyle) ---- */
   function durumKontrol(a) {
-    if (!a || !a.aktif) return { ok: false, msg: '🔒 Bu etkinlik şu an kapalı. Öğretmeninin açmasını bekle.' };
+    if (!a || !a.aktif) return { ok: false, msg: '🔒 Bu etkinlik şu an kapalı.' };
     var now = Date.now();
     if (a.acilis && now < new Date(a.acilis).getTime()) {
       var t;
-      try { t = new Date(a.acilis).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }); } catch (e) { t = new Date(a.acilis).toLocaleDateString(); }
+      try { t = new Date(a.acilis).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }); } catch (e) { t = a.acilis; }
       return { ok: false, msg: '📅 Bu etkinlik ' + t + ' tarihinde açılacak.' };
     }
     if (a.kapanis && now > new Date(a.kapanis).getTime()) return { ok: false, msg: '⏰ Bu etkinliğin süresi doldu.' };
     return { ok: true };
   }
+
   window.etkinlikAcikMi = function (etkinlikId, herkeseAcik) {
     return Promise.resolve().then(function () {
-      /* Öğretmen araçları: giriş yapılmadan da, öğrenci hesabıyla da her zaman açık. */
-      if (herkeseAcik) return { ok: true };
-      var s = oturumOku();
-      /* Misafir ve öğretmen her zaman açabilir; kısıtlama yalnız öğrenci hesaplarına uygulanır. */
-      if (!s || s.rol !== 'ogrenci') return { ok: true };
-      if (!CONFIG.url) {
-        var as = [];
-        try { as = JSON.parse(localStorage.getItem('bt_demo_atama') || '[]'); } catch (e) {}
-        var a = null;
-        for (var i = 0; i < as.length; i++) if (as[i].campusId === s.campusId && as[i].etkinlik_id === etkinlikId) { a = as[i]; break; }
-        return durumKontrol(a);
-      }
-      return fetch(CONFIG.url + '/rest/v1/etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&oyun_id=eq.' + encodeURIComponent(etkinlikId) + '&select=*', {
+      if (!kapiOku()) return { ok: false, msg: '🔒 Önce haftalık kodu girmelisin.' };
+      if (!CONFIG.url) return { ok: true };
+      return fetch(CONFIG.url + '/rest/v1/etkinlik_atama?oyun_id=eq.' + encodeURIComponent(etkinlikId) + '&select=*', {
         headers: { apikey: CONFIG.anon, Authorization: 'Bearer ' + CONFIG.anon }
       }).then(function (r) { return r.json(); }).then(function (rows) {
-        return durumKontrol(rows && rows[0]);
+        if (!rows || !rows.length) return { ok: true };
+        return durumKontrol(rows[0]);
       }).catch(function () { return { ok: true }; });
     });
   };
 
-  /* ===== Anasayfa oturum arayüzü: Giriş Yap + profil/rozet şeridi ===== */
-  var ROZET_TANIM = [
-    { e: '🎯', ad: 'İlk Adım', aciklama: '1 etkinlik tamamla', k: function (c, p) { return c >= 1; } },
-    { e: '🌟', ad: 'Aktif', aciklama: '3 etkinlik tamamla', k: function (c, p) { return c >= 3; } },
-    { e: '🏅', ad: 'Etkinlik Ustası', aciklama: '5 etkinlik tamamla', k: function (c, p) { return c >= 5; } },
-    { e: '🚀', ad: 'Yıldız', aciklama: '10 etkinlik tamamla', k: function (c, p) { return c >= 10; } },
-    { e: '💎', ad: 'Puan Avcısı', aciklama: '100 puan topla', k: function (c, p) { return p >= 100; } },
-    { e: '👑', ad: 'Kampüs Şampiyonu', aciklama: '250 puan topla', k: function (c, p) { return p >= 250; } }
-  ];
-
-  function escS(s) {
-    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
-  function ilkAd(s) { return String(s || '').trim().split(' ')[0] || s || ''; }
-
-  /* Oturuma ait güncel bilgileri getir (demo: bu cihaz; supabase: bulut). */
-  function oturumVerisi(s) {
-    if (s.rol === 'admin') {
-      return Promise.resolve({ rol: 'admin', kampusAdi: 'Tüm kampüsler', ad: s.ad, kullaniciAdi: s.kullaniciAdi });
-    }
-    if (!CONFIG.url) {
-      try {
-        var ps = JSON.parse(localStorage.getItem('bt_demo_profil') || '[]');
-        var ks = JSON.parse(localStorage.getItem('bt_demo_campus') || '[]');
-        var ts = JSON.parse(localStorage.getItem('bt_demo_tamamlanan') || '[]');
-        var as = JSON.parse(localStorage.getItem('bt_demo_atama') || '[]');
-        var p = null;
-        for (var i = 0; i < ps.length; i++) if (ps[i].id === s.id) { p = ps[i]; break; }
-        var k = null;
-        for (var j = 0; j < ks.length; j++) if (ks[j].id === s.campusId) { k = ks[j]; break; }
-        var kampusAdi = k ? k.ad : (s.kampusAdi || '');
-        if (s.rol === 'ogretmen') {
-          var ogr = 0;
-          ps.forEach(function (x) { if (x.campusId === s.campusId && x.rol === 'ogrenci') ogr++; });
-          var acikEtk = 0;
-          as.forEach(function (a) { if (a.campusId === s.campusId && a.aktif) acikEtk++; });
-          return Promise.resolve({ rol: 'ogretmen', kampusAdi: kampusAdi, ad: (p ? p.ad : s.ad), kullaniciAdi: (p ? p.kullaniciAdi : s.kullaniciAdi), avatar: (p ? p.avatar : (s.avatar || '👩‍🏫')), ogrenciSayisi: ogr, acikEtkinlik: acikEtk });
-        }
-        var tam = 0;
-        ts.forEach(function (t) { if (t.ogrenci_id === s.id) tam++; });
-        return Promise.resolve({
-          rol: 'ogrenci', kampusAdi: kampusAdi, ad: (p ? p.ad : s.ad), kullaniciAdi: (p ? p.kullaniciAdi : s.kullaniciAdi),
-          avatar: (p ? p.avatar : (s.avatar || '🐣')), puan: (p ? (p.puan || 0) : (s.puan || 0)), tamamlanan: tam
-        });
-      } catch (e) {
-        return Promise.resolve({ rol: s.rol, ad: s.ad, kullaniciAdi: s.kullaniciAdi, kampusAdi: s.kampusAdi || '', avatar: s.avatar || (s.rol === 'ogretmen' ? '👩‍🏫' : '🐣'), puan: s.puan || 0, tamamlanan: 0 });
-      }
-    }
-    /* Supabase kurulu: buluttan güncel bilgiler */
-    function sbGet(path) {
-      return fetch(CONFIG.url + '/rest/v1/' + path, {
-        headers: { apikey: CONFIG.anon, Authorization: 'Bearer ' + CONFIG.anon }
-      }).then(function (r) { return r.json(); });
-    }
-    if (s.rol === 'ogretmen') {
-      return Promise.all([
-        sbGet('profil?id=eq.' + encodeURIComponent(s.id) + '&select=ad,kullanici_adi,avatar'),
-        sbGet('profil?campus_id=eq.' + encodeURIComponent(s.campusId) + '&rol=eq.ogrenci&select=id'),
-        sbGet('etkinlik_atama?campus_id=eq.' + encodeURIComponent(s.campusId) + '&aktif=eq.true&select=id')
-      ]).then(function (r) {
-        return { rol: 'ogretmen', kampusAdi: s.kampusAdi || '', ad: (r[0] && r[0][0] ? r[0][0].ad : s.ad), kullaniciAdi: s.kullaniciAdi, avatar: (r[0] && r[0][0] ? r[0][0].avatar : (s.avatar || '👩‍🏫')), ogrenciSayisi: (r[1] || []).length, acikEtkinlik: (r[2] || []).length };
-      }).catch(function () {
-        return { rol: 'ogretmen', kampusAdi: s.kampusAdi || '', ad: s.ad, kullaniciAdi: s.kullaniciAdi, avatar: s.avatar || '👩‍🏫' };
-      });
-    }
-    return Promise.all([
-      sbGet('profil?id=eq.' + encodeURIComponent(s.id) + '&select=puan,avatar'),
-      sbGet('tamamlanan?ogrenci_id=eq.' + encodeURIComponent(s.id) + '&select=id')
-    ]).then(function (r) {
-      return { rol: 'ogrenci', kampusAdi: s.kampusAdi || '', ad: s.ad, kullaniciAdi: s.kullaniciAdi, avatar: (r[0] && r[0][0] ? (r[0][0].avatar || '🐣') : (s.avatar || '🐣')), puan: (r[0] && r[0][0] ? (r[0][0].puan || 0) : (s.puan || 0)), tamamlanan: (r[1] || []).length };
-    }).catch(function () {
-      return { rol: 'ogrenci', kampusAdi: s.kampusAdi || '', ad: s.ad, kullaniciAdi: s.kullaniciAdi, avatar: s.avatar || '🐣', puan: s.puan || 0, tamamlanan: 0 };
-    });
-  }
-
-  /* Üst sağ düğme + oturum şeridini çizer. */
-  function oturumArayuzu() {
-    var s = oturumOku();
-    var btn = document.getElementById('girisBtn');
-    var eski = document.querySelector('.oturum-sert');
-    if (eski) eski.remove();
-    if (!s || !s.kullaniciAdi) {
-      btn.textContent = '🔐 Giriş Yap';
-      btn.className = 'nav-giris';
-      btn.title = 'Giriş yap — öğretmen/öğrenci paneli';
-      var klavuzLink0 = document.getElementById('navKilavuz');
-      if (klavuzLink0) klavuzLink0.style.display = 'none'; // oturum yok → kılavuz gizli
-      return;
-    }
-    var kisa = ilkAd(s.ad);
-    var ikon = s.rol === 'ogretmen' ? '👩‍🏫' : (s.rol === 'admin' ? '🛡️' : (s.avatar || '🐣'));
-    btn.textContent = ikon + ' ' + kisa;
-    btn.className = 'nav-giris maxi';
-    btn.title = 'Paneline git: @' + s.kullaniciAdi;
-    // Kılavuz bağlantısı yalnızca öğretmen + yönetici oturumunda görünür
-    var klavuzLink = document.getElementById('navKilavuz');
-    if (klavuzLink) klavuzLink.style.display = (s.rol === 'ogretmen' || s.rol === 'admin') ? '' : 'none';
-    oturumVerisi(s).then(function (v) {
-      var sert = document.createElement('div');
-      sert.className = 'oturum-sert';
-      var rolEtiket = v.rol === 'ogretmen' ? 'ÖĞRETMEN' : (v.rol === 'admin' ? 'YÖNETİCİ' : 'ÖĞRENCİ');
-      var rolSinif = v.rol === 'ogretmen' ? 'ogretmen' : (v.rol === 'admin' ? 'admin' : 'ogrenci');
-      var h = '<div class="os-kimlik"><span class="os-avatar">' + escS(v.avatar || '🐣') + '</span>' +
-        '<div><div class="os-ad">' + escS(v.ad) + ' <span class="os-rol ' + rolSinif + '">' + rolEtiket + '</span></div>' +
-        '<div class="os-alt">@' + escS(v.kullaniciAdi) + ' · 🏫 ' + escS(v.kampusAdi) + '</div></div></div>';
-      if (v.rol === 'ogrenci') {
-        var puan = v.puan || 0;
-        var c = v.tamamlanan || 0;
-        var rozetler = '';
-        ROZET_TANIM.forEach(function (rz) {
-          var kazandi = rz.k(c, puan);
-          rozetler += '<span class="os-rozet' + (kazandi ? '' : ' kilitli') + '" title="' + escS(rz.ad + ': ' + rz.aciklama + (kazandi ? ' — kazandın! 🎉' : '')) + '">' + rz.e + '</span>';
-        });
-        h += '<div class="os-bilgiler">' +
-          '<div class="os-sayac"><b>' + puan + '</b><span>⭐ Puan</span></div>' +
-          '<div class="os-sayac"><b>' + c + '</b><span>✅ Etkinlik</span></div>' +
-          '<div class="os-rozetler" title="Rozetlerin: renkli = kazandın, gri = henüz kazanılmadı">' + rozetler + '</div></div>';
-        /* Son kazanılan rozetleri kontrol et ve confetti tetikle */
-        try {
-          var eskiRozet = JSON.parse(localStorage.getItem('bt_rozet_son') || '0');
-          if (puan > 0 && (c > eskiRozet.tamamlanan || puan > eskiRozet.puan)) {
-            setTimeout(function () { confettiRozet(); }, 300);
-          }
-          localStorage.setItem('bt_rozet_son', JSON.stringify({ tamamlanan: c, puan: puan }));
-        } catch (e) {}
-      } else if (v.rol === 'ogretmen') {
-        h += '<div class="os-bilgiler">' +
-          (v.ogrenciSayisi !== undefined ? '<div class="os-sayac"><b>' + v.ogrenciSayisi + '</b><span>👨‍🎓 Öğrenci</span></div>' : '') +
-          (v.acikEtkinlik !== undefined ? '<div class="os-sayac"><b>' + v.acikEtkinlik + '</b><span>🎮 Açık etkinlik</span></div>' : '') +
-          '</div>';
-      }
-      h += '<div class="os-islem"><a class="os-panel" href="panel.html">' +
-        (v.rol === 'admin' ? '🛡️ Yönetim Paneli' : (v.rol === 'ogretmen' ? '👩‍🏫 Öğretmen Paneli' : '👤 Panelim')) +
-        '</a><button class="os-cikis" id="cikisSertBtn">Çıkış</button></div>';
-      sert.innerHTML = h;
-      var baslik = document.querySelector('.hero-alan');
-      if (baslik) baslik.insertAdjacentElement('afterend', sert);      var cik = document.getElementById('cikisSertBtn');
-      if (cik) cik.onclick = function () {
-        localStorage.removeItem('bt_oturum');
-        oturumArayuzu();
-      };
-
-      /* --- Liderlik Tablosu (öğrenci girişinde göster) --- */
-      if (v.rol === 'ogrenci') {
-        sbGet('profil?rol=eq.ogrenci&campus_id=eq.' + encodeURIComponent(s.campusId || '') + '&select=ad,puan,avatar&order=puan.desc&limit=10').then(function (satirlar) {
-          if (!satirlar || satirlar.length < 2) return;
-          var kutu = document.createElement('div');
-          kutu.className = 'liderlik-kutu';
-          var medal = ['🥇','🥈','🥉'];
-          var satirH = '<div class="liderlik-baslik">🏆 Sıralama — ' + escS(s.kampusAdi || 'Kampüs') + '</div>';
-          satirlar.forEach(function (p, i) {
-            var rnk = i < 3 ? medal[i] : (i + 1);
-            var ben = p.ad === s.ad ? ' ben' : '';
-            satirH += '<div class="liderlik-satir' + ben + '"><span class="liderlik-sira">' + rnk + '</span><span class="liderlik-av" title="' + escS(p.ad) + '">' + (p.avatar || '🐣') + '</span><span class="liderlik-ad">' + escS(ilkAd(p.ad)) + '</span><span class="liderlik-puan">⭐ ' + (p.puan || 0) + '</span></div>';
-          });
-          kutu.innerHTML = satirH;
-          document.querySelector('main').insertAdjacentElement('beforebegin', kutu);
-          /* İlk 3'te kendisi varsa confetti */
-          var benSiralama = satirlar.findIndex(function (p) { return p.ad === s.ad; });
-          if (benSiralama >= 0 && benSiralama < 3) {
-            setTimeout(function () { confettiSiralama(); }, 600);
-          }
-        }).catch(function () {});
-      }
-
-    });
-  }
-  oturumArayuzu();
+  var kapi = kapiOku();
+  if (!kapi) kapigoster();
+  else portalAc(kapi.seviye);
 })();
 </script>
 </body>
