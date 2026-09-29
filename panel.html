@@ -409,8 +409,13 @@
             <a class="btn" href="index.html" target="_blank" rel="noopener">🧩 Portala Git (öğrenci görünümü)</a>
             <a class="btn ikincil" href="kullanim-kilavuzu.html" target="_blank" rel="noopener">📘 Öğretmen Kılavuzu</a>
           </div>
+          <div class="kart" id="haftalikKodKarti" style="margin-bottom:14px">
+            <h2>🔑 Bu Haftanın Giriş Kodları</h2>
+            <p class="kucuk-not">Öğrenciler portala <b>sınıf + 4 haneli haftalık kod</b> ile girer. Aşağıdaki kodlar bu hafta geçerli; tahtaya yansıtıp sınıflarına duyurabilirsin.</p>
+            <div id="ogretmenKodListe"></div>
+          </div>
           <div id="tahtaListe"></div>
-          <div class="kucuk-not" style="margin-top:10px">💡 Öğrenciler portala <b>haftalık kodla</b> girer; kodları yönetici 🔑 Haftalık Erişim Kodları kartından yeniler.</div>
+          <div class="kucuk-not" style="margin-top:10px">💡 Kodlar her hafta değişir; yenileme yetkisi yöneticinedir (🔑 Haftalık Erişim Kodları kartı).</div>
         </div>
       </div>
 
@@ -669,13 +674,13 @@
 
       <div class="kart">
         <h2>🔑 Haftalık Erişim Kodları</h2>
-        <p class="kucuk-not">Öğrenciler portala <b>sınıf + 4 haneli haftalık kod</b> ile girer (hesap oluşturmaz, ad vermez). Kodlar hash'lenerek saklanır ve her hafta değişir. <b>Kodları Yenile</b>'ye bastığında yeni kodlar yalnız bu ekranda <b>bir kez</b> gösterilir — kurum içi kanaldan öğretmenlere ilet.</p>
+        <p class="kucuk-not">Öğrenciler portala <b>sınıf + 4 haneli haftalık kod</b> ile girer (hesap oluşturmaz, ad vermez). Bu hafta geçerli kodlar kartta ve tüm öğretmenlerin <b>Tahta Etkinlikleri</b> sekmesinde otomatik görünür. <b>Kodları Yenile</b>'ye bastığında tüm kodlar değişir ve herkese yenisi gösterilir.</p>
         <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
           <button class="btn yesil" id="kodYenileBtn">🔄 Kodları Yenile (yeni hafta)</button>
           <span class="kucuk-not" id="kodDurum" style="margin:0"></span>
         </div>
-        <div class="csv-kutu" id="kodListe" style="margin-top:10px;display:none"></div>
-        <div class="kucuk-not" style="margin-top:8px">⚠️ Eski kodlar yenilendikleri anda geçersiz olur. Kodlar veritabanında <b>düz metin tutulmaz</b>; bu liste kapatıldıktan sonra tekrar görülemez.</div>
+        <div class="csv-kutu" id="kodListe" style="margin-top:10px"></div>
+        <div class="kucuk-not" style="margin-top:8px">⚠️ Eski kodlar yenilendikleri anda geçersiz olur. Doğrulama sunucuda hash ile yapılır; kodların düz metin kopyası yalnız panellerde görünür, öğrenciye asla açılmaz.</div>
       </div>
 
 
@@ -2152,6 +2157,7 @@
     $('ustOrta').innerHTML = '<div class="kampus">🏫 ' + esc(oturum.kampusAdi) + '</div><div class="kullanici">👩‍🏫 ' + esc(oturum.ad) + ' · @' + esc(oturum.kullaniciAdi) + '</div>';
     ogrenciListesiniCiz();
     etkinlikYonetiminiCiz();
+    kodlarOtomatikCiz();
   }
 
   function ogrenciListesiniCiz() {
@@ -2478,6 +2484,7 @@
     gunlukYedekKontrol();
     supBaglantiGoster();
     semaKontrolGoster();
+    kodlarOtomatikCiz();
   }
 
   /* ---------- Yönetici: öğretmen etkinliği onayları ---------- */
@@ -3258,18 +3265,68 @@
     for (var i = 0; i < 4; i++) k += Math.floor(Math.random() * 10);
     return k;
   }
-  function kodlariGoster(satirlar) {
-    var kutu = $('kodListe');
+  function kodTabloYaz(kutu, satirlar) {
     var h = '<table><tr><th>Sınıf / Seviye</th><th>Haftalık Kod</th></tr>';
     satirlar.forEach(function (r) {
       var sv = SEVIYELER.filter(function (x) { return x.kod === r.seviye; })[0];
       h += '<tr class="satir"><td><b>' + esc(sv ? sv.ad : r.seviye) + '</b></td>' +
         '<td style="font-size:22px;letter-spacing:6px;font-weight:800;color:#16a34a">' + esc(r.kod) + '</td></tr>';
     });
-    h += '</table>';
-    kutu.innerHTML = h;
-    kutu.style.display = '';
-    try { kutu.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+    kutu.innerHTML = h + '</table>';
+  }
+  /* Sunucudan haftanın geçerli kodlarını oku (kodlari_oku RPC). Demo modda null döner. */
+  function kodlarOku() {
+    if (typeof SUPABASE_URL === 'string' && SUPABASE_URL) {
+      return fetch(SUPABASE_URL + '/rest/v1/rpc/kodlari_oku', {
+        method: 'POST',
+        headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + SUPABASE_ANON, 'Content-Type': 'application/json' },
+        body: '{}'
+      }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); }).then(function (x) {
+        if (!x.ok || !Array.isArray(x.j)) {
+          var m = (x.j && (x.j.message || x.j.error_description)) || ('Hata: ' + (x.j && x.j.code ? x.j.code : 'bilinmeyen'));
+          throw new Error(String(m).replace(/"/g, ''));
+        }
+        return x.j;
+      });
+    }
+    return Promise.resolve(null);
+  }
+  function kodBosMesajYaz(el) {
+    if (el) el.innerHTML = '<div class="bos">Bu hafta için kod henüz üretilmemiş. Yönetici 🔑 Haftalık Erişim Kodları kartındaki "🔄 Kodları Yenile" düğmesiyle üretebilir.</div>';
+  }
+  /* Panel açılışında haftanın kodlarını otomatik çiz (admin + öğretmen). */
+  function kodlarOtomatikCiz() {
+    kodlarOku().then(function (satirlar) {
+      if (!satirlar || !satirlar.length) {
+        /* Demo mod: tarayıcıda üretilmiş örnek kodlar varsa göster */
+        try {
+          var d = JSON.parse(localStorage.getItem('bt_demo_kodlar') || 'null');
+          if (d && d.length) {
+            if ($('ogretmenKodListe')) kodTabloYaz($('ogretmenKodListe'), d);
+            if ($('kodListe')) kodTabloYaz($('kodListe'), d);
+            return;
+          }
+        } catch (e) {}
+        kodBosMesajYaz($('ogretmenKodListe'));
+        kodBosMesajYaz($('kodListe'));
+        return;
+      }
+      if ($('ogretmenKodListe')) {
+        var g = satirlar[0] && satirlar[0].gecerlilik ? new Date(satirlar[0].gecerlilik) : null;
+        var gTarihi = '';
+        try { if (g && !isNaN(g)) gTarihi = g.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }); } catch (e) {}
+        kodTabloYaz($('ogretmenKodListe'), satirlar);
+        var eskiNot = $('ogretmenKodNotu'); if (eskiNot) eskiNot.remove();
+        if (gTarihi) $('ogretmenKodListe').insertAdjacentHTML('beforebegin', '<div class="kucuk-not" id="ogretmenKodNotu">📅 ' + satirlar.length + ' seviye geçerli · ' + gTarihi + "'ye kadar</div>");
+      }
+      if ($('kodListe')) kodlariGoster(satirlar, '📅 Bu hafta geçerli kodlar otomatik yüklendi.');
+    }).catch(function () { /* kod servisi hazır değil: sessiz geç */ });
+  }
+  function kodlariGoster(satirlar, durum) {
+    kodTabloYaz($('kodListe'), satirlar);
+    $('kodListe').style.display = '';
+    try { $('kodListe').scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+    if (durum && $('kodDurum')) $('kodDurum').textContent = durum;
   }
   if ($('kodYenileBtn')) $('kodYenileBtn').onclick = function () {
     var btn = $('kodYenileBtn');
@@ -3286,14 +3343,16 @@
           var m = (x.j && (x.j.message || x.j.error_description)) || ('Hata: ' + (x.j && x.j.code ? x.j.code : 'bilinmeyen'));
           throw new Error(String(m).replace(/"/g, ''));
         }
-        kodlariGoster(x.j);
-        $('kodDurum').textContent = '✅ ' + x.j.length + ' seviye için kod üretildi — bu liste bir daha gösterilmez, hemen kaydet.';
+        kodlariGoster(x.j, '✅ ' + x.j.length + ' seviye için kod üretildi — eski kodlar geçersiz.');
       }).catch(function (e) {
         $('kodDurum').textContent = '❌ Kodlar üretilemedi: ' + e.message + ' (Supabase SQL kurulmuş mu?)';
       }).finally(function () { btn.disabled = false; btn.textContent = '🔄 Kodları Yenile (yeni hafta)'; });
     } else {
       /* Demo mod: yerelde üret (yalnız test için) */
-      var demo = ['s1','s2','s3','s4','s5','s6','s7','i2','i3','i4','i5','i6','i7'].map(function (sv) { return { seviye: sv, kod: rastgeleKod() }; });
+      /* Demo mod: kapı ekranının sabit demo kodlarıyla aynı (BT_DEMO_KODLARI) — testte girilen kod gerçekten çalışır */
+      var demoSabiti = { s1: '1234', s2: '2345', s3: '3456', s4: '4567', s5: '5678', s6: '6789', s7: '7890' };
+      var demo = ['s1','s2','s3','s4','s5','s6','s7','i2','i3','i4','i5','i6','i7'].map(function (sv) { return { seviye: sv, kod: demoSabiti[sv] || rastgeleKod() }; });
+      try { localStorage.setItem('bt_demo_kodlar', JSON.stringify(demo)); } catch (e) {}
       kodlariGoster(demo);
       $('kodDurum').textContent = 'ℹ️ Demo mod: kodlar yalnız bu tarayıcıda üretildi, sunucuya kaydedilmedi.';
       btn.disabled = false; btn.textContent = '🔄 Kodları Yenile (yeni hafta)';

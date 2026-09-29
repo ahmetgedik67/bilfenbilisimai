@@ -13,13 +13,16 @@
 
 -- ------------------------------------------------------------
 -- 1) HAFTALIK ERİŞİM KODLARI
---    Her seviye için tek satır. Kod ASLA düz metin saklanmaz;
---    yalnız SHA-256(kod + ':' + hafta_tuz) hash'i tutulur.
+--    Doğrulama yalnız SHA-256(kod + ':' + hafta_tuz) hash'i
+--    üzerinden yapılır. kod_acik sütunu yalnız öğretmen/yönetici
+--    panelinin haftanın kodlarını görebilmesi içindir; öğrenci
+--    hiçbir halükarda tabloya erişemez (bkz. bölüm 4).
 -- ------------------------------------------------------------
 create table if not exists public.erisim_kod (
   seviye        text primary key,            -- 's1'..'s7', 'i2'..'i7'
   kod_hash      text not null,               -- sha256 hex (kod + ':' + hafta_tuz)
   hafta_tuz     text not null,               -- her hafta yenilenen rastgele tuz
+  kod_acik      text,                        -- öğretmen paneli için düz metin kopya (null = gösterilmez)
   olusturma     timestamptz not null default now(),
   gecerlilik    timestamptz not null default now()  -- kodun son geçerlilik anı
 );
@@ -73,13 +76,14 @@ begin
   tuz := encode(gen_random_bytes(12), 'hex');
   -- gelecek pazartesi 08:00 Türkiye saati = 05:00 UTC
   hafta_sonu := date_trunc('week', now() + interval '7 days') + interval '5 hours';
-  insert into public.erisim_kod (seviye, kod_hash, hafta_tuz, gecerlilik)
+  insert into public.erisim_kod (seviye, kod_hash, hafta_tuz, kod_acik, gecerlilik)
   values (lower(p_seviye),
           encode(sha256(convert_to(yeni_kod || ':' || tuz, 'utf8')), 'hex'),
-          tuz, hafta_sonu)
+          tuz, yeni_kod, hafta_sonu)
   on conflict (seviye) do update
     set kod_hash   = excluded.kod_hash,
         hafta_tuz  = excluded.hafta_tuz,
+        kod_acik   = excluded.kod_acik,
         gecerlilik = excluded.gecerlilik,
         olusturma  = now();
   return yeni_kod;  -- yalnız bu çağrının yanıtında görünür
@@ -108,6 +112,27 @@ end;
 $$;
 
 grant execute on function public.kodlari_yenile_tumu() to anon, authenticated;
+
+-- ------------------------------------------------------------
+-- 3b) KOD OKUMA — öğretmen/yönetici paneli haftanın kodlarını
+--    otomatik görsün diye. Yalnız GEÇERLİ kodu döner; süresi
+--    dolmuş kod gösterilmez. Doğrulama hâlâ hash üzerinden
+--    yapılır; kod_acik yalnız panel görüntülemesidir.
+-- ------------------------------------------------------------
+create or replace function public.kodlari_oku()
+returns table (seviye text, kod text, gecerlilik timestamptz)
+language sql
+security definer
+set search_path = public
+as $$
+  select e.seviye, e.kod_acik, e.gecerlilik
+  from public.erisim_kod e
+  where e.kod_acik is not null
+    and e.gecerlilik >= now()
+  order by e.seviye;
+$$;
+
+grant execute on function public.kodlari_oku() to anon, authenticated;
 
 -- ------------------------------------------------------------
 -- 4) ERİŞİM KODU TABLOSUNA DOĞRUDAN ERİŞİM TAMAMEN KAPALI

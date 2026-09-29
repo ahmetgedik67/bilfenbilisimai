@@ -10,7 +10,7 @@
 |---|---|---|---|
 | Öğrenci kimliği | Öğrenci | **Toplanmaz** (ad, e-posta, şifre, puan, rozet yok) | — |
 | Öğrenci sonuç verisi | Öğrenci | **Hiçbir yerde saklanmaz** (tamamlanan tablosuna yazı kapalı, eski kayıtlar silinir) | — |
-| Haftalık kod | Yönetici üretir | Supabase `erisim_kod` tablosu | Yalnız SHA-256(kod+tuz) hash'i; düz kod hiç yazılmaz |
+| Haftalık kod | Yönetici üretir | Supabase `erisim_kod` tablosu | Doğrulama yalnız SHA-256(kod+tuz) hash'i ile; `kod_acik` sütunu yalnız öğretmen/yönetici paneli görüntülemesidir, öğrenci tabloya erişemez |
 | Öğretmen adı + kullanıcı adı + şifre hash'i (PBKDF2-SHA256, 60k tur) | Öğretmen | Supabase `profil` tablosu | Hesap silinene kadar |
 | Öğretmenin hazırladığı etkinlik içerikleri | Öğretmen | Supabase `ozel_etkinlik` | Öğretmen sildikçe |
 
@@ -40,19 +40,20 @@ etkinlikleri görebilir. Tarih zorlaması istemciye güvenmez.
 ## 5. Kod yenileme akışı
 
 1. Yönetici panelde **🔑 Haftalık Erişim Kodları → 🔄 Kodları Yenile** butonuna basar.
-2. Sunucu 13 seviye için 4 haneli kod üretir, hash'ini yazar, düz kodu **yalnız bu yanıtta** döner.
-3. Panel kodları bir kez gösterir; liste kapatılınca geri alınamaz.
-4. Yönetici kodları kurum içi kanalla öğretmenlere iletir.
-5. Geçerlilik: bir sonraki haftanın pazartesi 08:00'i (Türkiye saati).
+2. Sunucu 13 seviye için 4 haneli kod üretir; hash'i doğrulama için, düz metin kopyası (`kod_acik`) panel görüntülemesi için yazılır.
+3. Kodlar hafta boyunca yönetici kartında ve **tüm öğretmenlerin Tahta Etkinlikleri sekmesinde** otomatik görünür (`kodlari_oku` RPC — yalnız geçerli kodları döner).
+4. Öğrenciye kod yalnız kapı ekranındaki giriş denemesiyle iletilir; tabloya erişimi yoktur.
+5. Geçerlilik: bir sonraki haftanın pazartesi 08:00'i (Türkiye saati); süresi dolan kod panelde de gösterilmez.
 
 ## 6. Bilinen sınırlar (şeffaflık notu)
 
 - Panel tek dosyalık statik bir uygulama olduğundan "yönetici girişi" istemci
   taraflı kontrol + public anahtarla çalışır; Supabase yetkileri tablo
-  politikalarıyla (RLS) sınırlandırılmıştır. `kodlari_yenile_tumu` anon
-  anahtarla çağrılabilir — kötüye kullanım riski düşüktür (sonuç: kodlar
-  yenilenir, sıradaki hafta değişir) ama kurum dilersen bu fonksiyonu
-  yalnız authenticated role'e kısıtlayabilir.
+  politikalarıyla (RLS) sınırlandırılmıştır. `kodlari_yenile_tumu` ve
+  `kodlari_oku` anon anahtarla çağrılabilir — risk düşüktür (yenileme sadece
+  kodları değiştirir; okuma sadece geçerli kodu döner, hash'e ve öğrenci
+  verisine erişim yoktur) ama kurum dilersen her iki fonksiyonu yalnız
+  authenticated role'e kısıtlayabilir.
 - Öğrencinin cihazında kalan tek iz: `localStorage.bt_kapi` (seviye + zaman, 6 saat).
 - Erişim günlüğü (log) tutulmaz; bu bilinçli bir veri minimizasyonu tercihidir.
 
