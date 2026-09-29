@@ -18,6 +18,8 @@
 --    panelinin haftanın kodlarını görebilmesi içindir; öğrenci
 --    hiçbir halükarda tabloya erişemez (bkz. bölüm 4).
 -- ------------------------------------------------------------
+create extension if not exists pgcrypto;  -- sha256 + gen_random_bytes için
+
 create table if not exists public.erisim_kod (
   seviye        text primary key,            -- 's1'..'s7', 'i2'..'i7'
   kod_hash      text not null,               -- sha256 hex (kod + ':' + hafta_tuz)
@@ -26,6 +28,9 @@ create table if not exists public.erisim_kod (
   olusturma     timestamptz not null default now(),
   gecerlilik    timestamptz not null default now()  -- kodun son geçerlilik anı
 );
+
+-- Eski kurulumdan gelen tabloya yeni sütunu garanti et (idempotent):
+alter table public.erisim_kod add column if not exists kod_acik text;
 
 -- ------------------------------------------------------------
 -- 2) KOD DOĞRULAMA (güvenlik tanımlı) — kapı ekranı bunu çağırır.
