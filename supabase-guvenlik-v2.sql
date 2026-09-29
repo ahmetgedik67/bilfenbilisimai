@@ -78,7 +78,9 @@ declare
   hafta_sonu timestamptz;
 begin
   yeni_kod := lpad((floor(random() * 9000) + 1000)::text, 4, '0');
-  tuz := encode(gen_random_bytes(12), 'hex');
+  /* pgcrypto gerektirmez: 24 haneli hex tuz, yerleşik md5(random()) ile */
+  tuz := substr(replace(md5(random()::text || clock_timestamp()::text), ' ', ''), 1, 24);
+  tuz := tuz || substr(md5(clock_timestamp()::text || random()::text), 1, 24);
   -- gelecek pazartesi 08:00 Türkiye saati = 05:00 UTC
   hafta_sonu := date_trunc('week', now() + interval '7 days') + interval '5 hours';
   insert into public.erisim_kod (seviye, kod_hash, hafta_tuz, kod_acik, gecerlilik)
