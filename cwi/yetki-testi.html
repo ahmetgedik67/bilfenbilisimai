@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Yetki Testi</title>
+</head>
+<body>
+<script>
+/* Test 1: ozelSatir ogretmenId'yi koruyor mu? */
+function ozelSatir(o) {
+  var ham = (o.seviyeler !== undefined && o.seviyeler !== null) ? o.seviyeler : (o.secim || []);
+  var sv = [];
+  if (typeof ham === 'string') { try { sv = JSON.parse(ham || '[]'); } catch (e) {} }
+  else sv = ham || [];
+  return {
+    id: o.id,
+    campusId: o.campus_id || o.campusId || null,
+    ad: o.ad,
+    konu: o.konu || '',
+    secim: sv,
+    tip: o.tip,
+    icerik: o.icerik || '',
+    tarih: o.olusturma_tarihi || o.tarih || '',
+    durum: o.durum || 'onaylandi',
+    redNedeni: o.red_nedeni || o.redNedeni || '',
+    ogretmenId: o.ogretmen_id || o.ogretmenId || null,
+    ogretmenAd: o.ogretmen_ad || o.ogretmenAd || '',
+    ogretmenKullanici: o.ogretmen_kullanici || o.ogretmenKullanici || '',
+    gorsel: o.gorsel || ''
+  };
+}
+var ham = { id: 'x1', seviyeler: '["s1"]', ad: 'Test', ogretmen_id: 'uuid-123' };
+var satir = ozelSatir(ham);
+console.log('T1 ogretmenId:', satir.ogretmenId === 'uuid-123' ? 'GECti' : 'KALDI');
+
+/* Test 2: yetki filtresi */
+var oturum = { id: 'merve-uuid', rol: 'ogretmen' };
+function yonetimAdminMi() { return !!(oturum && oturum.rol === 'admin'); }
+function yonetimEtkinlikleri(e) {
+  if (yonetimAdminMi()) return true;
+  return !!(e && e.ozel && e.ozel.ogretmenId && oturum && e.ozel.ogretmenId === oturum.id);
+}
+var katalog = [
+  { id: 'carkifelek', ad: 'Statik', ozel: null },
+  { id: 'ozel:a', ad: 'Baslastirs', ozel: { ogretmenId: 'merve-uuid' } },
+  { id: 'ozel:b', ad: 'Baskasinin', ozel: { ogretmenId: 'meryem-uuid' } }
+];
+var f1 = katalog.filter(yonetimEtkinlikleri);
+console.log('T2 ogretmen-filtre:', f1.length === 1 && f1[0].ad === 'Baslastirs' ? 'GECti' : 'KALDI (' + f1.map(x=>x.ad) + ')');
+oturum = { id: 'admin', rol: 'admin' };
+var f2 = katalog.filter(yonetimEtkinlikleri);
+console.log('T2 admin-filtre:', f2.length === 3 ? 'GECti' : 'KALDI (' + f2.length + ')');
+
+/* Test 3: secimdenAtama kapali -> aktif false, tarihler silinir */
+function secimdenAtama(durumSec, acilisV, kapanisV) {
+  if (durumSec === 'kapali') return { aktif: false, acilis: null, kapanis: null };
+  if (durumSec === 'acik') return { aktif: true, acilis: null, kapanis: null };
+  return { aktif: true, acilis: acilisV || null, kapanis: kapanisV || null };
+}
+var a = secimdenAtama('kapali', 'x', 'y');
+console.log('T3 secimdenAtama:', (!a.aktif && !a.acilis && !a.kapanis) ? 'GECti' : 'KALDI');
+</script>
+</body>
+</html>

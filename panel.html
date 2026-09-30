@@ -423,7 +423,7 @@
       <div id="etkinlikSekme" style="display:none">
         <div class="kart">
           <h2>🎮 Etkinlikleri Yönet</h2>
-          <p class="kucuk-not">Hangi sınıfa, IPT'ye veya öğretmen aracına hangi etkinlik ne zaman açık olacak? Seviye sekmesine tıklayarak filtrele; toplu aç/kapat veya tarihli ayarla.</p>
+          <p class="kucuk-not" id="etkYonetimNot">Hangi sınıfa, IPT'ye veya öğretmen aracına hangi etkinlik ne zaman açık olacak? Seviye sekmesine tıklayarak filtrele; toplu aç/kapat veya tarihli ayarla.</p>
 
           <!-- Seviye sekmeleri -->
           <div class="seviye-sekmeler" id="seviyeSekmeler"></div>
@@ -1268,6 +1268,43 @@
     });
   }
 
+  /* ---------- Yetki ayrımı (v2.2) ----------
+     • Yönetici (admin): bütün etkinliklerin açılış / yayına alma / kapatma işlemlerini yapar.
+     • Öğretmen: Etkinlik Yönetimi'nde YALNIZ kendi eklediği özel etkinlikleri görür;
+       yalnız onların başlangıç (açılış) gününü belirler, düzenler, siler.
+       Hazır (statik) etkinlikler ve başkalarının etkinlikleri öğretmene gösterilmez. */
+  function yonetimAdminMi() { return !!(oturum && oturum.rol === 'admin'); }
+  function yonetimEtkinlikleri(e) {
+    if (yonetimAdminMi()) return true;
+    return !!(e && e.ozel && e.ozel.ogretmenId && oturum && e.ozel.ogretmenId === oturum.id);
+  }
+  function ozelEtkinlikSilAPI(id) {
+    if (yonetimAdminMi()) return API.ozelYoneticiSil(id);
+    return API.ozelEtkinlikSil(oturum, id);
+  }
+  function yonetimDuzenle(o) {
+    if (!o) return;
+    oeFormuTemizle();
+    oe.duzenleId = o.id;
+    $('oeAd').value = o.ad || '';
+    $('oeKonu').value = o.konu || '';
+    var temaDeger = '';
+    Array.prototype.some.call($('oeTema').options, function (op) { if (op.value.split('|')[1] === (o.konu || '')) { temaDeger = op.value; return true; } return false; });
+    $('oeTema').value = temaDeger;
+    oe.tip = o.tip || 'dosya';
+    oe.secim = (o.secim || []).slice();
+    if (o.tip === 'kod') { kodEditorAyarla(o.icerik || ''); oeKaynakGoster('kod'); }
+    else if (o.tip === 'drive') { $('oeDrive').value = o.icerik || ''; oeKaynakGoster('drive'); }
+    else { oe.dosyaMetin = o.icerik || ''; oeKaynakGoster('dosya'); }
+    seviyeCipsCiz();
+    if (o.gorsel) { $('oeGorselOnizle').src = o.gorsel; $('oeGorselOnizle').style.display = ''; oe.gorsel = o.gorsel; $('oeGorselDurum').textContent = '✅ Mevcut gorsel yuklu'; }
+    bilgiGoster($('oeBilgi'), '✏️ Duzenleme modu: "' + o.ad + '" — Degisiklikleri yapip tekrar kaydet.');
+    $('oeKaydetBtn').textContent = '💾 Degisiklikleri Kaydet';
+    var yonSec = $('sekmeOlustur');
+    if (yonSec) yonSec.click();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   /* ============================================================
      SUPABASE ARKA UÇ
      ============================================================ */
@@ -1448,7 +1485,10 @@
       await sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id), { method: 'PATCH', body: { durum: 'reddedildi', red_nedeni: neden || '' } });
     },
     ozelEtkinlikGuncelle: async function (s, id, veri) {
-      await sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id) + '&ogretmen_id=eq.' + encodeURIComponent(s.id), { method: 'PATCH', body: {
+      /* (v2.2) Yönetici bütün özel etkinlikleri düzenleyebilir; öğretmen yalnız kendi satırını. */
+      var filtre = 'ozel_etkinlik?id=eq.' + encodeURIComponent(id) +
+        (s && s.rol === 'admin' ? '' : '&ogretmen_id=eq.' + encodeURIComponent(s.id));
+      await sb(filtre, { method: 'PATCH', body: {
         ad: veri.ad, konu: veri.konu || '',
         seviyeler: JSON.stringify(veri.secim || []),
         tip: veri.tip, icerik: veri.icerik || '',
@@ -1770,7 +1810,7 @@
     ozelEtkinlikGuncelle: async function (s, id, veri) {
       var os = dGet(DK.ozel);
       os.forEach(function (o) {
-        if (o.id === id && (o.ogretmenId === s.id || (!o.ogretmenId && o.campusId === s.campusId))) {
+        if (o.id === id && (s.rol === 'admin' || o.ogretmenId === s.id || (!o.ogretmenId && o.campusId === s.campusId))) {
           o.ad = veri.ad; o.konu = veri.konu || '';
           o.seviyeler = JSON.stringify(veri.secim || []);
           o.tip = veri.tip; o.icerik = veri.icerik || '';
@@ -2231,7 +2271,20 @@
   function etkinlikYonetiminiCiz() {
     API.atamaListesi(oturum).then(function (atamalar) { atamalarOzet = atamalar;
       var ogrenciler = [];
-        katalogGetir('ogretmen').then(function (katalog) {
+        katalogGetir('ogretmen').then(function (katalogTam) {
+          /* (v2.2) Yetki ayrımı: yönetici bütün etkinlikleri, öğretmen yalnız
+             KENDİ eklediği özel etkinlikleri yönetir. */
+          var katalog = katalogTam.filter(yonetimEtkinlikleri);
+          var adminMi = yonetimAdminMi();
+
+          /* Yetki notu ve toplu butonlar yalnız yöneticide görünür */
+          var yNot = $('etkYonetimNot');
+          if (yNot) yNot.innerHTML = adminMi
+            ? 'Hangi sınıfa, IPT\'ye veya öğretmen aracına hangi etkinlik ne zaman açık olacak? Seviye sekmesine tıklayarak filtrele; toplu aç/kapat veya tarihli ayarla. <b>Yönetici olarak bütün etkinliklerin açılış, yayına alma ve kapatma işlemlerini yapabilirsin.</b>'
+            : 'Burada yalnız <b>kendi eklediğin</b> etkinlikleri görürsün; yalnız onların başlangıç gününü (açılış/kapanış tarihini) belirleyebilir, düzenleyebilir veya silebilirsin. Hazır etkinlikler ile diğer öğretmenlerin etkinlikleri yöneticinindir; onları tahta etkinliklerinden kullanmaya devam edebilirsin.';
+          var toplu = $('etkToplu');
+          if (toplu) toplu.style.display = adminMi ? '' : 'none';
+
           /* (v2.1) Atamalar etkinlik bazlıdır (oyun_id birincil anahtar); eski
              kampüsle eşlenmiş satırlar da aynı anahtarla yönetilir. */
           var byId = {};
@@ -2283,7 +2336,9 @@
           var kutu = $('etkinlikListe');
           var h = '';
           if (!filtreli.length) {
-            h = '<div style="padding:20px;text-align:center;color:#94a3b8;font-weight:600">Bu seviyede etkinlik yok.</div>';
+            h = adminMi
+              ? '<div style="padding:20px;text-align:center;color:#94a3b8;font-weight:600">Bu seviyede etkinlik yok.</div>'
+              : '<div style="padding:20px;text-align:center;color:#94a3b8;font-weight:600">Henüz yönetebileceğin bir etkinliğin yok. "✍️ Etkinlik Oluştur" sekmesinden etkinlik ekleyebilirsin; yönetici onayladığında burada başlangıç gününü ayarlayabilirsin.</div>';
           }
           filtreli.forEach(function (e) {
             var a = byId[e.id] || null;
@@ -2321,6 +2376,12 @@
                   '<div><label style="margin-top:0">📅 Açılış</label><input type="datetime-local" data-acilis="' + e.id + '" value="' + (a && a.acilis ? dtYerel(a.acilis) : '') + '"></div>' +
                   '<div><label style="margin-top:0">📅 Kapanış</label><input type="datetime-local" data-kapanis="' + e.id + '" value="' + (a && a.kapanis ? dtYerel(a.kapanis) : '') + '"></div>' +
                   '</div>') +
+              (e.ozel
+                ? '<div class="etk-kucuk-not" style="margin-top:8px">' +
+                  '<button class="btn ikincil kucuk" data-yonet-duzenle="' + esc(e.id) + '">✏️ Düzenle</button>' +
+                  '<button class="btn kirmizi kucuk" data-yonet-sil="' + esc(e.id) + '" style="margin-left:6px">🗑 Sil</button>' +
+                  '</div>'
+                : '') +
               '</div>';
           });
           kutu.innerHTML = h;
@@ -2351,6 +2412,32 @@
                 bilgiGoster($('oBilgi'), '✅ Kaydedildi.'); etkinlikYonetiminiCiz();
                 setTimeout(function () { bilgiGoster($('oBilgi'), ''); }, 2500);
               }).catch(function (e) { alert('Hata: ' + e.message); b.textContent = '💾 Kaydet'; b.disabled = false; });
+            };
+          });
+
+          /* Düzenle / Sil — yalnız özel etkinliklerde var; öğretmen yalnız
+             kendi etkinliğini görür, yönetici hepsini düzenleyebilir. */
+          Array.prototype.forEach.call(kutu.querySelectorAll('[data-yonet-duzenle]'), function (b) {
+            b.onclick = function () {
+              var id = b.getAttribute('data-yonet-duzenle');
+              var kayit = katalog.filter(function (x) { return x.id === id; })[0];
+              if (!kayit || !kayit.ozel) return;
+              if (!yonetimAdminMi() && kayit.ozel.ogretmenId !== oturum.id) { alert('Yalnız kendi eklediğin etkinlikleri düzenleyebilirsin.'); return; }
+              yonetimDuzenle(kayit.ozel);
+            };
+          });
+          Array.prototype.forEach.call(kutu.querySelectorAll('[data-yonet-sil]'), function (b) {
+            b.onclick = function () {
+              var id = b.getAttribute('data-yonet-sil');
+              var kayit = katalog.filter(function (x) { return x.id === id; })[0];
+              if (!kayit || !kayit.ozel) return;
+              if (!yonetimAdminMi() && kayit.ozel.ogretmenId !== oturum.id) { alert('Yalnız kendi eklediğin etkinlikleri silebilirsin.'); return; }
+              if (!confirm('"' + kayit.ozel.ad + '" adlı etkinliği silmek istediğine emin misin? Öğrenciler de bu etkinliği göremez olur.')) return;
+              ozelEtkinlikSilAPI(kayit.ozel.id).then(function () {
+                bilgiGoster($('oBilgi'), '🗑 Etkinlik silindi.');
+                setTimeout(function () { bilgiGoster($('oBilgi'), ''); }, 2500);
+                etkinlikYonetiminiCiz();
+              }).catch(function (e) { alert('Hata: ' + e.message); });
             };
           });
 
@@ -3401,8 +3488,10 @@
   };
 
   function hepsineUygula(acik, seviyeFiltresi) {
-    return katalogGetir('ogretmen').then(function (katalog) {
-      var hedefler = katalog.filter(function (e) {
+    return katalogGetir('ogretmen').then(function (katalogTam) {
+      /* (v2.2) Toplu işlem yalnız yöneticidir; öğretmen oturumunda hiçbir şeye dokunmaz. */
+      if (!yonetimAdminMi()) return Promise.resolve();
+      var hedefler = katalogTam.filter(function (e) {
         if (e.ozel && aracMi(e.ozel.secim)) return false;
         /* (v2.1) Toplu işlem yalnız daha önce ayarlanmış (atama satırı olan)
            etkinliklere dokunur; hiç ayarlanmamışlar panelde zaten Açık görünür. */
@@ -3420,6 +3509,7 @@
   }
   /* Seçili seviyedekileri aç/kapat */
   $('hepsiniAcBtn').onclick = function () {
+    if (!yonetimAdminMi()) { alert('Toplu açma/kapatma yetkisi yöneticinedir.'); return; }
     var sev = aktifSeviye;
     var msg = sev === 'hepsi' ? 'Bütün etkinlikleri açık yap (tarih ayarları silinir)?'
       : 'Bu seviyedeki (' + sev + ') etkinlikleri açık yap?';
@@ -3427,19 +3517,22 @@
     hepsineUygula(true, sev).then(function () { etkinlikYonetiminiCiz(); }).catch(function (e) { alert('Hata: ' + e.message); });
   };
   $('hepsiniKapatBtn').onclick = function () {
+    if (!yonetimAdminMi()) { alert('Toplu açma/kapatma yetkisi yöneticinedir.'); return; }
     var sev = aktifSeviye;
     var msg = sev === 'hepsi' ? 'Bütün etkinlikleri kapat?'
       : 'Bu seviyedeki (' + sev + ') etkinlikleri kapat?';
     if (!confirm(msg)) return;
     hepsineUygula(false, sev).then(function () { etkinlikYonetiminiCiz(); }).catch(function (e) { alert('Hata: ' + e.message); });
   };
-  /* Tümünü aç/kapat (tüm seviyeler) */
+  /* Tümünü aç/kapat (tüm seviyeler) — yalnız yönetici */
   if ($('tumuAcBtn')) {
     $('tumuAcBtn').onclick = function () {
+      if (!yonetimAdminMi()) { alert('Toplu açma/kapatma yetkisi yöneticinedir.'); return; }
       if (!confirm('TÜM seviyelerdeki bütün etkinlikleri açık yap (tarih ayarları silinir)?')) return;
       hepsineUygula(true, 'hepsi').then(function () { etkinlikYonetiminiCiz(); }).catch(function (e) { alert('Hata: ' + e.message); });
     };
     $('tumuKapatBtn').onclick = function () {
+      if (!yonetimAdminMi()) { alert('Toplu açma/kapatma yetkisi yöneticinedir.'); return; }
       if (!confirm('TÜM seviyelerdeki bütün etkinlikleri kapat?')) return;
       hepsineUygula(false, 'hepsi').then(function () { etkinlikYonetiminiCiz(); }).catch(function (e) { alert('Hata: ' + e.message); });
     };

@@ -478,7 +478,7 @@
     <li><span class="toc-emoji">👩‍🏫</span> Öğretmen Paneli — Genel Görünüm</li>
     <li><span class="toc-emoji">👨‍🎓</span> Öğrenci Ekleme (Tek Tek ve Toplu CSV)</li>
     <li><span class="toc-emoji">✍️</span> Etkinlik Oluşturma (Kod, Dosya, Drive)</li>
-    <li><span class="toc-emoji">🎮</span> Etkinlik Yönetimi ve Yayına Alma</li>
+    <li><span class="toc-emoji">🎮</span> Etkinlik Yönetimi ve Yayına Alma (Öğretmen: yalnız kendi etkinlikleri · Yönetici: tümü)</li>
     <li><span class="toc-emoji">🧰</span> Tahta Araçları — Çarkıfelek &amp; Sanal Sınıf Turu</li>
     <li><span class="toc-emoji">✅</span> Yönetici Onay Akışı</li>
     <li><span class="toc-emoji">📊</span> Öğrenci Takibi ve Raporlama</li>
@@ -778,7 +778,7 @@
     <div class="feature-card">
       <div class="icon">🎮</div>
       <h4>Etkinlik Yönetimi</h4>
-      <p>Hangi etkinlikler aktif, hangileri kapalı — kontrol paneli</p>
+      <p>Kendi etkinliklerinin yayınını yönet — başlangıç günü belirle, açık/kapalı/tarihli yap, düzenle veya sil</p>
     </div>
     <div class="feature-card">
       <div class="icon">✍️</div>
@@ -789,6 +789,14 @@
       <div class="icon">📊</div>
       <h4>Kampüs Raporu</h4>
       <p>Öğrenci tamamlama istatistikleri</p>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <span class="callout-icon">🛡️</span>
+    <div>
+      <div class="callout-title">Yetki Ayrımı</div>
+      <p style="margin:0">Etkinlik yönetimi yetkisi role göre ayrılmıştır: <strong>öğretmen</strong> yalnız kendi eklediği etkinlikleri görür, yalnız onların başlangıç gününü belirler, düzenler ve siler; <strong>yönetici (admin)</strong> bütün etkinliklerin açılış, yayına alma ve kapatma işlemlerini yapar. Hazır etkinlikler (Çarkıfelek, Sanal Sınıf Turu vb.) yöneticinindir; tahtada kullanmaya devam edebilirsin. Detaylar Bölüm 7'de.</p>
     </div>
   </div>
 
@@ -1162,7 +1170,7 @@ Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
     <span class="callout-icon">⚠️</span>
     <div>
       <div class="callout-title">Onay Akışı</div>
-      <p style="margin:0">Etkinliği kaydettiğinizde <strong>yoneticinin onayına gider</strong>. Onaylanmadan öğrenciler etkinliği göremez. Onay durumunu "🗂️ Oluşturduğum Etkinlikler" sekmesinden takip edebilirsiniz.</p>
+      <p style="margin:0">Etkinliği kaydettiğinizde <strong>yoneticinin onayına gider</strong>. Onaylanmadan öğrenciler etkinliği göremez. Onay durumunu "🗂️ Oluşturduğum Etkinlikler" listesinden takip edebilirsiniz. Onaylanınca etkinlik <strong>🎮 Etkinlik Yönetimi</strong> sekmesinde yalnız size görünür; başlangıç gününü (açılış/kapanış) orada belirlersiniz.</p>
     </div>
   </div>
 
@@ -1186,39 +1194,49 @@ Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
 <section class="page-break">
   <h2><span class="num">7</span> 🎮 Etkinlik Yönetimi</h2>
 
-  <p><strong>🎮 Etkinlik Yönetimi</strong> sekmesi, mevcut tüm etkinlikleri看到ür ve quản.</p>
+  <p><strong>🎮 Etkinlik Yönetimi</strong> sekmesinde etkinliklerin yayın durumu yönetilir:
+  <strong>✔ Açık</strong> · <strong>✖ Kapalı</strong> · <strong>📅 Tarihli</strong> (başlangıç günü belirleme).
+  <strong>Yetki alanınız role göre değişir:</strong></p>
 
-  <h3>📂 Etkinlik Kategorileri</h3>
+  <h3>🛡️ Kim, Hangi Etkinliği Yönetebilir?</h3>
   <table>
     <tr>
-      <th>Sekme</th>
-      <th>Ne Görürsünüz</th>
-      <th>Ne Yapabilirsiniz</th>
+      <th>Yetki</th>
+      <th>👩‍🏫 Öğretmen</th>
+      <th>🛡️ Yönetici (admin)</th>
     </tr>
     <tr>
-      <td><strong>📋 Tüm Etkinlikler</strong></td>
-      <td>Sistemdeki tüm etkinlikler</td>
-      <td>Görüntüleme, arama</td>
+      <td><strong>Görüntüleme</strong></td>
+      <td>Yalnız <strong>kendi eklediği</strong> özel etkinlikler. Hazır etkinlikler (Çarkıfelek, Sanal Sınıf Turu vb.) ve diğer öğretmenlerin etkinlikleri listede <strong>görünmez</strong>.</td>
+      <td>Sistemdeki <strong>bütün etkinlikler</strong>: hazır etkinlikler + tüm öğretmenlerin özel etkinlikleri.</td>
     </tr>
     <tr>
-      <td><strong>✅ Aktif Etkinlikler</strong></td>
-      <td>Öğrencilere açık olanlar</td>
-      <td>Kapatma (devre dışı bırakma)</td>
+      <td><strong>Başlangıç günü / yayına alma / kapatma</strong></td>
+      <td>Kendi etkinlikleri için ✔ Açık / ✖ Kapalı / 📅 Tarihli seçip <strong>💾 Kaydet</strong> — başlangıç (açılış) gününü belirler.</td>
+      <td>Bütün etkinliklerin açılış, yayına alma ve kapatma işlemlerini yapar.</td>
     </tr>
     <tr>
-      <td><strong>🗂️ Oluşturduğum Etkinlikler</strong></td>
-      <td>Sizin oluşturduğunuz özel etkinlikler</td>
-      <td>Düzenleme, silme, durum takibi</td>
+      <td><strong>Düzenle / Sil</strong></td>
+      <td>Yalnız kendi etkinliğini: <strong>✏️ Düzenle</strong> formu açar (kaydedince yeniden onaya gider), <strong>🗑 Sil</strong> etkinliği öğrencilerden de kaldırır.</td>
+      <td>Tüm özel etkinlikleri düzenleyebilir ve silebilir.</td>
     </tr>
     <tr>
-      <td><strong>⏳ Bekleyenler</strong></td>
-      <td>Yönetici onayı bekleyenler</td>
-      <td>Durum takibi</td>
+      <td><strong>Toplu Aç / Kapat</strong></td>
+      <td>Yok — bu butonlar öğretmende gizlidir.</td>
+      <td>Seçili seviyedekileri veya tümünü tek tıkla açar/kapatır.</td>
     </tr>
   </table>
 
-  <h3>🔒 Etkinliği Kapatma / Açma</h3>
-  <p>Onaylanmış bir etkinliği ihtiyacınız olmadığında kapatabilirsiniz:</p>
+  <div class="callout callout-info">
+    <span class="callout-icon">💡</span>
+    <div>
+      <div class="callout-title">Seviye Sekmeleri</div>
+      <p style="margin:0">Üstteki seviye sekmeleri (📋 Tümü, 1. Sınıf … 5 IPT) listeyi filtreler. Öğretmen oturumunda sayılar yalnız kendi etkinliklerinizi sayar.</p>
+    </div>
+  </div>
+
+  <h3>🔒 Etkinliği Kapatma / Açma / Tarihli Yapma</h3>
+  <p>Kendi etkinliğinizin yayınını yönetmek için:</p>
   <div class="steps">
     <div class="step">
       <div class="step-num">1</div>
@@ -1226,11 +1244,11 @@ Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
     </div>
     <div class="step">
       <div class="step-num">2</div>
-      <div class="step-text"><strong>✅ Aktif Etkinlikler</strong> alt sekmesine tıklayın</div>
+      <div class="step-text">Etkinliğin satırındaki durum kutusunu seçin: <strong>✔ Açık</strong>, <strong>✖ Kapalı</strong> veya <strong>📅 Tarihli</strong></div>
     </div>
     <div class="step">
       <div class="step-num">3</div>
-      <div class="step-text">Kapatmak istediğiniz etkinliğin yanındaki <strong>🔴 Kapat</strong> butonuna tıklayın</div>
+      <div class="step-text"><strong>📅 Tarihli</strong> seçerseniz açılış/kapanış alanlarını doldurun, ardından <strong>💾 Kaydet</strong>'e basın</div>
     </div>
   </div>
 
@@ -1248,11 +1266,12 @@ Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
         <rect x="164" y="54" width="58" height="22" rx="11" fill="#f8fafc" stroke="#e2e8f0"/><text x="193" y="69" fill="#475569">3. Snf</text>
         <rect x="228" y="54" width="58" height="22" rx="11" fill="#f8fafc" stroke="#e2e8f0"/><text x="257" y="69" fill="#475569">5 IPT</text>
       </g>
-      <!-- toplu butonlar -->
+      <!-- toplu butonlar (yalnız yönetici) -->
       <g font-family="Segoe UI,Arial" font-size="9" font-weight="700" text-anchor="middle">
         <rect x="36" y="86" width="130" height="22" rx="7" fill="#ecfdf5" stroke="#10b981"/><text x="101" y="101" fill="#065f46">✔ Seçili Seviyedekileri Aç</text>
         <rect x="174" y="86" width="136" height="22" rx="7" fill="#fef2f2" stroke="#ef4444"/><text x="242" y="101" fill="#991b1b">✖ Seçili Seviyedekileri Kapat</text>
       </g>
+      <text x="318" y="101" font-family="Segoe UI,Arial" font-size="8.5" fill="#94a3b8">(yalnız yöneticide görünür)</text>
       <!-- etkinlik satırları -->
       <g font-family="Segoe UI,Arial" font-size="10">
         <rect x="36" y="120" width="568" height="46" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
@@ -1306,7 +1325,7 @@ Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
     <div>
       <div class="callout-title">Tarihli Ayar Hakkında</div>
       <p style="margin:0">Durumu <strong>📅 Tarihli</strong> yapınca <strong>📅 Açılış</strong> ve <strong>📅 Kapanış</strong>
-      alanları görünür. Ödev vermek için idealdir: örn. "Cuma 15:00'e kadar tamamla". Tek kayıt bütün kampüse uygulanır.</p>
+      alanları görünür. Ödev vermek için idealdir: örn. "Cuma 15:00'e kadar tamamla". Tek kayıt bütün kampüslere uygulanır.</p>
     </div>
   </div>
 
@@ -1315,6 +1334,22 @@ Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
     <div>
       <div class="callout-title">Kapatma Ne Demek?</div>
       <p style="margin:0">Etkinliği kapattığınızda <strong>öğrenciler o etkinliği göremez</strong>, ancak etkinlik silinmez. İhtiyacınız olduğunda tekrar açabilirsiniz.</p>
+    </div>
+  </div>
+
+  <h3>✏️ Kendi Etkinliğimi Düzenleme / Silme</h3>
+  <p>🎮 Etkinlik Yönetimi'nde her özel etkinliğin kartında <strong>✏️ Düzenle</strong> ve <strong>🗑 Sil</strong>
+  düğmeleri vardır (aynı işlemler <strong>✍️ Etkinlik Oluştur</strong> sekmesindeki "🗂️ Oluşturduğum Etkinlikler"
+  listesinde de bulunur). Bu düğmeler yalnız <strong>kendi eklediğiniz</strong> etkinliklerde işinize yarar —
+  öğretmen oturumu zaten başkasının etkinliğini göstermez.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">Etkinlik kartında <strong>✏️ Düzenle</strong>'ye tıklayın — form dolu olarak "✍️ Etkinlik Oluştur" sekmesinde açılır; değişiklikleri yapıp kaydedin (etkinlik yeniden onaya gider)</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">Silmek için <strong>🗑 Sil</strong>'e tıklayın ve onaylayın — atama ayarları temizlenir, öğrenciler etkinliği görmez olur</div>
     </div>
   </div>
 </section>
@@ -1676,6 +1711,19 @@ Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
 
   <p>Öğretmenlerin oluşturduğu özel etkinlikler <strong>yoneticinin onayına gider</strong>. Onaylanmadan öğrenciler etkinlikleri göremez.</p>
 
+  <div class="callout callout-info">
+    <span class="callout-icon">🛡️</span>
+    <div>
+      <div class="callout-title">Yetki Ayrımı (v2.2)</div>
+      <p style="margin:0">
+        <strong>Yönetici (admin):</strong> bütün etkinliklerin başlangıç, yayına alma ve kapatma işlemlerini yapar;
+        tüm özel etkinlikleri düzenleyebilir/silebilir; toplu aç-kapat yetkisi yalnız onundur; kod yenileme ve onay akışı ona aittir.<br>
+        <strong>Öğretmen:</strong> yalnız kendi eklediği etkinlikleri görür; yalnız onların başlangıç gününü belirler,
+        düzenler ve siler. Hazır etkinlikleri ve diğer öğretmenlerin etkinliklerini göremez, değiştiremez.
+      </p>
+    </div>
+  </div>
+
   <div class="flow">
     <div class="flow-item">👩‍🏫 Öğretmen<br>Yükler</div>
     <div class="flow-arrow">→</div>
@@ -1712,7 +1760,7 @@ Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
     </div>
     <div class="step">
       <div class="step-num">6</div>
-      <div class="step-text"><strong>✅ Onayla</strong> ile yayınlameya veya <strong>❌ Reddet</strong> ile geri gönderin</div>
+      <div class="step-text"><strong>✅ Onayla</strong> ile yayınlayın veya <strong>❌ Reddet</strong> ile geri gönderin</div>
     </div>
   </div>
 
@@ -1744,7 +1792,7 @@ Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
   <h2><span class="num">10</span> 📊 Öğrenci Takibi</h2>
 
   <h3>👨‍🎓 Kampüsümdeki Öğrenciler</h3>
-  <p>Öğretmen panelinde <strong>👨‍🎓 Öğrencilerim</strong> sekmesinde kampüsünüzdeki tüm öğrencileri看到ürsünüz.</p>
+  <p>Öğretmen panelinde <strong>👨‍🎓 Öğrencilerim</strong> sekmesinde kampüsünüzdeki tüm öğrencileri görürsünüz.</p>
 
   <table>
     <tr>
