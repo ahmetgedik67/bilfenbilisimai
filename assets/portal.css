@@ -489,6 +489,23 @@ main > section.sinifli { margin-bottom: 46px; }
 }
 .kart:hover .oyna-overlay span { transform: translateY(0); }
 
+/* (v2.2) Pasif etkinlik kartı: kapalı / tarihi gelmemiş / süresi dolmuş.
+   Soluk-gri görünür, tıklanamaz; Başlat overlay'i hiç görünmez. */
+.kart.pasif { cursor: default; }
+.kart.pasif .kart-thumb img,
+.kart.pasif .kart-govde { filter: grayscale(1); opacity: .55; }
+.kart.pasif .kart-thumb::after { background: linear-gradient(90deg, #94a3b8, #cbd5e1); }
+.kart.pasif .kart-thumb .oyna-overlay { display: none; }
+.kart.pasif:hover { transform: none; border-color: var(--cizgi); box-shadow: var(--golge-kucuk); }
+.kart.pasif:hover .kart-thumb img { transform: none; }
+.kart.pasif .oynat-btn, .kart.pasif .dinle-btn { display: none; }
+.pasif-rozet {
+  margin-left: auto; font-size: 11.5px; font-weight: 800; white-space: nowrap;
+  color: #64748b; background: #f1f5f9; border: 1px solid #e2e8f0;
+  padding: 5px 12px; border-radius: 999px;
+}
+html[data-tema='koyu'] .pasif-rozet { color: #93a3c0; background: #1a2438; border-color: #24314e; }
+
 .kart-govde { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
 .kart-ust { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .kart-ust .no {

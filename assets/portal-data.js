@@ -144,9 +144,10 @@ function ozelOnizlemeSvg(ad, tip, konu) {
 
 function ozelEtkinlikleriYukle() {
   if (!SUPABASE_CONFIG.url) return Promise.resolve();
-  /* (v2) Öğrenci tarafı güvenli görünümden okur: yalnız onaylı + aktif ataması
-     olan (acilis <= simdi < kapanis) etkinlikler döner. Ham ozel_etkinlik
-     tablosu okunmaz; kapalı/tarihli etkinlik listeye hiç gelmez. */
+  /* (v2.2) Öğrenci tarafı güvenli görünümden okur: onaylı bütün özel etkinlikler
+     döner. Kapalı/tarihli etkinliğin İÇERİĞİ görünümden dönmez (icerik=null);
+     portal bu kartları soluk-pasif gösterir, açılamaz. acik/acilis/kapanis
+     alanları kart rozetini ve açılabilirlik kontrolünü besler. */
   return fetch(SUPABASE_CONFIG.url + '/rest/v1/ozel_etkinlik_ogrenci?select=*&order=olusturma_tarihi', {
     headers: { apikey: SUPABASE_CONFIG.anon, Authorization: 'Bearer ' + SUPABASE_CONFIG.anon }
   }).then(function (r) { return r.json(); }).then(function (rows) {
@@ -161,7 +162,13 @@ function ozelEtkinlikleriYukle() {
         kategoriler: coz.kategoriler, siniflar: coz.siniflar, ogretmen: coz.ogretmen,
         /* Öğretmen hiçbir seviye seçmediyse etkinlik bütün seviyelere açıktır */
         herkese: !(coz.siniflar.length || coz.kategoriler.length || coz.ogretmen),
-        etiketler: ['Özel Etkinlik'], ozel: true, ozelTip: o.tip, ozelIcerik: o.icerik || '',
+        etiketler: ['Özel Etkinlik'], ozel: true,
+        ozelTip: o.tip,
+        /* Kapalıyken içerik null döner — etkinlik açılamaz */
+        ozelIcerik: o.icerik || '',
+        acik: o.acik !== false,
+        acilis: o.acilis || null,
+        kapanis: o.kapanis || null,
         nasil: ['Öğretmeniniz bu etkinliği oluşturdu.', '▶ Başlat ile açın.'],
         amac: o.konu || 'Öğretmeninizin hazırladığı özel etkinlik.',
         kazanimlar: [],

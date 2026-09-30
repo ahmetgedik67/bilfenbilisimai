@@ -214,22 +214,26 @@ create policy "tamamlanan_anon_okur" on public.tamamlanan
 
 -- ------------------------------------------------------------
 -- 7) YAYIN ZAMANI SUNUCUDA ZORLANIR (öğrenci için güvenli görünüm)
---    Öğrenciye yalnız: durum='onaylandi' VE aktif atama
---    (acilis <= simdi < kapanis) olan özel etkinlikler döner.
+--    Onaylı bütün özel etkinlikler döner; acik bayrağı ve açılış/
+--    kapanış zamanları satırla birlikte verilir. KAPALI veya tarihi
+--    gelmemiş/dolmuş etkinliğin İÇERİĞİ (icerik) ASLA dönmez (null) —
+--    öğrenci listede yalnız soluk kartı görür, açamaz.
+--    Atama satırı yoksa etkinlik açık sayılır (panel varsayılanı).
 -- ------------------------------------------------------------
 create or replace view public.ozel_etkinlik_ogrenci
 with (security_invoker = false) as
 select o.id, o.ad, o.konu, o.seviyeler, o.tip, o.gorsel,
-       o.olusturma_tarihi, o.icerik
+       o.olusturma_tarihi,
+       case when a.aktif = true
+             and (a.acilis is null or a.acilis <= now())
+             and (a.kapanis is null or a.kapanis > now())
+            then o.icerik else null end as icerik,
+       coalesce(a.aktif, true) as acik,
+       a.acilis, a.kapanis
 from public.ozel_etkinlik o
-where o.durum = 'onaylandi'
-  and exists (
-    select 1 from public.etkinlik_atama a
-    where a.oyun_id = 'ozel:' || o.id::text
-      and a.aktif = true
-      and (a.acilis is null or a.acilis <= now())
-      and (a.kapanis is null or a.kapanis > now())
-  );
+left join public.etkinlik_atama a
+  on a.oyun_id = 'ozel:' || o.id::text
+where o.durum = 'onaylandi';
 
 grant select on public.ozel_etkinlik_ogrenci to anon;
 -- NOT: Görünüme RLS policy verilemez (PostgreSQL); erişim yalnız GRANT ile:
@@ -239,8 +243,9 @@ grant select on public.ozel_etkinlik_ogrenci to anon;
 -- (assets/portal-data.js → ozel_etkinlik_ogrenci). Ham ozel_etkinlik tablosu
 -- anon'a kapalı DEĞİLDİR çünkü panel (onay ekranı, görüntüle, yedek indir)
 -- aynı anahtarla okur; bu bilinen sınır KVKK-UYUM.md'de belgelenmiştir.
--- Öğrenciye asla listelenmeyenler: bekleyen/reddedilenler, kapalı ve
--- tarihi gelmemiş/dolmuş etkinlikler — bunlar görünümden dönmez.
+-- Öğrenciye asla dönmeyenler: bekleyen/reddedilenler. Kapalı ve tarihi
+-- gelmemiş/dolmuş etkinlikler YALNIZ isim/önizlemeyle (icerik=null) döner;
+-- portal bu kartları soluk/pasif gösterir, açılamaz (index.html oynat kontrolü).
 
 -- Dış etkinlik atamaları için aktif (içinde zaman aralığı olan) görünüm:
 create or replace view public.etkinlik_atama_aktif as

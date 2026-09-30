@@ -762,9 +762,24 @@
   }
 
   /* ---------- Kart ---------- */
+  /* (v2.2) Pasif etkinlik bilgisi: kapalı veya tarihi gelmemiş/dolmuş özel
+     etkinlik kartı soluk-gri görünür, tıklanamaz. */
+  function pasifBilgi(etkinlik) {
+    if (etkinlik.ogretmen || etkinlik.acik !== false) return null;
+    var now = Date.now();
+    if (etkinlik.acilis && now < new Date(etkinlik.acilis).getTime()) {
+      var t;
+      try { t = new Date(etkinlik.acilis).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }); } catch (e) { t = etkinlik.acilis; }
+      return { rozet: '📅 ' + t + ' günü açılacak', mesaj: '📅 Bu etkinlik ' + t + ' tarihinde açılacak — o gün tekrar gel!' };
+    }
+    if (etkinlik.kapanis && now > new Date(etkinlik.kapanis).getTime()) return { rozet: '⏰ Süresi doldu', mesaj: '⏰ Bu etkinliğin süresi doldu.' };
+    return { rozet: '🔒 Kapalı', mesaj: '🔒 Bu etkinlik şu an kapalı. Öğretmenin açması gerek.' };
+  }
+
   function kartYap(etkinlik, sira) {
     const kart = document.createElement('article');
-    kart.className = 'kart';
+    const pasif = pasifBilgi(etkinlik);
+    kart.className = 'kart' + (pasif ? ' pasif' : '');
     kart.style.animationDelay = (sira % 4) * 45 + (sira % 3) * 25 + 'ms';
     /* Kart vurgu rengi: öğretmen araçları → gök mavisi, tüm seviyeler → turuncu,
        aksi halde etkinliğin ilk kategorisinin gökkuşağı rengi */
@@ -773,8 +788,10 @@
     else if ((etkinlik.kategoriler || []).length >= KATEGORILER.length) vurgu = '#ff7a3d';
     else if ((etkinlik.kategoriler || [])[0]) vurgu = KATEGORI_RENK[(etkinlik.kategoriler[0] - 2) % KATEGORI_RENK.length];
     kart.style.setProperty('--kart-renk', vurgu);
-    /* Kart tıklaması → detay modalı; Başlat butonları → doğrudan oynatma */
-    kart.onclick = () => detayAc(etkinlik);
+    /* Kart tıklaması → detay modalı; Başlat butonları → doğrudan oynatma.
+       (v2.2) Pasif kart hiçbir yere tıklamaz; sadece durum mesajı gösterir. */
+    if (!pasif) kart.onclick = () => detayAc(etkinlik);
+    else kart.title = pasif.mesaj;
 
     const thumb = document.createElement('div');
     thumb.className = 'kart-thumb';
@@ -819,6 +836,16 @@
       s.textContent = t;
       etiketler.appendChild(s);
     });
+    /* (v2.2) Pasif etkinlikte Başlat/Dinle yok; yerine durum rozeti durur */
+    if (pasif) {
+      const durum = document.createElement('span');
+      durum.className = 'pasif-rozet';
+      durum.textContent = pasif.rozet;
+      alt.append(etiketler, durum);
+      govde.append(ust, h3, p, alt);
+      kart.append(thumb, govde);
+      return kart;
+    }
     const btn = document.createElement('button');
     btn.className = 'oynat-btn';
     btn.textContent = '▶ Başlat';
@@ -1032,6 +1059,12 @@
   });
 
   function oynat(etkinlik) {
+    /* (v2.2) İçeriği olmayan özel etkinlik (görünüm kapalıya null verir) asla açılmaz:
+       kart zaten pasif çizilir; derin bağlantıyla gelirse burada engellenir. */
+    if (etkinlik.ozel && !etkinlik.ozelIcerik) {
+      alert(pasifBilgi(etkinlik) ? pasifBilgi(etkinlik).mesaj : '🔒 Bu etkinlik şu an açılamıyor.');
+      return;
+    }
     /* Atama anahtarı: panel etkinlik_atama satırlarını 'ozel:<uuid>' (iki nokta) yazar;
        portal nesne id'si ise 'ozel_<uuid>' (alt çizgi). Kapı kontrolü DB anahtarıyla yapılır —
        eşleşme yanlış olsaydı kapalı etkinlik hiçbir zaman engellenemezdi. */
