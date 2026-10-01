@@ -493,7 +493,7 @@ main > section.sinifli { margin-bottom: 46px; }
    Soluk-gri görünür, tıklanamaz; Başlat overlay'i hiç görünmez. */
 .kart.pasif { cursor: default; }
 .kart.pasif .kart-thumb img,
-.kart.pasif .kart-govde { filter: grayscale(1); opacity: .55; }
+.kart.pasif .kart-govde > :not(.geri-sayim) { filter: grayscale(1); opacity: .55; }
 .kart.pasif .kart-thumb::after { background: linear-gradient(90deg, #94a3b8, #cbd5e1); }
 .kart.pasif .kart-thumb .oyna-overlay { display: none; }
 .kart.pasif:hover { transform: none; border-color: var(--cizgi); box-shadow: var(--golge-kucuk); }
@@ -505,6 +505,59 @@ main > section.sinifli { margin-bottom: 46px; }
   padding: 5px 12px; border-radius: 999px;
 }
 html[data-tema='koyu'] .pasif-rozet { color: #93a3c0; background: #1a2438; border-color: #24314e; }
+
+/* (v2.6) Geri sayım panosu: açılışı beklenen etkinliklerde canlı, heyecanlı sayaç.
+   Soluk kartta bile renkli kalır; gri süzgeç .kart-govde çocuklarına uygulanır. */
+.geri-sayim {
+  border-radius: 14px; padding: 12px 13px 13px;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 45%, #db2777 100%);
+  box-shadow: 0 12px 26px rgba(124, 58, 237, .35), inset 0 1px 0 rgba(255, 255, 255, .25);
+  position: relative; overflow: hidden;
+}
+.geri-sayim::before {
+  content: ''; position: absolute; top: -70%; bottom: -70%; width: 55%; left: -60%;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, .3), transparent);
+  transform: skewX(-18deg);
+  animation: gs-parilti 3.4s ease-in-out infinite;
+}
+@keyframes gs-parilti {
+  0%, 45% { left: -60%; }
+  75%, 100% { left: 130%; }
+}
+.gs-baslik {
+  position: relative; text-align: center; font-size: 12px; font-weight: 800;
+  letter-spacing: .6px; color: #fff; margin-bottom: 9px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, .3);
+}
+.gs-satir { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.gs-birim {
+  text-align: center; padding: 7px 2px 6px; border-radius: 10px;
+  background: rgba(255, 255, 255, .16);
+  border: 1px solid rgba(255, 255, 255, .3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2);
+}
+.gs-birim b {
+  display: block; font-size: 21px; font-weight: 800; line-height: 1.15; color: #fff;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+}
+.gs-birim b[data-gs='sn'] { animation: gs-nabiz 1s ease-in-out infinite; }
+@keyframes gs-nabiz {
+  0%, 100% { transform: scale(1); color: #fff; }
+  50% { transform: scale(1.14); color: #fde68a; }
+}
+.gs-birim span {
+  display: block; margin-top: 3px; font-size: 8.5px; font-weight: 800;
+  letter-spacing: 1.2px; color: rgba(255, 255, 255, .82);
+}
+html[data-tema='koyu'] .geri-sayim {
+  background: linear-gradient(135deg, #4338ca 0%, #6d28d9 45%, #be185d 100%);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .18);
+}
+@media (prefers-reduced-motion: reduce) {
+  .geri-sayim::before { animation: none; opacity: 0; }
+  .gs-birim b[data-gs='sn'] { animation: none; }
+}
 
 .kart-govde { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
 .kart-ust { display: flex; align-items: center; justify-content: space-between; gap: 8px; }

@@ -762,19 +762,73 @@
   }
 
   /* ---------- Kart ---------- */
-  /* (v2.2) Pasif etkinlik bilgisi: kapalı veya tarihi gelmemiş/dolmuş özel
-     etkinlik kartı soluk-gri görünür, tıklanamaz. */
+  /* (v2.3) Pasif etkinlik bilgisi: açılışı beklenen (tarihli), kapalı veya
+     süresi dolmuş etkinlik kartı soluk-gri görünür, tıklanamaz.
+     Açılışı beklenen kartta açılış tarihi + heyecanlı GERİ SAYIM panosu gösterilir.
+     Kural bütün etkinlik türleri için geçerlidir (şu an ve gelecekte eklenecekler). */
   function pasifBilgi(etkinlik) {
-    if (etkinlik.ogretmen || etkinlik.acik !== false) return null;
+    if (etkinlik.ogretmen) return null;
     var now = Date.now();
-    if (etkinlik.acilis && now < new Date(etkinlik.acilis).getTime()) {
+    var acilisMs = etkinlik.acilis ? new Date(etkinlik.acilis).getTime() : 0;
+    var kapanisMs = etkinlik.kapanis ? new Date(etkinlik.kapanis).getTime() : 0;
+    /* İçerik yalnız aktif + tarih penceresi içindeyken döner (sunucu görünümü);
+       özel etkinlikte içerik yokluğu pasifliğin kesin işaretidir. */
+    var icerikYok = etkinlik.ozel === true ? !etkinlik.ozelIcerik : (etkinlik.acik === false);
+    if (acilisMs && now < acilisMs) {
       var t;
       try { t = new Date(etkinlik.acilis).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }); } catch (e) { t = etkinlik.acilis; }
-      return { rozet: '📅 ' + t + ' günü açılacak', mesaj: '📅 Bu etkinlik ' + t + ' tarihinde açılacak — o gün tekrar gel!' };
+      return {
+        rozet: '📅 ' + t + ' günü açılacak',
+        mesaj: '📅 Bu etkinlik ' + t + ' tarihinde açılacak — geri sayım başladı!',
+        acilisMs: acilisMs
+      };
     }
-    if (etkinlik.kapanis && now > new Date(etkinlik.kapanis).getTime()) return { rozet: '⏰ Süresi doldu', mesaj: '⏰ Bu etkinliğin süresi doldu.' };
+    if (kapanisMs && now > kapanisMs) return { rozet: '⏰ Süresi doldu', mesaj: '⏰ Bu etkinliğin süresi doldu.' };
+    if (!icerikYok) return null;
     return { rozet: '🔒 Kapalı', mesaj: '🔒 Bu etkinlik şu an kapalı. Öğretmenin açması gerek.' };
   }
+
+  /* (v2.3) Geri sayım panosu: hedef ana kadar canlı sayaç çizer.
+     Hedef geçince liste sunucudan tazelenir; etkinlik açıldıysa normal karta döner. */
+  function geriSayimYap(hedefMs) {
+    const kutu = document.createElement('div');
+    kutu.className = 'geri-sayim';
+    kutu.setAttribute('data-hedef', String(hedefMs));
+    kutu.innerHTML =
+      '<div class="gs-baslik">🎉 Açılışa kalan süre</div>' +
+      '<div class="gs-satir">' +
+      '  <div class="gs-birim"><b data-gs="gun">0</b><span>GÜN</span></div>' +
+      '  <div class="gs-birim"><b data-gs="saat">00</b><span>SAAT</span></div>' +
+      '  <div class="gs-birim"><b data-gs="dk">00</b><span>DAKİKA</span></div>' +
+      '  <div class="gs-birim"><b data-gs="sn">00</b><span>SANİYE</span></div>' +
+      '</div>';
+    return kutu;
+  }
+  function ikiHane(n) { return (n < 10 ? '0' : '') + n; }
+  var geriSayimTazeleme = 0;
+  function geriSayimlariGuncelle() {
+    var simdi = Date.now();
+    var sayaclar = document.querySelectorAll('.geri-sayim[data-hedef]');
+    var bitti = false;
+    for (var i = 0; i < sayaclar.length; i++) {
+      var k = sayaclar[i];
+      var hedef = parseInt(k.getAttribute('data-hedef'), 10) || 0;
+      var kalan = hedef - simdi;
+      if (kalan <= 0) { bitti = true; continue; }
+      var snToplam = Math.floor(kalan / 1000);
+      var el;
+      if ((el = k.querySelector('[data-gs="gun"]'))) el.textContent = String(Math.floor(snToplam / 86400));
+      if ((el = k.querySelector('[data-gs="saat"]'))) el.textContent = ikiHane(Math.floor((snToplam % 86400) / 3600));
+      if ((el = k.querySelector('[data-gs="dk"]'))) el.textContent = ikiHane(Math.floor((snToplam % 3600) / 60));
+      if ((el = k.querySelector('[data-gs="sn"]'))) el.textContent = ikiHane(snToplam % 60);
+    }
+    /* Süre doldu: içeriği sunucudan tazele (açılan etkinlik normal karta döner) */
+    if (bitti && simdi - geriSayimTazeleme > 5000) {
+      geriSayimTazeleme = simdi;
+      ozelEtkinlikleriYukle().then(function () { render(); }).catch(function () { render(); });
+    }
+  }
+  setInterval(geriSayimlariGuncelle, 1000);
 
   function kartYap(etkinlik, sira) {
     const kart = document.createElement('article');
@@ -842,7 +896,9 @@
       durum.className = 'pasif-rozet';
       durum.textContent = pasif.rozet;
       alt.append(etiketler, durum);
-      govde.append(ust, h3, p, alt);
+      /* (v2.6) Açılışı beklenen etkinlikte kart gövdesine heyecanlı canlı geri sayım panosu */
+      if (pasif.acilisMs) govde.append(ust, h3, p, geriSayimYap(pasif.acilisMs), alt);
+      else govde.append(ust, h3, p, alt);
       kart.append(thumb, govde);
       return kart;
     }
@@ -976,6 +1032,8 @@
       bos.innerHTML = '<div class="buyuk">🧩</div><p>Bu seviye için henüz etkinlik yok — Robi yeni etkinlikler hazırlıyor! 🚀</p>';
       icerik.appendChild(bos);
     }
+    /* (v2.6) Geri sayımlar ilk saniyeyi beklemeden dolu görünsün */
+    geriSayimlariGuncelle();
   }
 
   /* ---------- Oynatma penceresi ---------- */
