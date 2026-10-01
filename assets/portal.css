@@ -1020,58 +1020,179 @@ html[data-tema='koyu'] ::selection { background: rgba(91, 141, 255, .3); }
 @media (max-width: 600px) { .tema-dugme { width: 36px; height: 36px; font-size: 15px; } }
 
 /* ============================================================
-   KVKK DOSTU KAPI (v2) — Sınıf + haftalık kod ekranı
+   KVKK DOSTU KAPI (v2.4) — Seviye kartı + 4 haneli kod ekranı
+   İki aşamalı: 1) Sınıf / IPT kategorisi kartını seç  2) Haftalık kodu gir.
+   Profesyonel cam (glassmorphism) kart, gradyan vurgular, canlı kod kutuları.
    ============================================================ */
 .kapi {
   position: fixed; inset: 0; z-index: 300;
   display: flex; align-items: center; justify-content: center;
-  padding: 20px;
+  padding: 24px 16px; overflow-y: auto;
   background:
-    radial-gradient(circle at 8% 8%, rgba(125, 211, 252, .55), transparent 28%),
-    radial-gradient(circle at 94% 14%, rgba(253, 224, 71, .42), transparent 25%),
-    linear-gradient(135deg, #f8fbff 0%, #eef6ff 46%, #fefce8 100%);
+    radial-gradient(circle at 10% 12%, rgba(125, 211, 252, .5), transparent 30%),
+    radial-gradient(circle at 90% 16%, rgba(253, 224, 71, .38), transparent 26%),
+    radial-gradient(circle at 84% 88%, rgba(167, 139, 250, .28), transparent 30%),
+    linear-gradient(135deg, #f6fbff 0%, #eef5ff 44%, #fef9ec 100%);
+}
+.kapi::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(rgba(37, 99, 235, .055) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 78%);
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 78%);
 }
 .kapi-kart {
-  width: min(440px, 100%);
-  background: rgba(255, 255, 255, .96);
-  border: 1px solid rgba(255, 255, 255, .86);
+  position: relative;
+  width: min(560px, 100%);
+  margin: auto;
+  background: rgba(255, 255, 255, .93);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, .9);
   border-radius: 30px;
-  box-shadow: 0 18px 45px rgba(30, 64, 175, .13);
-  padding: clamp(26px, 5vw, 40px);
+  box-shadow: 0 24px 60px rgba(30, 64, 175, .16), 0 4px 14px rgba(30, 64, 175, .07);
+  padding: clamp(28px, 5vw, 38px) clamp(20px, 4.5vw, 36px) clamp(22px, 4vw, 30px);
   text-align: center;
-  animation: kapiGel .4s cubic-bezier(.22, 1.2, .36, 1) both;
+  animation: kapiGel .45s cubic-bezier(.22, 1.2, .36, 1) both;
 }
-@keyframes kapiGel { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: none; } }
-.kapi-robi { font-size: 52px; line-height: 1; margin-bottom: 10px; filter: drop-shadow(0 8px 14px rgba(49, 46, 129, .25)); }
+.kapi-kart::before {
+  content: ''; position: absolute; inset: 0 0 auto 0; height: 6px;
+  border-radius: 30px 30px 0 0;
+  background: linear-gradient(90deg, #2563eb, #7c3aed 35%, #ec4899 68%, #f59e0b);
+}
+@keyframes kapiGel { from { opacity: 0; transform: translateY(18px) scale(.96); } to { opacity: 1; transform: none; } }
+.kapi-robi {
+  width: 84px; height: 84px; margin: 2px auto 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 46px; line-height: 1;
+  background: #fff; border-radius: 28px;
+  box-shadow: 0 10px 24px rgba(49, 46, 129, .18), inset 0 0 0 1px rgba(37, 99, 235, .08);
+  animation: robiSalinca 3.4s ease-in-out infinite;
+}
+@keyframes robiSalinca { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-5px) rotate(2deg); } }
 .kapi-kart h1 {
   font-family: var(--font-baslik);
-  font-size: clamp(1.5rem, 4vw, 1.9rem);
-  letter-spacing: -.03em; color: var(--rp-ink, #172554);
+  font-size: clamp(1.45rem, 4vw, 1.85rem);
+  letter-spacing: -.03em;
+  background: linear-gradient(90deg, #1e3a8a, #6d28d9);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: #1e3a8a;
 }
-.kapi-alt { margin-top: 8px; color: var(--rp-muted, #52627f); font-size: .95rem; line-height: 1.5; }
-.kapi-form { margin-top: 20px; display: flex; flex-direction: column; gap: 14px; text-align: left; }
-.kapi-alan { display: flex; flex-direction: column; gap: 6px; }
-.kapi-alan label { font-size: 12px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--rp-blue, #2563eb); }
-.kapi-alan select,
-.kapi-alan input {
-  border: 2px solid #c7d2fe; border-radius: 14px; background: #eef2ff;
-  color: #172554; font: inherit; font-weight: 700; font-size: 1.05rem;
-  padding: 12px 14px; outline: none;
-  transition: border-color .18s, box-shadow .18s, background .18s;
+.kapi-alt { margin-top: 8px; color: var(--rp-muted, #52627f); font-size: .93rem; line-height: 1.55; }
+.kapi-form { margin-top: 18px; display: flex; flex-direction: column; gap: 12px; text-align: left; }
+.kapi-adim {
+  background: rgba(248, 250, 255, .82);
+  border: 1.5px solid #e2e8f0; border-radius: 20px;
+  padding: 14px 14px 16px;
+  animation: kapiGel .3s ease both;
 }
-.kapi-alan select:focus, .kapi-alan input:focus {
-  border-color: #6d28d9; background: #fff;
-  box-shadow: 0 0 0 4px rgba(109, 40, 217, .14);
+.kapi-adim-baslik {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 800; font-size: .95rem; color: #1e293b;
+  margin-bottom: 12px;
 }
-.kapi-alan input { letter-spacing: .5em; text-align: center; font-size: 1.3rem; }
-.kapi-btn { width: 100%; margin-top: 4px; }
+.kapi-adim-no {
+  width: 22px; height: 22px; border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #fff; font-size: .78rem; font-weight: 800;
+  box-shadow: 0 3px 8px rgba(37, 99, 235, .3);
+}
+
+/* 1. adım: seviye kartları — sınıf çipleri + IPT kategorisi hapları */
+.kapi-grup-baslik {
+  font-size: 10.5px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  color: #64748b; margin: 2px 2px 7px;
+}
+.kapi-sev-grup { display: grid; grid-template-columns: repeat(7, 1fr); gap: 7px; margin-bottom: 12px; }
+.kapi-sev-grup:last-child { margin-bottom: 2px; }
+.kapi-sev {
+  --sev-renk: #2563eb;
+  position: relative; border: 2px solid #dbe3f0; border-radius: 13px;
+  background: #fff; cursor: pointer;
+  min-height: 58px; padding: 7px 2px 6px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  font: inherit; color: #1e293b;
+  transition: transform .15s, border-color .15s, box-shadow .15s, background .15s;
+}
+.kapi-sev:hover { transform: translateY(-2px); border-color: var(--sev-renk); box-shadow: 0 8px 16px rgba(15, 23, 42, .12); }
+.kapi-sev:focus-visible { outline: none; border-color: var(--sev-renk); box-shadow: 0 0 0 4px rgba(37, 99, 235, .18); }
+.kapi-sev.secili {
+  border-color: var(--sev-renk); background: linear-gradient(180deg, #fff, #f0f6ff);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .2), 0 8px 18px rgba(30, 64, 175, .12);
+}
+.kapi-sev.secili::after {
+  content: '✓'; position: absolute; top: -7px; right: -6px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--sev-renk); color: #fff;
+  font-size: .68rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, .25);
+}
+.kapi-sev-sinif .kapi-sev-no { font-size: 1.25rem; font-weight: 800; color: var(--sev-renk); }
+.kapi-sev-sinif .kapi-sev-ad { font-size: .62rem; font-weight: 700; letter-spacing: .4px; color: #64748b; text-transform: uppercase; }
+.kapi-sev-ipt { border-top: 3px solid var(--sev-renk); }
+.kapi-sev-rozet {
+  font-size: .56rem; font-weight: 800; letter-spacing: .6px;
+  color: #fff; background: var(--sev-renk);
+  border-radius: 6px; padding: 2px 5px;
+}
+.kapi-sev-ipt .kapi-sev-ad { font-size: 1.1rem; font-weight: 800; color: #1e293b; }
+
+/* 2. adım: seçili seviye satırı + kod kutuları */
+.kapi-secili-satir {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff; border: 2px solid #dbe3f0; border-radius: 14px;
+  padding: 8px 12px; margin-bottom: 12px;
+}
+.kapi-geri {
+  border: none; background: #eef2ff; color: #4338ca;
+  width: 32px; height: 32px; border-radius: 10px; cursor: pointer;
+  font-size: 1rem; font-weight: 800; flex: none;
+  transition: background .15s, transform .15s;
+}
+.kapi-geri:hover { background: #e0e7ff; transform: translateX(-2px); }
+.kapi-secili-ikon { font-size: 1.25rem; flex: none; }
+.kapi-secili-ad { font-weight: 800; font-size: 1.02rem; color: #1e293b; flex: 1; text-align: left; }
+.kapi-secili-rozet {
+  font-size: .66rem; font-weight: 800; letter-spacing: .5px; text-transform: uppercase;
+  color: #fff; background: #2563eb; border-radius: 8px; padding: 4px 9px; flex: none;
+}
+.kapi-gizli { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
+.kapi-kod-kutu { display: flex; gap: 10px; justify-content: center; margin: 4px 0 14px; }
+.kapi-kutu {
+  width: 58px; height: 66px; border-radius: 16px;
+  border: 2px solid #dbe3f0; background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.9rem; font-weight: 800; color: #1e293b;
+  box-shadow: inset 0 2px 6px rgba(15, 23, 42, .05);
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+.kapi-kod-kutu:hover .kapi-kutu { border-color: #c7d2fe; }
+.kapi-kutu.dolu { border-color: #6d28d9; background: #f5f3ff; animation: kutuPop .18s ease; }
+.kapi-kutu.aktif { border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, .16); transform: translateY(-2px); }
+@keyframes kutuPop { from { transform: scale(.82); } to { transform: scale(1); } }
+.kapi-btn { width: 100%; margin-top: 2px; }
 .kapi-hata {
   background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;
   border-radius: 12px; padding: 10px 12px; font-size: .88rem; font-weight: 700;
+  animation: kapiSalla .35s ease;
 }
-.kapi-not { margin-top: 18px; font-size: .8rem; color: #64748b; line-height: 1.6; }
+@keyframes kapiSalla { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+.kapi-not { margin-top: 16px; font-size: .8rem; color: #64748b; line-height: 1.6; }
 .kapi-not a { color: var(--rp-blue, #2563eb); font-weight: 800; text-decoration: none; }
 .kapi-not a:hover { text-decoration: underline; }
+@media (prefers-reduced-motion: reduce) {
+  .kapi-robi { animation: none; }
+  .kapi-kart, .kapi-adim, .kapi-hata, .kapi-kutu.dolu { animation: none !important; }
+}
+/* Küçük ekran: sınıf çipleri 4'lü, kod kutuları biraz küçülür */
+@media (max-width: 540px) {
+  .kapi { padding: 14px 10px; align-items: flex-start; }
+  .kapi-sev-grup { grid-template-columns: repeat(4, 1fr); }
+  .kapi-sev { min-height: 52px; border-radius: 12px; }
+  .kapi-kutu { width: 52px; height: 60px; font-size: 1.6rem; }
+}
 /* Kapı açıkken arkadaki portal gizli (kazınmasın diye) */
 body.kapi-modu > *:not(#kapi) { visibility: hidden !important; }
 body.kapi-modu #kapi { visibility: visible !important; }
@@ -1081,12 +1202,32 @@ html[data-tema='koyu'] .kapi {
   background:
     radial-gradient(circle at 8% 8%, rgba(14, 165, 233, .12), transparent 30%),
     radial-gradient(circle at 94% 14%, rgba(250, 204, 21, .07), transparent 26%),
+    radial-gradient(circle at 84% 88%, rgba(139, 92, 246, .1), transparent 30%),
     linear-gradient(135deg, #0b1220 0%, #0d1526 50%, #101828 100%);
 }
-html[data-tema='koyu'] .kapi-kart { background: rgba(13, 21, 38, .97); border-color: var(--kutu-kenar); }
-html[data-tema='koyu'] .kapi-kart h1 { color: #f1f5ff; }
-html[data-tema='koyu'] .kapi-alt { color: #94a3c4; }
-html[data-tema='koyu'] .kapi-alan select, html[data-tema='koyu'] .kapi-alan input {
-  background: var(--kutu-zemin); border-color: var(--kutu-kenar); color: var(--murekkep);
+html[data-tema='koyu'] .kapi::before {
+  background-image: radial-gradient(rgba(147, 197, 253, .08) 1px, transparent 1.4px);
 }
-html[data-tema='koyu'] .kapi-alan input:focus, html[data-tema='koyu'] .kapi-alan select:focus { border-color: var(--mavi-acik); }
+html[data-tema='koyu'] .kapi-kart { background: rgba(13, 21, 38, .96); border-color: var(--kutu-kenar); }
+html[data-tema='koyu'] .kapi-kart h1 {
+  background: linear-gradient(90deg, #93c5fd, #c4b5fd);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: #93c5fd;
+}
+html[data-tema='koyu'] .kapi-alt { color: #94a3c4; }
+html[data-tema='koyu'] .kapi-robi { background: var(--kutu-zemin); box-shadow: 0 10px 24px rgba(0, 0, 0, .4), inset 0 0 0 1px var(--kutu-kenar); }
+html[data-tema='koyu'] .kapi-adim { background: rgba(15, 23, 42, .55); border-color: var(--kutu-kenar); }
+html[data-tema='koyu'] .kapi-adim-baslik { color: #e2e8f0; }
+html[data-tema='koyu'] .kapi-grup-baslik { color: #8ea0bd; }
+html[data-tema='koyu'] .kapi-sev { background: var(--kutu-zemin); border-color: #24324d; color: var(--murekkep); }
+html[data-tema='koyu'] .kapi-sev:hover { border-color: var(--sev-renk); box-shadow: 0 8px 16px rgba(0, 0, 0, .35); }
+html[data-tema='koyu'] .kapi-sev.secili { background: rgba(37, 99, 235, .12); }
+html[data-tema='koyu'] .kapi-sev-sinif .kapi-sev-ad { color: #8ea0bd; }
+html[data-tema='koyu'] .kapi-sev-ipt .kapi-sev-ad { color: var(--murekkep); }
+html[data-tema='koyu'] .kapi-secili-satir { background: var(--kutu-zemin); border-color: #24324d; }
+html[data-tema='koyu'] .kapi-secili-ad { color: var(--murekkep); }
+html[data-tema='koyu'] .kapi-geri { background: #1c2942; color: #a5b4fc; }
+html[data-tema='koyu'] .kapi-geri:hover { background: #24324d; }
+html[data-tema='koyu'] .kapi-kutu { background: var(--kutu-zemin); border-color: #24324d; color: var(--murekkep); }
+html[data-tema='koyu'] .kapi-kutu.dolu { border-color: #8b5cf6; background: rgba(139, 92, 246, .12); }
+html[data-tema='koyu'] .kapi-kutu.aktif { border-color: #60a5fa; }

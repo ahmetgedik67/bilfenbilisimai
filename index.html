@@ -1262,8 +1262,12 @@
     });
   }
 
-  /* Supabase yoksa (yerel demo): kapı yerelde doğrulanır. */
-  var BT_DEMO_KODLARI = { s1: '1234', s2: '2345', s3: '3456', s4: '4567', s5: '5678', s6: '6789', s7: '7890' };
+  /* Supabase yoksa (yerel demo): kapı yerelde doğrulanır — 13 seviyenin hepsi. */
+  var BT_DEMO_KODLARI = {};
+  (function () {
+    for (var i = 1; i <= 7; i++) BT_DEMO_KODLARI['s' + i] = String(1000 + i * 111);
+    for (var j = 2; j <= 7; j++) BT_DEMO_KODLARI['i' + j] = String(2000 + j * 111);
+  })();
 
   function kodDogrula(seviye, kod) {
     if (!CONFIG.url) {
@@ -1280,26 +1284,31 @@
     });
   }
 
+  /* (v2.4) İki aşamalı kapı: 1) Seviye kartını seç (1-7. Sınıf + 2-7 IPT),
+     2) 4 haneli haftalık kodu gir. Panel haftalık kodları bu 13 seviyenin
+     hepsi için üretilir; kapı da BT_SEVIYELER listesinden aynı seviyeleri sunar. */
   var KAPI_HTML =
     '<div class="kapi-kart">' +
     '  <div class="kapi-robi" aria-hidden="true">🤖</div>' +
     '  <h1>Bilfen Bilişim AI</h1>' +
-    '  <p class="kapi-alt">Etkinliklere girmek için sınıfını seç ve öğretmeninin verdiği <b>haftalık kodu</b> gir.</p>' +
+    '  <p class="kapi-alt">Etkinliklere girmek için önce <b>sınıfını</b> seç, sonra öğretmeninin verdiği <b>haftalık kodu</b> gir.</p>' +
     '  <div class="kapi-form">' +
-    '    <div class="kapi-alan"><label for="kapiSeviye">Sınıfın</label>' +
-    '      <select id="kapiSeviye">' +
-    '        <option value="">Sınıf seç…</option>' +
-    '        <option value="s1">1. Sınıf</option>' +
-    '        <option value="s2">2. Sınıf</option>' +
-    '        <option value="s3">3. Sınıf</option>' +
-    '        <option value="s4">4. Sınıf</option>' +
-    '        <option value="s5">5. Sınıf</option>' +
-    '        <option value="s6">6. Sınıf</option>' +
-    '        <option value="s7">7. Sınıf</option>' +
-    '      </select></div>' +
-    '    <div class="kapi-alan"><label for="kapiKod">Haftalık kod</label>' +
-    '      <input id="kapiKod" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off"></div>' +
-    '    <button class="btn btn-birincil kapi-btn" id="kapiGir">🚪 Etkinliklere Gir</button>' +
+    '    <div class="kapi-adim" id="kapiAdim1">' +
+    '      <div class="kapi-adim-baslik"><span class="kapi-adim-no">1</span> Sınıfını seç</div>' +
+    '      <div class="kapi-sev-izgara" id="kapiSeviyeIzgara" role="listbox" aria-label="Sınıf veya IPT kategorisi seç"></div>' +
+    '    </div>' +
+    '    <div class="kapi-adim" id="kapiAdim2" hidden>' +
+    '      <div class="kapi-adim-baslik"><span class="kapi-adim-no">2</span> Haftalık kodu gir</div>' +
+    '      <div class="kapi-secili-satir">' +
+    '        <button type="button" class="kapi-geri" id="kapiGeri" title="Sınıf seçimine dön">←</button>' +
+    '        <span class="kapi-secili-ikon" aria-hidden="true">🎓</span>' +
+    '        <span class="kapi-secili-ad" id="kapiSeciliAd">—</span>' +
+    '        <span class="kapi-secili-rozet" id="kapiSeciliRozet">Sınıf</span>' +
+    '      </div>' +
+    '      <input id="kapiGizliKod" type="text" inputmode="numeric" maxlength="4" tabindex="-1" aria-label="Haftalık kod" class="kapi-gizli">' +
+    '      <div class="kapi-kod-kutu" id="kapiKodKutu"></div>' +
+    '      <button class="btn btn-birincil kapi-btn" id="kapiGir">🚪 Etkinliklere Gir</button>' +
+    '    </div>' +
     '    <div class="kapi-hata" id="kapiHata" role="alert" hidden></div>' +
     '  </div>' +
     '  <p class="kapi-not">🔒 Ad, e-posta veya şifre istemiyoruz. Kod her hafta değişir.<br>' +
@@ -1313,23 +1322,182 @@
     overlay.className = 'kapi';
     overlay.innerHTML = KAPI_HTML;
     document.body.appendChild(overlay);
-    var sel = overlay.querySelector('#kapiSeviye'),
-        kod = overlay.querySelector('#kapiKod'),
+
+    var izgara = overlay.querySelector('#kapiSeviyeIzgara'),
+        adim1 = overlay.querySelector('#kapiAdim1'),
+        adim2 = overlay.querySelector('#kapiAdim2'),
+        seciliAd = overlay.querySelector('#kapiSeciliAd'),
+        seciliRozet = overlay.querySelector('#kapiSeciliRozet'),
+        seciliIkon = overlay.querySelector('.kapi-secili-ikon'),
+        geriBtn = overlay.querySelector('#kapiGeri'),
+        kutu = overlay.querySelector('#kapiKodKutu'),
+        gizli = overlay.querySelector('#kapiGizliKod'),
         btn = overlay.querySelector('#kapiGir'),
         hata = overlay.querySelector('#kapiHata');
+
+    var seviyeler = (typeof BT_SEVIYELER !== 'undefined' && BT_SEVIYELER && BT_SEVIYELER.length)
+      ? BT_SEVIYELER
+      : (function () { var l = [], n; for (n = 1; n <= 7; n++) l.push({ kod: 's' + n, no: n, ad: n + '. Sınıf', tur: 'sinif', renk: '#2563eb' }); for (n = 2; n <= 7; n++) l.push({ kod: 'i' + n, no: n, ad: n + ' IPT', tur: 'ipt', renk: '#f59e0b' }); return l; })();
+
+    var seciliSeviye = null;
+    var kutular = [];
+
     function hataGoster(m) { hata.textContent = m; hata.hidden = !m; }
+
+    /* 1. adım: seviye ızgarasını çiz — sınıf çipleri + IPT kategorileri */
+    function izgaraCiz() {
+      var i, sv, el;
+      var sinifBaslik = document.createElement('div');
+      sinifBaslik.className = 'kapi-grup-baslik';
+      sinifBaslik.textContent = 'Sınıfın';
+      izgara.appendChild(sinifBaslik);
+      var sinifGrup = document.createElement('div');
+      sinifGrup.className = 'kapi-sev-grup kapi-sinif-grup';
+      izgara.appendChild(sinifGrup);
+      var iptBaslik = document.createElement('div');
+      iptBaslik.className = 'kapi-grup-baslik';
+      iptBaslik.textContent = 'IPT Kategorisi';
+      izgara.appendChild(iptBaslik);
+      var iptGrup = document.createElement('div');
+      iptGrup.className = 'kapi-sev-grup';
+      izgara.appendChild(iptGrup);
+      for (i = 0; i < seviyeler.length; i++) {
+        sv = seviyeler[i];
+        el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'kapi-sev' + (sv.tur === 'sinif' ? ' kapi-sev-sinif' : ' kapi-sev-ipt');
+        el.setAttribute('role', 'option');
+        el.setAttribute('aria-selected', 'false');
+        el.setAttribute('data-kod', sv.kod);
+        if (sv.tur === 'sinif') {
+          el.innerHTML = '<span class="kapi-sev-no">' + sv.no + '</span><span class="kapi-sev-ad">Sınıf</span>';
+          el.style.setProperty('--sev-renk', sv.renk || '#2563eb');
+          sinifGrup.appendChild(el);
+        } else {
+          el.innerHTML = '<span class="kapi-sev-rozet">IPT</span><span class="kapi-sev-ad">' + sv.no + '</span>';
+          el.style.setProperty('--sev-renk', sv.renk || '#f59e0b');
+          iptGrup.appendChild(el);
+        }
+      }
+    }
+
+    /* 2. adım: 4 haneli kod kutularını çiz; gerçek input gizli kalır */
+    function kutuCiz() {
+      var i, k;
+      kutu.innerHTML = '';
+      kutular = [];
+      for (i = 0; i < 4; i++) {
+        k = document.createElement('div');
+        k.className = 'kapi-kutu';
+        k.setAttribute('data-indeks', String(i));
+        kutu.appendChild(k);
+        kutular.push(k);
+      }
+      kodYansit();
+    }
+
+    function kodYansit() {
+      var v = gizli.value, i;
+      for (i = 0; i < 4; i++) {
+        kutular[i].textContent = v.charAt(i) || '';
+        kutular[i].className = 'kapi-kutu' + (v.charAt(i) ? ' dolu' : '') + (i === v.length && document.activeElement === gizli ? ' aktif' : '');
+      }
+      btn.disabled = !/^\d{4}$/.test(v);
+    }
+
+    function adimGec(adim) {
+      adim1.hidden = adim !== 1;
+      adim2.hidden = adim !== 2;
+      hataGoster('');
+      if (adim === 2) {
+        /* Beklemeden odakla: kart tıklandıktan sonra hızlıca basılan rakam
+           kaçmasın (setTimeout yarışı ilk haneyi yutabiliyordu). */
+        try { gizli.focus({ preventScroll: true }); } catch (e) { gizli.focus(); }
+      }
+    }
+
+    izgaraCiz();
+    kutuCiz();
+
+    izgara.addEventListener('click', function (e) {
+      var b = e.target.closest('.kapi-sev');
+      if (!b) return;
+      var kod0 = b.getAttribute('data-kod');
+      var i, sv = null;
+      for (i = 0; i < seviyeler.length; i++) { if (seviyeler[i].kod === kod0) { sv = seviyeler[i]; break; } }
+      if (!sv) return;
+      seciliSeviye = sv;
+      seciliAd.textContent = sv.ad;
+      seciliRozet.textContent = sv.tur === 'sinif' ? 'Sınıf' : 'Kategori';
+      seciliRozet.style.background = sv.renk || '#2563eb';
+      seciliIkon.textContent = sv.tur === 'sinif' ? '🎓' : '🧩';
+      gizli.value = '';
+      kodYansit();
+      adimGec(2);
+    });
+
+    geriBtn.addEventListener('click', function () { seciliSeviye = null; adimGec(1); });
+
+    gizli.addEventListener('input', function () {
+      gizli.value = gizli.value.replace(/\D/g, '').slice(0, 4);
+      kodYansit();
+      hataGoster('');
+      if (/^\d{4}$/.test(gizli.value)) btn.focus();
+    });
+    gizli.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); if (/^\d{4}$/.test(gizli.value)) btn.click(); return; }
+      if (e.key === 'Escape') { geriBtn.click(); return; }
+      /* Kod 4 haneyi dolduktan sonra basılan yeni rakam kodu baştan başlatır */
+      if (/^\d$/.test(e.key) && gizli.value.length >= 4) {
+        e.preventDefault(); gizli.value = e.key; kodYansit(); hataGoster('');
+      }
+    });
+    kutu.addEventListener('click', function () { gizli.focus(); });
+
+    /* (v2.4) Erken tuşları yakala: adım 2 açıkken rakam/Enter/Escape hangi
+       öğeye giderse gitsin kod alanına yönlendirilir — çocuk kartı tıklayıp
+       hemen yazmaya başlasa bile ilk haneyi asla kaçırmaz. */
+    overlay.addEventListener('keydown', function (e) {
+      if (adim2.hidden) return;
+      var t = e.target;
+      if (t === gizli) return; /* kendi dinleyicisi hallediyor */
+      if (t === geriBtn) { if (e.key === 'Escape') geriBtn.click(); return; }
+      if (/^\d$/.test(e.key)) {
+        e.preventDefault();
+        gizli.focus();
+        gizli.value = /^\d{4}$/.test(gizli.value) ? e.key : (gizli.value + e.key).slice(0, 4);
+        kodYansit();
+        hataGoster('');
+        if (/^\d{4}$/.test(gizli.value)) btn.focus();
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        gizli.focus();
+        gizli.value = gizli.value.slice(0, -1);
+        kodYansit();
+      } else if (e.key === 'Enter' && /^\d{4}$/.test(gizli.value)) {
+        e.preventDefault();
+        btn.click();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        geriBtn.click();
+      }
+    }, true);
+
     btn.onclick = function () {
-      var sv = sel.value, kd = (kod.value || '').trim();
-      if (!sv) { hataGoster('Lütfen sınıfını seç.'); return; }
+      var sv = seciliSeviye, kd = (gizli.value || '').trim();
+      if (!sv) { hataGoster('Lütfen önce sınıfını seç.'); adimGec(1); return; }
       if (!/^\d{4}$/.test(kd)) { hataGoster('Kod 4 haneli olmalı.'); return; }
       btn.disabled = true; btn.textContent = '⏳ Kontrol ediliyor…';
-      kodDogrula(sv, kd).then(function (sonuc) {
-        if (String(sonuc) === sv) {
-          kapiYaz(sv);
-          portalAc(sv);
+      kodDogrula(sv.kod, kd).then(function (sonuc) {
+        if (String(sonuc) === sv.kod) {
+          kapiYaz(sv.kod);
+          portalAc(sv.kod);
         } else {
           hataGoster('❌ Kod hatalı veya süresi dolmuş. Öğretmenine danı.');
-          btn.disabled = false; btn.textContent = '🚪 Etkinliklere Gir';
+          gizli.value = '';
+          kodYansit();
+          btn.textContent = '🚪 Etkinliklere Gir';
+          try { gizli.focus({ preventScroll: true }); } catch (e) { gizli.focus(); }
         }
       }).catch(function (e) {
         var hazirDegil = e && (e.durum === 404 || e.durum === 403);
@@ -1339,8 +1507,6 @@
         btn.disabled = false; btn.textContent = '🚪 Etkinliklere Gir';
       });
     };
-    kod.addEventListener('keydown', function (e) { if (e.key === 'Enter') btn.click(); });
-    kod.addEventListener('input', function () { kod.value = kod.value.replace(/\D/g, '').slice(0, 4); });
   }
 
   function portalAc(seviye) {
