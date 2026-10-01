@@ -412,6 +412,10 @@
           <div class="kart" id="haftalikKodKarti" style="margin-bottom:14px">
             <h2>🔑 Bu Haftanın Giriş Kodları</h2>
             <p class="kucuk-not">Öğrenciler portala <b>sınıf + 4 haneli haftalık kod</b> ile girer. Aşağıdaki kodlar bu hafta geçerli; tahtaya yansıtıp sınıflarına duyurabilirsin.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px">
+              <button type="button" class="btn kucuk ikincil" id="ogretmenKodYazdir">🖨️ PDF / Yazdır</button>
+              <button type="button" class="btn kucuk ikincil" id="ogretmenKodJpg">🖼️ JPG İndir</button>
+            </div>
             <div id="ogretmenKodListe"></div>
           </div>
           <div id="tahtaListe"></div>
@@ -677,6 +681,8 @@
         <p class="kucuk-not">Öğrenciler portala <b>sınıf + 4 haneli haftalık kod</b> ile girer (hesap oluşturmaz, ad vermez). Bu hafta geçerli kodlar kartta ve tüm öğretmenlerin <b>Tahta Etkinlikleri</b> sekmesinde otomatik görünür. <b>Kodları Yenile</b>'ye bastığında tüm kodlar değişir ve herkese yenisi gösterilir.</p>
         <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
           <button class="btn yesil" id="kodYenileBtn">🔄 Kodları Yenile (yeni hafta)</button>
+          <button type="button" class="btn ikincil" id="kodYazdirBtn">🖨️ PDF / Yazdır</button>
+          <button type="button" class="btn ikincil" id="kodJpgBtn">🖼️ JPG İndir</button>
           <span class="kucuk-not" id="kodDurum" style="margin:0"></span>
         </div>
         <div class="csv-kutu" id="kodListe" style="margin-top:10px"></div>
@@ -3375,6 +3381,8 @@
     return k;
   }
   function kodTabloYaz(kutu, satirlar) {
+    /* (v2.5) Son gösterilen satırları yakala: PDF/JPG düğmeleri bu veriyi kullanır */
+    if (satirlar && satirlar.length) _sonKodSatirlari = satirlar;
     var h = '<table><tr><th>Sınıf / Seviye</th><th>Haftalık Kod</th></tr>';
     satirlar.forEach(function (r) {
       var sv = SEVIYELER.filter(function (x) { return x.kod === r.seviye; })[0];
@@ -3467,6 +3475,208 @@
       btn.disabled = false; btn.textContent = '🔄 Kodları Yenile (yeni hafta)';
     }
   };
+
+  /* ---------- (v2.5) Kod çıktısı: PDF yazdırma + JPG indirme ----------
+     Son görüntülenen satırlar kodTabloYaz ile yakalanır; hem admin hem
+     öğretmen kartındaki düğmeler aynı çıktı motorunu kullanır. */
+  var _sonKodSatirlari = [];
+  function kodSatirlariSirala(satirlar) {
+    var sira = {};
+    SEVIYELER.forEach(function (s, i) { sira[s.kod] = i; });
+    return satirlar.slice().sort(function (a, b) {
+      var ia = (a.seviye in sira) ? sira[a.seviye] : 99;
+      var ib = (b.seviye in sira) ? sira[b.seviye] : 99;
+      return ia - ib;
+    });
+  }
+  var _IPT_RENK = { 2: '#f59e0b', 3: '#22c55e', 4: '#38bdf8', 5: '#a78bfa', 6: '#f472b6', 7: '#facc15' };
+  function kodSeviyeBilgi(kod) {
+    var sv = SEVIYELER.filter(function (x) { return x.kod === kod; })[0];
+    if (!sv) return { ad: kod, tur: 'SEVIYE', renk: '#64748b' };
+    if (sv.tur === 'sinif') return { ad: sv.ad, tur: 'SINIF', renk: '#2563eb' };
+    /* Panel SEVIYELER'inde 'no' yok — numarayı koddan türet (i5 → 5) */
+    var no = parseInt(String(sv.kod).slice(1), 10);
+    return { ad: sv.ad, tur: 'IPT', renk: _IPT_RENK[no] || '#f59e0b' };
+  }
+  function kodGecerlilikTarihi(satirlar) {
+    for (var i = 0; i < satirlar.length; i++) {
+      if (satirlar[i] && satirlar[i].gecerlilik) {
+        var d = new Date(satirlar[i].gecerlilik);
+        if (!isNaN(d)) return d;
+      }
+    }
+    return null;
+  }
+  function kodHaftaMetni(g) {
+    if (!g) return 'Bu hafta';
+    var bas = new Date(g.getTime() - 7 * 86400000);
+    function kisa(d) { try { return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }); } catch (e) { return d.getDate() + '.' + (d.getMonth() + 1) + '.'; } }
+    return kisa(bas) + ' – ' + kisa(g) + ' ' + g.getFullYear();
+  }
+  /* Markalı A4 çıktı sayfası (HTML): hem yazdırmada hem testte kullanılır. */
+  function kodCiktiHtml(satirlar) {
+    var g = kodGecerlilikTarihi(satirlar);
+    var hafta = kodHaftaMetni(g);
+    var kartlar = kodSatirlariSirala(satirlar).map(function (r) {
+      var b = kodSeviyeBilgi(r.seviye);
+      return '<div class="kod-karti" style="--r:' + b.renk + '">' +
+        '<div class="sev">' + esc(b.ad) + '</div>' +
+        '<span class="tur">' + b.tur + '</span>' +
+        '<div class="kod">' + esc(r.kod) + '</div>' +
+        '</div>';
+    }).join('');
+    var bugun = '';
+    try { bugun = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { bugun = new Date().toLocaleDateString(); }
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Bilfen Bilişim AI — Haftalık Kodlar</title><style>' +
+      '@page { size: A4 portrait; margin: 0; }' +
+      '* { margin:0; padding:0; box-sizing:border-box; }' +
+      'body { -webkit-print-color-adjust:exact; print-color-adjust:exact; background:#eef2f7; }' +
+      '.sayfa { width:210mm; min-height:297mm; margin:0 auto; padding:13mm 12mm 10mm; background:linear-gradient(165deg,#f8fbff 0%,#eef5ff 55%,#fef9ec 100%); font-family:\'Segoe UI\',system-ui,Arial,sans-serif; }' +
+      '.baslik-alani { display:flex; align-items:center; gap:16px; }' +
+      '.robi { width:76px; height:76px; border-radius:22px; background:linear-gradient(135deg,#2563eb,#7c3aed); display:flex; align-items:center; justify-content:center; font-size:40px; box-shadow:0 8px 18px rgba(49,46,129,.22); }' +
+      'h1 { font-size:28px; color:#1e3a8a; letter-spacing:-.4px; }' +
+      '.alt { color:#475569; font-size:14px; font-weight:600; margin-top:2px; }' +
+      '.hafta { margin-left:auto; background:#fff; border:1.5px solid #dbe3f0; color:#334155; border-radius:999px; padding:8px 16px; font-size:12.5px; font-weight:700; white-space:nowrap; }' +
+      '.izgara { margin-top:22px; display:grid; grid-template-columns:repeat(3,1fr); gap:13px; }' +
+      '.kod-karti { background:#fff; border:1.6px solid #e2e8f0; border-radius:16px; padding:20px 14px 16px; text-align:center; position:relative; overflow:hidden; box-shadow:0 2px 6px rgba(15,23,42,.05); }' +
+      '.kod-karti::before { content:\'\'; position:absolute; top:0; left:0; right:0; height:7px; background:var(--r); }' +
+      '.sev { font-size:15px; font-weight:800; color:#1e293b; }' +
+      '.tur { font-size:9.5px; font-weight:800; letter-spacing:1.2px; color:#fff; background:var(--r); border-radius:6px; padding:3px 9px; display:inline-block; margin-top:7px; }' +
+      '.kod { margin-top:12px; font-size:31px; font-weight:800; letter-spacing:9px; color:#16a34a; font-family:Consolas,\'Courier New\',monospace; padding-left:9px; }' +
+      '.alt-bilgi { margin-top:20px; border-top:1.5px solid #dbe3f0; padding-top:12px; font-size:11px; color:#64748b; text-align:center; line-height:1.7; }' +
+      '</style></head><body>' +
+      '<div class="sayfa">' +
+      '<div class="baslik-alani">' +
+      '<div class="robi">🤖</div>' +
+      '<div><h1>Bilfen Bilişim AI</h1><div class="alt">Haftalık Erişim Kodları · Öğrenci Kapısı</div></div>' +
+      '<div class="hafta">📅 ' + esc(hafta) + '</div>' +
+      '</div>' +
+      '<div class="izgara">' + kartlar + '</div>' +
+      '<div class="alt-bilgi">Öğrenciler <b>ahmetgedik67.github.io/bilfenbilisimai</b> adresinde sınıflarını seçip bu kodu girerek etkinliklere ulaşır.<br>Kodlar her hafta yenilenir · Döküm: ' + esc(bugun) + ' · Bilfen Bilişim Teknolojileri</div>' +
+      '</div>' +
+      '</body></html>';
+    return html;
+  }
+  /* Yazdırma: çıktı sayfasını gizli iframe'e yazar, yazdır penceresini açar.
+     Kullanıcı "Hedef: PDF olarak kaydet" seçerek PDF alır. */
+  function kodYazdir(satirlar) {
+    /* frameElement koruması: iframe DOM'dan kaldırılmışsa (yetim) yazdırma açılmaz;
+       isConnected şart — koparılmış iframe'de frameElement referansı null olmayabilir */
+    var html = kodCiktiHtml(satirlar) +
+      '<scr' + 'ipt>window.onload=function(){setTimeout(function(){try{if(!window.frameElement||!window.frameElement.isConnected)return;window.focus();window.print();}catch(e){}},250);};</scr' + 'ipt>';
+    var f = document.createElement('iframe');
+    f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
+    document.body.appendChild(f);
+    var d = f.contentDocument || (f.contentWindow && f.contentWindow.document);
+    if (!d) { f.remove(); alert('Yazdırma penceresi açılamadı.'); return; }
+    d.open(); d.write(html); d.close();
+    setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 120000);
+  }
+  /* Markalı JPG: canvas'a çizip indirir (1440×1872 ≈ A4 oranı). */
+  function _rrect(c, x, y, w, h, r) {
+    var rr = Math.min(r, w / 2, h / 2);
+    c.beginPath();
+    c.moveTo(x + rr, y);
+    c.arcTo(x + w, y, x + w, y + h, rr);
+    c.arcTo(x + w, y + h, x, y + h, rr);
+    c.arcTo(x, y + h, x, y, rr);
+    c.arcTo(x, y, x + w, y, rr);
+    c.closePath();
+  }
+  function kodJpgIndir(satirlar) {
+    var W = 1440, H = 1872, kenar = 80;
+    var cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    var c = cv.getContext('2d');
+    var bg = c.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#f8fbff'); bg.addColorStop(.6, '#eef5ff'); bg.addColorStop(1, '#fef9ec');
+    c.fillStyle = bg; c.fillRect(0, 0, W, H);
+    /* Üst şerit */
+    var serit = c.createLinearGradient(0, 0, W, 0);
+    serit.addColorStop(0, '#2563eb'); serit.addColorStop(.4, '#7c3aed'); serit.addColorStop(.72, '#ec4899'); serit.addColorStop(1, '#f59e0b');
+    c.fillStyle = serit; c.fillRect(0, 0, W, 14);
+    /* Başlık: Robi rozeti + yazılar + hafta hapı */
+    var rG = c.createLinearGradient(kenar, 64, kenar + 140, 64 + 140);
+    rG.addColorStop(0, '#2563eb'); rG.addColorStop(1, '#7c3aed');
+    c.fillStyle = rG; _rrect(c, kenar, 64, 140, 140, 40); c.fill();
+    c.fillStyle = '#fff'; c.font = '84px \'Segoe UI Emoji\',\'Segoe UI\',sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('🤖', kenar + 70, 140);
+    c.textAlign = 'left';
+    c.fillStyle = '#1e3a8a'; c.font = '800 56px \'Segoe UI\',system-ui,Arial,sans-serif';
+    c.fillText('Bilfen Bilişim AI', kenar + 172, 118);
+    c.fillStyle = '#475569'; c.font = '600 30px \'Segoe UI\',system-ui,Arial,sans-serif';
+    c.fillText('Haftalık Erişim Kodları · Öğrenci Kapısı', kenar + 172, 172);
+    var hafta = kodHaftaMetni(kodGecerlilikTarihi(satirlar));
+    c.font = '700 26px \'Segoe UI\',system-ui,Arial,sans-serif';
+    var hw = c.measureText(hafta).width + 64;
+    c.fillStyle = '#fff'; _rrect(c, W - kenar - hw, 92, hw, 64, 32); c.fill();
+    c.strokeStyle = '#dbe3f0'; c.lineWidth = 3; _rrect(c, W - kenar - hw, 92, hw, 64, 32); c.stroke();
+    c.fillStyle = '#334155'; c.textAlign = 'center';
+    c.fillText('📅 ' + hafta, W - kenar - hw / 2, 126);
+    /* Kod kartları: 3 sütun */
+    var satirlarSirali = kodSatirlariSirala(satirlar);
+    var gw = 3, bosluk = 36;
+    var kw = (W - kenar * 2 - bosluk * (gw - 1)) / gw;
+    var kh = 250, iy = 300;
+    satirlarSirali.forEach(function (r, i) {
+      var b = kodSeviyeBilgi(r.seviye);
+      var x = kenar + (i % gw) * (kw + bosluk);
+      var y = iy + Math.floor(i / gw) * (kh + bosluk);
+      c.fillStyle = '#fff'; _rrect(c, x, y, kw, kh, 26); c.fill();
+      c.strokeStyle = '#e2e8f0'; c.lineWidth = 3; _rrect(c, x, y, kw, kh, 26); c.stroke();
+      c.save(); _rrect(c, x, y, kw, kh, 26); c.clip();
+      c.fillStyle = b.renk; c.fillRect(x, y, kw, 12);
+      c.restore();
+      c.fillStyle = '#1e293b'; c.font = '800 34px \'Segoe UI\',system-ui,Arial,sans-serif'; c.textAlign = 'center';
+      c.fillText(b.ad, x + kw / 2, y + 72);
+      c.font = '800 20px \'Segoe UI\',system-ui,Arial,sans-serif';
+      var tw = c.measureText(b.tur).width + 40;
+      c.fillStyle = b.renk; _rrect(c, x + kw / 2 - tw / 2, y + 92, tw, 38, 10); c.fill();
+      c.fillStyle = '#fff'; c.fillText(b.tur, x + kw / 2, y + 113);
+      c.fillStyle = '#16a34a'; c.font = '800 62px Consolas,\'Courier New\',monospace';
+      try { c.letterSpacing = '10px'; } catch (e) {}
+      c.fillText(r.kod, x + kw / 2 + 5, y + 196);
+      try { c.letterSpacing = '0px'; } catch (e) {}
+    });
+    /* Alt bilgi */
+    var sonY = iy + Math.ceil(satirlarSirali.length / gw) * (kh + bosluk);
+    c.strokeStyle = '#dbe3f0'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(kenar, sonY + 18); c.lineTo(W - kenar, sonY + 18); c.stroke();
+    c.fillStyle = '#64748b'; c.font = '500 24px \'Segoe UI\',system-ui,Arial,sans-serif';
+    c.fillText('Öğrenciler ahmetgedik67.github.io/bilfenbilisimai adresinde sınıflarını seçip bu kodu girer · Kodlar her hafta yenilenir', W / 2, sonY + 64);
+    var bugun2 = '';
+    try { bugun2 = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { bugun2 = new Date().toLocaleDateString(); }
+    c.fillText('Döküm: ' + bugun2 + ' · Bilfen Bilişim Teknolojileri', W / 2, sonY + 102);
+    if (cv.toBlob) {
+      cv.toBlob(function (blob) {
+        if (!blob) { alert('JPG oluşturulamadı.'); return; }
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'bilfen-kodlar-' + new Date().toISOString().slice(0, 10) + '.jpg';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+        if ($('kodDurum')) $('kodDurum').textContent = '✅ JPG indirildi — sınıfa yazdırabilir veya telefonundan gönderebilirsin.';
+      }, 'image/jpeg', 0.92);
+    } else {
+      alert('Tarayıcın JPG indirmeyi desteklemiyor — 🖨️ PDF / Yazdır düğmesini kullan.');
+    }
+  }
+  /* Düğme bağlama: admin (kodYazdirBtn/kodJpgBtn) + öğretmen (ogretmenKodYazdir/ogretmenKodJpg) */
+  ['kodYazdirBtn', 'ogretmenKodYazdir'].forEach(function (id) {
+    var b = $(id);
+    if (b) b.onclick = function () {
+      if (!_sonKodSatirlari.length) { alert('Bu hafta için kod yok — önce "🔄 Kodları Yenile" ile üret.'); return; }
+      kodYazdir(_sonKodSatirlari);
+      if ($('kodDurum')) $('kodDurum').textContent = '🖨️ Yazdır penceresinde "Hedef: PDF olarak kaydet" seçerek PDF alabilirsin.';
+    };
+  });
+  ['kodJpgBtn', 'ogretmenKodJpg'].forEach(function (id) {
+    var b = $(id);
+    if (b) b.onclick = function () {
+      if (!_sonKodSatirlari.length) { alert('Bu hafta için kod yok — önce "🔄 Kodları Yenile" ile üret.'); return; }
+      kodJpgIndir(_sonKodSatirlari);
+    };
+  });
 
   $('sekmeOgrenci').onclick = function () {
     $('sekmeOgrenci').classList.add('secili'); $('sekmeEtkinlik').classList.remove('secili'); $('sekmeOlustur').classList.remove('secili');
