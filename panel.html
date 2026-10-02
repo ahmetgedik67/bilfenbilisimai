@@ -1300,6 +1300,29 @@
     };
   }
   function ozelSiralama(a, b) { return (b.tarih || '').localeCompare(a.tarih || ''); }
+  /* (v2.7.3) Düzenleme modunda kayıtlı içeriğin yüklendiğini kullanıcıya açıkça göster:
+     dosya tipinde boyut bilgisi, kod tipinde editörde yüklü, drive tipinde bağlantı formada. */
+  function kayitliKaynakBilgisi(o) {
+    var hedef = $('oeDosyaAdi');
+    if (!hedef) return;
+    if (o && o.tip === 'dosya') {
+      var kb = Math.max(1, Math.round((o.icerik || '').length / 1024));
+      hedef.textContent = '✅ Kayıtlı dosya yüklü (~' + kb + ' KB) — yeni dosya seçersen değişir';
+    } else {
+      hedef.textContent = '';
+    }
+  }
+  /* (v2.7.3) Yönetim ekranında tarihli kayıt yapılınca tarih ozel_etkinlik satırına da yazılır:
+     böylece ✏️ Düzenle formunda ve öğretmen listesindeki 📅 rozetinde aynı tarih görünür. */
+  function ozelTarihGuncelle(ozelId, acilis, kapanis) {
+    if (DEMO) {
+      var os = dGet(DK.ozel);
+      os.forEach(function (o) { if (o.id === ozelId) { o.acilis = acilis; o.kapanis = kapanis; } });
+      dSet(DK.ozel, os);
+      return Promise.resolve();
+    }
+    return sb('ozel_etkinlik?id=eq.' + encodeURIComponent(ozelId), { method: 'PATCH', body: { acilis: acilis, kapanis: kapanis } });
+  }
   /* Onaylı/onaysız özel etkinlik silinirken atama ve tamamlanma kayıtlarını (tüm kampüslerde) temizle */
   function ozelKalintiTemizle(id) {
     var etkinlikId = 'ozel:' + id;
@@ -1341,9 +1364,13 @@
     if (o.tip === 'kod') { kodEditorAyarla(o.icerik || ''); oeKaynakGoster('kod'); }
     else if (o.tip === 'drive') { $('oeDrive').value = o.icerik || ''; oeKaynakGoster('drive'); }
     else { oe.dosyaMetin = o.icerik || ''; oeKaynakGoster('dosya'); }
+    kayitliKaynakBilgisi(o); /* (v2.7.3) kayıtlı dosya/kod/bağlantı formada görünür */
     seviyeCipsCiz();
+    /* (v2.7.3) Kayıtlı yayın tarihleri de forma geri gelir */
+    $('oeAcilis').value = o.acilis ? dtYerel(o.acilis) : '';
+    $('oeKapanis').value = o.kapanis ? dtYerel(o.kapanis) : '';
     if (o.gorsel) { $('oeGorselOnizle').src = o.gorsel; $('oeGorselOnizle').style.display = ''; oe.gorsel = o.gorsel; $('oeGorselDurum').textContent = '✅ Mevcut gorsel yuklu'; }
-    bilgiGoster($('oeBilgi'), '✏️ Duzenleme modu: "' + o.ad + '" — Degisiklikleri yapip tekrar kaydet.');
+    bilgiGoster($('oeBilgi'), '✏️ Düzenleme modu: "' + o.ad + '" — değişiklikleri yapıp tekrar kaydet.');
     $('oeKaydetBtn').textContent = '💾 Degisiklikleri Kaydet';
     var yonSec = $('sekmeOlustur');
     if (yonSec) yonSec.click();
@@ -2242,12 +2269,13 @@
           if (o.tip === 'kod') { kodEditorAyarla(o.icerik || ''); oeKaynakGoster('kod'); }
           else if (o.tip === 'drive') { $('oeDrive').value = o.icerik || ''; oeKaynakGoster('drive'); }
           else { oe.dosyaMetin = o.icerik || ''; oeKaynakGoster('dosya'); }
+          kayitliKaynakBilgisi(o); /* (v2.7.3) kayıtlı dosya/kod/bağlantı formada görünür */
           seviyeCipsCiz();
           /* (v2.7) Kayıtlı yayın tarihlerini forma geri getir */
           $('oeAcilis').value = o.acilis ? dtYerel(o.acilis) : '';
           $('oeKapanis').value = o.kapanis ? dtYerel(o.kapanis) : '';
           if (o.gorsel) { $('oeGorselOnizle').src = o.gorsel; $('oeGorselOnizle').style.display = ''; oe.gorsel = o.gorsel; $('oeGorselDurum').textContent = '✅ Mevcut gorsel yuklu'; }
-          bilgiGoster($('oeBilgi'), '✏️ Duzenleme modu: \"' + o.ad + '\" — Degisiklikleri yapip tekrar kaydet.');
+          bilgiGoster($('oeBilgi'), '✏️ Düzenleme modu: \"' + o.ad + '\" — kayıtlı içerik formada yüklü, değişiklikleri yapıp tekrar kaydet.');
           $('oeKaydetBtn').textContent = '💾 Degisiklikleri Kaydet';
           window.scrollTo({ top: 0, behavior: 'smooth' });
         };
@@ -2454,25 +2482,26 @@
               (e.aciklama ? '<div class="etk-kucuk-not">' + esc(e.aciklama) + '</div>' : '') +
               (arac
                 ? '<div class="etk-kucuk-not">Öğrenci listelerinde görünmez — ders sırasında tahtada kullan.</div>'
-                : '<div class="etk-satir" style="margin-top:8px">' +
-                  '<select data-secim="' + e.id + '">' +
+                : /* (v2.7.3) Tek esnek satır: Durum + Tarihler + 💾 Kaydet + ✏️ Düzenle + 🗑 Sil YAN YANA;
+                     tarihli seçilince tarih alanları aynı satırda açılır, mobilde sarar. */
+                  '<div class="etk-satir" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end">' +
+                  '<div style="flex:1 1 150px;min-width:135px">' +
+                  '<label style="font-size:11px;margin-top:0;color:#64748b">Durum</label>' +
+                  '<select data-secim="' + e.id + '" style="width:100%">' +
                   '<option value="acik"' + (secim === 'acik' ? ' selected' : '') + '>✔ Açık</option>' +
                   '<option value="kapali"' + (secim === 'kapali' ? ' selected' : '') + '>✖ Kapalı</option>' +
                   '<option value="tarihli"' + (secim === 'tarihli' ? ' selected' : '') + '>📅 Tarihli</option>' +
                   '</select>' +
-                  '<button class="etk-kaydet-btn" data-kaydet="' + e.id + '">💾 Kaydet</button>' +
-                  '<span class="etk-kucuk-not">Sonuç verisi saklanmaz (v2)</span>' +
                   '</div>' +
-                  '<div class="tarihler' + (secim === 'tarihli' ? ' goster' : '') + '" data-tarihler="' + e.id + '">' +
-                  '<div><label style="margin-top:0">📅 Açılış</label><input type="datetime-local" data-acilis="' + e.id + '" value="' + (a && a.acilis ? dtYerel(a.acilis) : '') + '"></div>' +
-                  '<div><label style="margin-top:0">📅 Kapanış</label><input type="datetime-local" data-kapanis="' + e.id + '" value="' + (a && a.kapanis ? dtYerel(a.kapanis) : '') + '"></div>' +
+                  '<div class="tarihler' + (secim === 'tarihli' ? ' goster' : '') + '" data-tarihler="' + e.id + '" style="flex:2 1 280px;min-width:250px;margin-top:0">' +
+                  '<div style="flex:1 1 125px;min-width:120px"><label style="font-size:11px;margin-top:0;color:#b45309">📅 Açılış</label><input type="datetime-local" data-acilis="' + e.id + '" value="' + (a && a.acilis ? dtYerel(a.acilis) : '') + '" style="width:100%"></div>' +
+                  '<div style="flex:1 1 125px;min-width:120px"><label style="font-size:11px;margin-top:0;color:#b45309">📅 Kapanış</label><input type="datetime-local" data-kapanis="' + e.id + '" value="' + (a && a.kapanis ? dtYerel(a.kapanis) : '') + '" style="width:100%"></div>' +
+                  '</div>' +
+                  '<button class="etk-kaydet-btn" data-kaydet="' + e.id + '">💾 Kaydet</button>' +
+                  (e.ozel ? '<button class="btn ikincil kucuk" data-yonet-duzenle="' + esc(e.id) + '">✏️ Düzenle</button>' : '') +
+                  (e.ozel ? '<button class="btn kirmizi kucuk" data-yonet-sil="' + esc(e.id) + '">🗑 Sil</button>' : '') +
+                  '<span class="etk-kucuk-not" style="flex-basis:100%">Sonuç verisi saklanmaz (v2)</span>' +
                   '</div>') +
-              (e.ozel
-                ? '<div class="etk-kucuk-not" style="margin-top:8px">' +
-                  '<button class="btn ikincil kucuk" data-yonet-duzenle="' + esc(e.id) + '">✏️ Düzenle</button>' +
-                  '<button class="btn kirmizi kucuk" data-yonet-sil="' + esc(e.id) + '" style="margin-left:6px">🗑 Sil</button>' +
-                  '</div>'
-                : '') +
               '</div>';
           });
           kutu.innerHTML = h;
@@ -2508,7 +2537,12 @@
               if (a.acilis && a.kapanis && new Date(a.kapanis) <= new Date(a.acilis)) { alert('Kapanış, açılıştan sonra olmalı.'); return; }
               b.textContent = '⏳'; b.disabled = true;
               API.atamaKaydet(oturum, id, a.aktif, a.acilis, a.kapanis).then(function () {
+                /* (v2.7.3) Özel etkinlikte tarih etkinlik kaydına da yazılır (düzenleme formu + rozet aynı tarihi gösterir) */
+                var ozelId = (id.indexOf('ozel:') === 0) ? id.slice(5) : null;
+                return ozelId ? ozelTarihGuncelle(ozelId, a.acilis, a.kapanis) : null;
+              }).then(function () {
                 bilgiGoster($('oBilgi'), '✅ Kaydedildi.'); etkinlikYonetiminiCiz();
+                ozelListeCiz();
                 setTimeout(function () { bilgiGoster($('oBilgi'), ''); }, 2500);
               }).catch(function (e) { alert('Hata: ' + e.message); b.textContent = '💾 Kaydet'; b.disabled = false; });
             };
