@@ -296,6 +296,9 @@
   .etkinlik-yg { border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 10px; background: #fff; transition: .2s; }
   .etkinlik-yg:hover { box-shadow: 0 2px 12px rgba(0,0,0,.06); }
   .etkinlik-yg .etk-baslik { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  /* (v2.7.5) Öğrenci kartı önizlemesi — öğrenci portalındaki kart görselinin mini hali */
+  .etk-onizleme { width: 56px; height: 40px; object-fit: cover; border-radius: 8px;
+    border: 1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,.08); background: #f1f5f9; flex: none; }
   .etkinlik-yg .etk-ad { font-weight: 800; font-size: 15px; }
   .etkinlik-yg .etk-seviyeler { display: flex; gap: 4px; flex-wrap: wrap; }
   .etkinlik-yg .etk-sev-chip { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
@@ -2047,7 +2050,7 @@
   function katalogGetir(tur) {
     return API.ozelOnaylilar().then(function (ozeller) {
       var liste = ETKINLIKLER.map(function (e) {
-        return { id: e.id, ad: e.ad, url: e.url, aciklama: e.aciklama, ogretmen: e.ogretmen };
+        return { id: e.id, ad: e.ad, url: e.url, aciklama: e.aciklama, ogretmen: e.ogretmen, onizleme: e.onizleme || '' };
       });
       (ozeller || []).forEach(function (o) {
         if (tur === 'ogrenci' && aracMi(o.secim)) return;
@@ -2479,8 +2482,12 @@
               });
               if (arac) sevChips += '<span class="etk-sev-chip arac">👩‍🏫 Öğretmen Aracı</span>';
             }
+            /* (v2.7.5) Öğrenci tarafındaki kart görseli: özel etkinlikte kayıtlı gorsel
+               (yoksa otomatik SVG), statik etkinlikte thumbnails/ görseli. */
+            var onizlemeSrc = e.ozel ? (e.ozel.gorsel || gorselOlustur(e.ozel.ad, e.ozel.tip, e.ozel.konu)) : (e.onizleme || '');
             h += '<div class="etkinlik-yg" data-etk-id="' + esc(e.id) + '">' +
               '<div class="etk-baslik">' +
+              (onizlemeSrc ? '<img class="etk-onizleme" src="' + onizlemeSrc + '" alt="" loading="lazy">' : '') +
               '<span class="etk-ad">' + esc(e.ad) + '</span>' +
               '<span class="rozet ' + d.sinif + '">' + esc(d.etiket) + '</span>' +
               (e.ozel ? '<button class="btn ikincil kucuk" data-yonet-oynat="' + esc(e.id) + '" style="margin-left:auto">👁 Tahtada Aç</button>' : '') +
