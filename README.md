@@ -190,16 +190,28 @@ atlanır ve kaç satırın eklenemediği bildirilir.
    - **📄 HTML dosyası yükle** (tek dosyalık etkinlik .html)
    - **🔗 Drive bağlantısı** (paylaşım "Bağlantısı olan herkes" olmalı)
    - **✂️ Kodu yapıştır** (HTML kodunun tamamı)
-4. **👁 Önizle** ile önce dene, **💾 Etkinliği Kaydet** ile kaydet.
+4. **📅 Yayın tarihi** gir (isteğe bağlı): **Açılış** boşsa etkinlik onaylandığında hemen
+   yayınlanır; tarih girersen öğrenciler o saate kadar soluk kartta **canlı geri sayım**
+   görür (GÜN/SAAT/DAKİKA/SANİYE + açılış tarihi) ve etkinlik saatte kendiliğinden açılır.
+   İsteğe bağlı **Kapanış** ile bitiş de verilebilir (kapanış boşsa "süresiz açık kalır"
+   uyarısı gösterilir).
+5. **👁 Önizle** ile önce dene, **💾 Etkinliği Kaydet** ile kaydet.
 
 Kaydedilen etkinlik **yönetici onayına gider** — dosya ve bilgiler öğrencilere
 ve diğer öğretmenlere görünmez; öğretmen "Oluşturduğum Etkinlikler" listesinde
-**⏳ Onay bekleniyor** durumunu izler. Yönetici **⏳ Etkinlik Onayları** kartından
+**⏳ Onay bekleniyor** durumunu izler. Yönetici **⏳ Etkinlik Onayları** sekmesinden
 **✅ Onayla** deyince etkinlik **tüm kampüslerin** öğrencilerinin **Etkinliklerim**
-listesine düşer (HTML içerik pencerede oynar, Drive bağlantısı yeni sekmede açılır);
-**🎮 Etkinlik Yönetimi** sekmesinden açık / kapalı / tarihli yapılır, puan/rozet
-akışı aynen çalışır. **❌ Reddet** dersen gerekçe öğretmene gösterilir. Yayındaki
-etkinlikleri yalnız yönetici silebilir; onay bekleyen/reddedilenleri öğretmen silebilir.
+listesine düşer (HTML içerik pencerede oynar, Drive bağlantısı yeni sekmede açılır)
+ve öğretmenin kaydettiği **yayın tarihi** otomatik geçerli olur. **🎮 Etkinlik
+Yönetimi** sekmesinde her satırda **önizleme görseli + durum rozeti** ve yan yana
+**[Durum] [📅 Açılış] [📅 Kapanış] [💾 Kaydet] [✏️ Düzenle] [🗑 Sil]** durur:
+**✔ Açık / ✖ Kapalı anında kaydedilir**, 📅 Tarihli'de tarihler girilip Kaydet'e
+basılır (tarih etkinlik kaydına da yazılır; rozet ve düzenleme formu aynı tarihi
+gösterir). Öğretmen ✏️ Düzenle deyince form kayıtlı içerikle (kod/bağlantı/dosya
++ tarihler) açılır. Yönetici düzenlemesi onay durumunu bozmaz — etkinlik öğrenciden
+düşmez. Puan/rozet akışı aynen çalışır. **❌ Reddet** dersen gerekçe öğretmene
+gösterilir. Yayındaki etkinlikleri yalnız yönetici silebilir; onay
+bekleyen/reddedilenleri öğretmen silebilir.
 
 > Demo modunda etkinlikler bu cihazda saklanır; Supabase kuruluysa
 > `ozel_etkinlik` tablosuna yazılır (`supabase-schema.sql` güncellendi — şemayı
@@ -216,7 +228,7 @@ etkinlikleri yalnız yönetici silebilir; onay bekleyen/reddedilenleri öğretme
 - ▶️ Karta tıklayınca tam ekran oynatma penceresi (+ yeni sekmede aç)
 - 🤖 Robi hem logoda hem de portalda ziyaretçileri karşılar
 - 🎯 Sınıf Çarkıfeleği gibi tahta etkinlikleri, sınıf/IPC bölümlerini şişirmeden yalnız Öğretmen kategorisinde durur
-- 👤 Sağ üstte **Panel** düğmesi: öğretmen kaydı + kampüs (örn. Kurtköy Bilfen), öğrenci ekleme (tek tek veya **CSV toplu**), şifre sıfırlama, etkinlik aç/kapa/tarih
+- 👤 Sağ üstte **Panel** düğmesi: öğretmen kaydı + kampüs (örn. Kurtköy Bilfen), öğrenci ekleme (tek tek veya **CSV toplu**), şifre sıfırlama, etkinlik aç/kapa/tarih (v2.7: öğretmen oluştururken **yayın tarihi** girer; açılışta öğrenci kartında **canlı geri sayım** işler; yönetim satırları yan yana düzende + önizleme görseliyle; yönetici paneli 5 sekmede)
 - 🔐 Anasayfada **Giriş Yap** düğmesi; giriş yapınca başlık altında profil şeridi: öğrenci için avatar + ⭐ puan + ✅ etkinlik + **rozetler** (kazanılan renkli, kazanılmayan gri), öğretmen için kampüs + öğrenci/açık etkinlik sayısı, yönetici için sistem bilgisi; panel kısayolu ve **Çıkış**
 - 🛡️ **admin** hesabıyla tüm kampüs, öğretmen ve öğrencilerin ekleme/silme/düzenleme, şifre sıfırlama ve takibi
 - 📊 Yönetici için kampüs bazlı etkinlik raporu: etkinlik başına tamamlayan öğrenci sayısı ve zamana göre tamamlanma grafiği

@@ -1170,7 +1170,15 @@ Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
     <span class="callout-icon">⚠️</span>
     <div>
       <div class="callout-title">Onay Akışı</div>
-      <p style="margin:0">Etkinliği kaydettiğinizde <strong>yoneticinin onayına gider</strong>. Onaylanmadan öğrenciler etkinliği göremez. Onay durumunu "🗂️ Oluşturduğum Etkinlikler" listesinden takip edebilirsiniz. Onaylanınca etkinlik <strong>🎮 Etkinlik Yönetimi</strong> sekmesinde yalnız size görünür; başlangıç gününü (açılış/kapanış) orada belirlersiniz.</p>
+      <p style="margin:0">Etkinliği kaydettiğinizde <strong>yoneticinin onayına gider</strong>. Onaylanmadan öğrenciler etkinliği göremez. Onay durumunu "🗂️ Oluşturduğum Etkinlikler" listesinden takip edebilirsiniz. Onaylanınca etkinlik <strong>🎮 Etkinlik Yönetimi</strong> sekmesinde yalnız size görünür; başlangıç gününü (açılış/kapanış) orada değiştirebilirsiniz.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <span class="callout-icon">📅</span>
+    <div>
+      <div class="callout-title">Yayın Tarihi (v2.7) — Oluştururken Belirleyin</div>
+      <p style="margin:0">Formda <strong>📅 Yayın tarihi</strong> bloğu vardır: <strong>Açılış</strong> (boş bırakırsanız etkinlik onaylandığında hemen yayınlanır) ve isteğe bağlı <strong>Kapanış</strong>. Tarih girerseniz öğrenciler o güne kadar portaldaki soluk kartta <strong>canlı geri sayım</strong> görür ("🎉 Açılışa kalan süre" panosu + "📅 Açılış: 4 Ekim 2026 Pazar, 09:15" satırı); etkinlik belirttiğiniz saatte <strong>kendiliğinden açılır</strong>. Aynı tarihler listenizdeki "📅 … yayınlanacak" rozetinde de görünür; isterseniz onaydan sonra 🎮 Etkinlik Yönetimi'nden değiştirilir.</p>
     </div>
   </div>
 
@@ -1212,13 +1220,13 @@ Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
     </tr>
     <tr>
       <td><strong>Başlangıç günü / yayına alma / kapatma</strong></td>
-      <td>Kendi etkinlikleri için ✔ Açık / ✖ Kapalı / 📅 Tarihli seçip <strong>💾 Kaydet</strong> — başlangıç (açılış) gününü belirler.</td>
-      <td>Bütün etkinliklerin açılış, yayına alma ve kapatma işlemlerini yapar.</td>
+      <td>Kendi etkinlikleri için ✔ Açık / ✖ Kapalı seçimleri <strong>anında kaydedilir</strong>; 📅 Tarihli'de tarihleri girip <strong>💾 Kaydet</strong>'e basarsınız (kapanış boş kalırsa "süresiz açık kalır" uyarısı çıkar).</td>
+      <td>Bütün etkinliklerin açılış, yayına alma ve kapatma işlemlerini yapar; listesini <strong>kampüs etiketi + önizleme görseliyle</strong> görür.</td>
     </tr>
     <tr>
       <td><strong>Düzenle / Sil</strong></td>
-      <td>Yalnız kendi etkinliğini: <strong>✏️ Düzenle</strong> formu açar (kaydedince yeniden onaya gider), <strong>🗑 Sil</strong> etkinliği öğrencilerden de kaldırır.</td>
-      <td>Tüm özel etkinlikleri düzenleyebilir ve silebilir.</td>
+      <td>Yalnız kendi etkinliğini: <strong>✏️ Düzenle</strong> formu kayıtlı içerik (kod/bağlantı/dosya bilgisi + tarihler) <strong>dolu olarak</strong> açar; kaydedince yeniden onaya gider. <strong>🗑 Sil</strong> etkinliği öğrencilerden de kaldırır.</td>
+      <td>Tüm özel etkinlikleri düzenleyebilir ve silebilir. Yönetici düzenlemesi <strong>onay durumunu bozmaz</strong> — etkinlik öğrenciden düşmez; tarih verirse atama da senkronlanır.</td>
     </tr>
     <tr>
       <td><strong>Toplu Aç / Kapat</strong></td>
@@ -1240,15 +1248,15 @@ Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
   <div class="steps">
     <div class="step">
       <div class="step-num">1</div>
-      <div class="step-text"><strong>🎮 Etkinlik Yönetimi</strong> sekmesine gidin</div>
+      <div class="step-text"><strong>🎮 Etkinlik Yönetimi</strong> sekmesine gidin — her satırda <strong>önizleme görseli + isim + durum rozeti</strong> ve tek satırda <strong>[Durum ▾] [📅 Açılış] [📅 Kapanış] [💾 Kaydet] [✏️ Düzenle] [🗑 Sil]</strong> yan yana durur</div>
     </div>
     <div class="step">
       <div class="step-num">2</div>
-      <div class="step-text">Etkinliğin satırındaki durum kutusunu seçin: <strong>✔ Açık</strong>, <strong>✖ Kapalı</strong> veya <strong>📅 Tarihli</strong></div>
+      <div class="step-text">Durum kutusundan <strong>✔ Açık</strong> veya <strong>✖ Kapalı</strong> seçerseniz <strong>anında kaydedilir</strong> — ayrıca Kaydet'e basmanız gerekmez</div>
     </div>
     <div class="step">
       <div class="step-num">3</div>
-      <div class="step-text"><strong>📅 Tarihli</strong> seçerseniz açılış/kapanış alanlarını doldurun, ardından <strong>💾 Kaydet</strong>'e basın</div>
+      <div class="step-text"><strong>📅 Tarihli</strong> seçerseniz tarih alanları aynı satırda açılır; doldurup <strong>💾 Kaydet</strong>'e basın. Kapanışı boş bırakırsanız "süresiz açık kalır" uyarısı görürsünüz; tarih kaydedilince öğrenci tarafında canlı geri sayım başlar</div>
     </div>
   </div>
 
@@ -1316,9 +1324,17 @@ Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
     <tr>
       <td><span class="badge badge-yellow">📅 Tarihli</span></td>
       <td>Açılış ve kapanış tarihi verilmiştir</td>
-      <td>Aralık içinde çalıştırabilir; aralık dışında <strong>soluk gri</strong> görünür — açılış saatinde kendiliğinden aktifleşir, süre bitince yine soluklaşır</td>
+      <td>Aralık içinde çalıştırabilir; açılış saatine kadar kart <strong>soluk gri</strong> görünür ve kartın üstünde <strong>canlı geri sayım panosu</strong> (GÜN · SAAT · DAKİKA · SANİYE + "📅 Açılış: …" tarihi) işler — saat geldiğinde kendiliğinden aktifleşir, süre bitince yine soluklaşır</td>
     </tr>
   </table>
+
+  <div class="callout callout-warning">
+    <span class="callout-icon">⏳</span>
+    <div>
+      <div class="callout-title">Kapanış Boş Uyarısı</div>
+      <p style="margin:0">📅 Tarihli kayıtta <strong>Kapanış</strong> girilmezse satırın altında sarı uyarı çıkar: "Kapanış boş = etkinlik açılış günü açılır ve <strong>SÜRESİZ açık kalır</strong>". Bitiş istiyorsanız Kapanış tarihi girin; kapanış dolunca uyarı kendiliğinden kaybolur.</p>
+    </div>
+  </div>
 
   <div class="callout callout-info">
     <span class="callout-icon">💡</span>
@@ -1345,7 +1361,7 @@ Mehmet Kaya;@mehmet.kaya;abcd</code></pre>
   <div class="steps">
     <div class="step">
       <div class="step-num">1</div>
-      <div class="step-text">Etkinlik kartında <strong>✏️ Düzenle</strong>'ye tıklayın — form dolu olarak "✍️ Etkinlik Oluştur" sekmesinde açılır; değişiklikleri yapıp kaydedin (etkinlik yeniden onaya gider)</div>
+      <div class="step-text">Etkinlik kartında <strong>✏️ Düzenle</strong>'ye tıklayın — form <strong>kayıtlı içerikle dolu olarak</strong> açılır (kod editörde HTML kodunuz, Drive bağlantısı kutuda, HTML dosyası için boyut bilgisi; yayın tarihleri de geri gelir); değişiklikleri yapıp kaydedin (öğretmen kaydında etkinlik yeniden onaya gider)</div>
     </div>
     <div class="step">
       <div class="step-num">2</div>
