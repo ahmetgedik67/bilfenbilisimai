@@ -48,10 +48,13 @@
   .bilgi { color: #166534; background: #dcfce7; border: 1px solid #bbf7d0; padding: 9px 12px; border-radius: 10px; font-size: 13px; margin-top: 12px; display: none; }
   .satir { display: flex; gap: 10px; flex-wrap: wrap; }
   .satir > div { flex: 1; min-width: 140px; }
-  .sekmeler { display: flex; gap: 8px; margin-bottom: 16px; }
+  .sekmeler { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
   .sekme { padding: 9px 18px; border-radius: 999px; background: #e0e7ff; color: #3730a3; font-weight: 700; font-size: 14px; cursor: pointer; border: none; }
   .sekme.secili { background: #4f46e5; color: #fff; }
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  /* (v2.7.3) Mobil: genis tablolar tasmasin — oeListe/onay listesi yatay kaydirma ile acilir */
+  .kart { max-width: 100%; overflow-x: auto; }
+  table { min-width: 480px; }
   th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; }
   th { color: #6366f1; font-size: 12px; text-transform: uppercase; letter-spacing: .4px; }
   tr.satir:hover { background: #f5f3ff; }
@@ -2493,7 +2496,7 @@
                   '<option value="tarihli"' + (secim === 'tarihli' ? ' selected' : '') + '>📅 Tarihli</option>' +
                   '</select>' +
                   '</div>' +
-                  '<div class="tarihler' + (secim === 'tarihli' ? ' goster' : '') + '" data-tarihler="' + e.id + '" style="flex:2 1 280px;min-width:250px;margin-top:0">' +
+                  '<div class="tarihler' + (secim === 'tarihli' ? ' goster' : '') + '" data-tarihler="' + e.id + '" style="flex:2 1 280px;min-width:0;max-width:100%;margin-top:0">' +
                   '<div style="flex:1 1 125px;min-width:120px"><label style="font-size:11px;margin-top:0;color:#b45309">📅 Açılış</label><input type="datetime-local" data-acilis="' + e.id + '" value="' + (a && a.acilis ? dtYerel(a.acilis) : '') + '" style="width:100%"></div>' +
                   '<div style="flex:1 1 125px;min-width:120px"><label style="font-size:11px;margin-top:0;color:#b45309">📅 Kapanış</label><input type="datetime-local" data-kapanis="' + e.id + '" value="' + (a && a.kapanis ? dtYerel(a.kapanis) : '') + '" style="width:100%"></div>' +
                   '</div>' +
