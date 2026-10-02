@@ -550,6 +550,13 @@ html[data-tema='koyu'] .pasif-rozet { color: #93a3c0; background: #1a2438; borde
   display: block; margin-top: 3px; font-size: 8.5px; font-weight: 800;
   letter-spacing: 1.2px; color: rgba(255, 255, 255, .82);
 }
+/* (v2.7) Yayın (açılış) tarihi — geri sayımın altında açıkça görünür */
+.gs-tarih {
+  position: relative; text-align: center; margin-top: 9px; padding-top: 8px;
+  border-top: 1px dashed rgba(255, 255, 255, .35);
+  font-size: 11.5px; font-weight: 700; color: #fff; letter-spacing: .2px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .3);
+}
 html[data-tema='koyu'] .geri-sayim {
   background: linear-gradient(135deg, #4338ca 0%, #6d28d9 45%, #be185d 100%);
   box-shadow: 0 12px 26px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .18);

@@ -789,11 +789,18 @@
   }
 
   /* (v2.3) Geri sayım panosu: hedef ana kadar canlı sayaç çizer.
-     Hedef geçince liste sunucudan tazelenir; etkinlik açıldıysa normal karta döner. */
+     Hedef geçince liste sunucudan tazelenir; etkinlik açıldıysa normal karta döner.
+     (v2.7) Panelde ayrıca yayın (açılış) tarihi açıkça gösterilir. */
   function geriSayimYap(hedefMs) {
     const kutu = document.createElement('div');
     kutu.className = 'geri-sayim';
     kutu.setAttribute('data-hedef', String(hedefMs));
+    var tarihSatir = '';
+    try {
+      var d = new Date(hedefMs);
+      tarihSatir = '📅 Açılış: ' + d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' }) +
+        ', ' + d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    } catch (e) { tarihSatir = ''; }
     kutu.innerHTML =
       '<div class="gs-baslik">🎉 Açılışa kalan süre</div>' +
       '<div class="gs-satir">' +
@@ -801,7 +808,8 @@
       '  <div class="gs-birim"><b data-gs="saat">00</b><span>SAAT</span></div>' +
       '  <div class="gs-birim"><b data-gs="dk">00</b><span>DAKİKA</span></div>' +
       '  <div class="gs-birim"><b data-gs="sn">00</b><span>SANİYE</span></div>' +
-      '</div>';
+      '</div>' +
+      (tarihSatir ? '<div class="gs-tarih">' + tarihSatir + '</div>' : '');
     return kutu;
   }
   function ikiHane(n) { return (n < 10 ? '0' : '') + n; }
