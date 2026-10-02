@@ -308,6 +308,10 @@
   .etkinlik-yg .tarihler.goster { display: flex; }
   .etkinlik-yg .tarihler label { font-size: 12px; margin-top: 0; }
   .etkinlik-yg .tarihler input { padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12px; }
+  /* (v2.7.4) Kapanış boş uyarısı: tarihli kayıtta kapanış girilmemişse görünür sarı çubuk */
+  .kapanis-uyari { display: none; flex-basis: 100%; margin-top: 2px; padding: 7px 12px; border-radius: 10px;
+    background: #fef9c3; border: 1px solid #fde047; color: #854d0e; font-size: 12px; font-weight: 600; line-height: 1.5; }
+  .kapanis-uyari.goster { display: block; }
   .etk-kucuk-not { font-size: 12px; color: #64748b; margin-top: 6px; }
   .etk-kaydet-btn { padding: 5px 14px; border-radius: 8px; border: none; background: #6366f1; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; }
   .etk-kaydet-btn:hover { background: #4f46e5; }
@@ -2504,6 +2508,7 @@
                   (e.ozel ? '<button class="btn ikincil kucuk" data-yonet-duzenle="' + esc(e.id) + '">✏️ Düzenle</button>' : '') +
                   (e.ozel ? '<button class="btn kirmizi kucuk" data-yonet-sil="' + esc(e.id) + '">🗑 Sil</button>' : '') +
                   '<span class="etk-kucuk-not" style="flex-basis:100%">Sonuç verisi saklanmaz (v2)</span>' +
+                  '<div class="kapanis-uyari' + (secim === 'tarihli' && a && a.acilis && !a.kapanis ? ' goster' : '') + '" data-kapanis-uyari="' + e.id + '">⏳ Kapanış boş = etkinlik açılış günü açılır ve SÜRESİZ açık kalır. Bitiş vermek istersen Kapanış tarihi gir.</div>' +
                   '</div>') +
               '</div>';
           });
@@ -2516,16 +2521,32 @@
              Daha önce yönetici seçimi değiştirip 💾 Kaydet'e basmayınca hiçbir şey
              olmuyordu ("değişiklik olmuyor" şikayeti). Tarihli seçimi tarih girişi
              gerektirdiğinden hâlâ 💾 Kaydet düğmesini bekler. */
+          /* (v2.7.4) "Kapanış boş = süresiz açık" uyarısını canlı güncelle:
+             tarihli seçiliyken VE açılış dolu VE kapanış boşken görünür. */
+          function kapanisUyariTazele(id) {
+            var u = kutu.querySelector('[data-kapanis-uyari="' + id + '"]');
+            if (!u) return;
+            var s = kutu.querySelector('[data-secim="' + id + '"]');
+            var acilis = kutu.querySelector('[data-acilis="' + id + '"]');
+            var kapanis = kutu.querySelector('[data-kapanis="' + id + '"]');
+            var gorunur = s && s.value === 'tarihli' && acilis && acilis.value && kapanis && !kapanis.value;
+            u.classList.toggle('goster', !!gorunur);
+          }
           Array.prototype.forEach.call(kutu.querySelectorAll('[data-secim]'), function (s) {
             s.onchange = function () {
               var sid = s.getAttribute('data-secim');
               var tar = kutu.querySelector('[data-tarihler="' + sid + '"]');
               if (tar) tar.classList.toggle('goster', s.value === 'tarihli');
+              kapanisUyariTazele(sid);
               if (s.value === 'acik' || s.value === 'kapali') {
                 var kbtn = kutu.querySelector('[data-kaydet="' + sid + '"]');
                 if (kbtn) kbtn.click();
               }
             };
+          });
+          Array.prototype.forEach.call(kutu.querySelectorAll('[data-acilis], [data-kapanis]'), function (inp) {
+            inp.addEventListener('input', function () { kapanisUyariTazele(inp.getAttribute('data-acilis') || inp.getAttribute('data-kapanis')); });
+            inp.addEventListener('change', function () { kapanisUyariTazele(inp.getAttribute('data-acilis') || inp.getAttribute('data-kapanis')); });
           });
 
           /* Kaydet */
@@ -2544,9 +2565,12 @@
                 var ozelId = (id.indexOf('ozel:') === 0) ? id.slice(5) : null;
                 return ozelId ? ozelTarihGuncelle(ozelId, a.acilis, a.kapanis) : null;
               }).then(function () {
-                bilgiGoster($('oBilgi'), '✅ Kaydedildi.'); etkinlikYonetiminiCiz();
+                /* (v2.7.4) Kapanışsız tarihli kayıtta kullanıcı açıkça uyarılır */
+                var mesaj = '✅ Kaydedildi.';
+                if (secim === 'tarihli' && a.acilis && !a.kapanis) mesaj = '✅ Kaydedildi — kapanış boş: etkinlik süresiz açık kalacak.';
+                bilgiGoster($('oBilgi'), mesaj); etkinlikYonetiminiCiz();
                 ozelListeCiz();
-                setTimeout(function () { bilgiGoster($('oBilgi'), ''); }, 2500);
+                setTimeout(function () { bilgiGoster($('oBilgi'), ''); }, 3500);
               }).catch(function (e) { alert('Hata: ' + e.message); b.textContent = '💾 Kaydet'; b.disabled = false; });
             };
           });
