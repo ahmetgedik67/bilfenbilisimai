@@ -1541,17 +1541,25 @@
       await sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id), { method: 'PATCH', body: { durum: 'reddedildi', red_nedeni: neden || '' } });
     },
     ozelEtkinlikGuncelle: async function (s, id, veri) {
-      /* (v2.2) Yönetici bütün özel etkinlikleri düzenleyebilir; öğretmen yalnız kendi satırını. */
+      /* (v2.2) Yönetici bütün özel etkinlikleri düzenleyebilir; öğretmen yalnız kendi satırını.
+         (v2.7.2) Yönetici düzenlemesi ONAY DURUMUNU BOZMAZ: içerik alanları yamalanır,
+         durum/onay_tarihi dokunulmaz — onaylı etkinlik kaybolmaz (öğrenciden düşmez).
+         Öğretmen düzenlemesi yeniden onaya gider (eski davranış). */
+      var adminMi = !!(s && s.rol === 'admin');
       var filtre = 'ozel_etkinlik?id=eq.' + encodeURIComponent(id) +
-        (s && s.rol === 'admin' ? '' : '&ogretmen_id=eq.' + encodeURIComponent(s.id));
+        (adminMi ? '' : '&ogretmen_id=eq.' + encodeURIComponent(s.id));
       var govde = {
         ad: veri.ad, konu: veri.konu || '',
         seviyeler: JSON.stringify(veri.secim || []),
         tip: veri.tip, icerik: veri.icerik || '',
-        durum: 'bekliyor', gorsel: veri.gorsel || '',
-        red_nedeni: '', onay_tarihi: null,
+        gorsel: veri.gorsel || '',
         acilis: veri.acilis || null, kapanis: veri.kapanis || null
       };
+      if (!adminMi) {
+        govde.durum = 'bekliyor';
+        govde.red_nedeni = '';
+        govde.onay_tarihi = null;
+      }
       try { await sb(filtre, { method: 'PATCH', body: govde }); }
       catch (e) {
         /* (v2.7) Yayın tarihi sütunları henüz eklenmemişse (SQL migration çalışmadan) tarihsiz güncelle */
@@ -1559,6 +1567,11 @@
           delete govde.acilis; delete govde.kapanis;
           await sb(filtre, { method: 'PATCH', body: govde });
         } else { throw e; }
+      }
+      /* (v2.7.2) Yönetici tarihli düzenlediyse atama satırını da senkronla —
+         öğrenci görünümü pencere (acilis/kapanis) bilgisini atama satırından alır. */
+      if (adminMi && (veri.acilis || veri.kapanis)) {
+        try { await API.atamaKaydet(s, 'ozel:' + id, true, veri.acilis || null, veri.kapanis || null); } catch (e2) {}
       }
     },
     ozelEtkinlikSil: async function (s, id) {
@@ -1874,13 +1887,16 @@
     },
     ozelEtkinlikGuncelle: async function (s, id, veri) {
       var os = dGet(DK.ozel);
+      var adminMi = s && s.rol === 'admin';
       os.forEach(function (o) {
-        if (o.id === id && (s.rol === 'admin' || o.ogretmenId === s.id || (!o.ogretmenId && o.campusId === s.campusId))) {
+        if (o.id === id && (adminMi || o.ogretmenId === s.id || (!o.ogretmenId && o.campusId === s.campusId))) {
           o.ad = veri.ad; o.konu = veri.konu || '';
           o.seviyeler = JSON.stringify(veri.secim || []);
           o.tip = veri.tip; o.icerik = veri.icerik || '';
-          o.durum = 'bekliyor'; o.gorsel = veri.gorsel || '';
-          o.redNedeni = ''; o.red_nedeni = '';
+          /* (v2.7.2) Yönetici düzenlemesi onay durumunu bozmaz; öğretmen düzenlemesi onaya döner */
+          if (!adminMi) { o.durum = 'bekliyor'; o.redNedeni = ''; o.red_nedeni = ''; }
+          o.gorsel = veri.gorsel || '';
+          o.acilis = veri.acilis || null; o.kapanis = veri.kapanis || null;
         }
       });
       dSet(DK.ozel, os);
@@ -2140,13 +2156,17 @@
   }
 
   function ozelListeCiz() {
-    API.ozelEtkinliklerim(oturum).then(function (ozeller) {
+    /* (v2.7.2) Yönetici BÜTÜN etkinlikleri kendi listesinde görür (önceden ogretmen_id=eq.admin
+       filtresiyle hiçbir şey görünmüyor ve düzenlenen etkinlik "kaybolmuş" gibi duruyordu). */
+    var listeSozu = (oturum && oturum.rol === 'admin') ? API.tumOzelEtkinlikler() : API.ozelEtkinliklerim(oturum);
+    listeSozu.then(function (ozeller) {
       var kutu = $('oeListe');
       if (!ozeller.length) { kutu.innerHTML = '<div class="bos">Henüz etkinlik oluşturmadın. Üstteki formla ekle.</div>'; return; }
       var h = '<table><tr><th>Etkinlik</th><th>Konu &amp; Tema</th><th>Kullanım yeri</th><th>Kaynak</th><th>İşlem</th></tr>';      ozeller.forEach(function (o) {
         var redBanner = (o.redNedeni && o.durum === 'reddedildi') ? '<div style="background:#fee2e2;border-left:4px solid #ef4444;padding:6px 10px;margin-top:6px;border-radius:4px;font-size:12px;color:#991b1b">❌ Red nedeni: ' + esc(o.redNedeni) + '</div>' : '';
         var duzenleBtn = ' <button class="btn ikincil kucuk" data-oe-duzenle="' + esc(o.id) + '">✏️ Düzenle</button>';
-        h += '<tr class="satir"><td><b>' + esc(o.ad) + '</b><br>' + durumRozeti(o) +
+        h += '<tr class="satir"><td><b>' + esc(o.ad) + '</b>' +
+          (oturum && oturum.rol === 'admin' && o.kampusAdi ? ' <span style="font-size:11px;color:#64748b">🏫 ' + esc(o.kampusAdi) + '</span>' : '') + '<br>' + durumRozeti(o) +
           (o.acilis ? ' <span class="rozet tarih">📅 ' + esc(tarihKisa(o.acilis)) + ' yayınlanacak</span>' : '') +
           redBanner + '</td>' +
           '<td>' + esc(o.konu || '') + '</td>' +
@@ -2232,7 +2252,7 @@
           window.scrollTo({ top: 0, behavior: 'smooth' });
         };
       });
-    }).catch(function (e) { $('oeListe').innerHTML = '<div class="hata" style="display:block">' + esc(e.message) + '</div>'; });
+    }).catch(function (e) { console.error('ozelListeCiz hata:', e); $('oeListe').innerHTML = '<div class="hata" style="display:block">' + esc(e.message) + '</div>'; });
   }
 
 
@@ -2460,11 +2480,19 @@
           /* GSAP satır giriş animasyonu */
           setTimeout(function() { gsapSatirGiris('#etkinlikSekme'); }, 100);
 
-          /* Seçim → tarih göster/gizle */
+          /* Seçim → tarih göster/gizle + (v2.7.2) Açık/Kapalı ANINDA kaydedilir.
+             Daha önce yönetici seçimi değiştirip 💾 Kaydet'e basmayınca hiçbir şey
+             olmuyordu ("değişiklik olmuyor" şikayeti). Tarihli seçimi tarih girişi
+             gerektirdiğinden hâlâ 💾 Kaydet düğmesini bekler. */
           Array.prototype.forEach.call(kutu.querySelectorAll('[data-secim]'), function (s) {
             s.onchange = function () {
-              var tar = kutu.querySelector('[data-tarihler="' + s.getAttribute('data-secim') + '"]');
+              var sid = s.getAttribute('data-secim');
+              var tar = kutu.querySelector('[data-tarihler="' + sid + '"]');
               if (tar) tar.classList.toggle('goster', s.value === 'tarihli');
+              if (s.value === 'acik' || s.value === 'kapali') {
+                var kbtn = kutu.querySelector('[data-kaydet="' + sid + '"]');
+                if (kbtn) kbtn.click();
+              }
             };
           });
 

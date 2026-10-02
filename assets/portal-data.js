@@ -158,10 +158,29 @@ function ozelEtkinlikleriYukle() {
   /* (v2.2) Öğrenci tarafı güvenli görünümden okur: onaylı bütün özel etkinlikler
      döner. Kapalı/tarihli etkinliğin İÇERİĞİ görünümden dönmez (icerik=null);
      portal bu kartları soluk-pasif gösterir, açılamaz. acik/acilis/kapanis
-     alanları kart rozetini ve açılabilirlik kontrolünü besler. */
-  return fetch(SUPABASE_CONFIG.url + '/rest/v1/ozel_etkinlik_ogrenci?select=*&order=olusturma_tarihi', {
-    headers: { apikey: SUPABASE_CONFIG.anon, Authorization: 'Bearer ' + SUPABASE_CONFIG.anon }
-  }).then(function (r) { return r.json(); }).then(function (rows) {
+     alanları kart rozetini ve açılabilirlik kontrolünü besler.
+     (v2.7.2) STATİK etkinliklerin de paneldeki aç/kapalı/tarihli durumu okunur:
+     önceden listede hep açık görünüyorlardı; yönetici kapatsa bile öğrenci
+     listesinde hiçbir değişiklik olmuyordu. Artık etkinlik_atama satırları
+     statik listeye de uygulanır (kapalı → soluk, tarihli → geri sayım). */
+  var basliklar = { apikey: SUPABASE_CONFIG.anon, Authorization: 'Bearer ' + SUPABASE_CONFIG.anon };
+  var gorunum = fetch(SUPABASE_CONFIG.url + '/rest/v1/ozel_etkinlik_ogrenci?select=*&order=olusturma_tarihi', { headers: basliklar })
+    .then(function (r) { return r.json(); });
+  var atamalar = fetch(SUPABASE_CONFIG.url + '/rest/v1/etkinlik_atama?select=oyun_id,aktif,acilis,kapanis', { headers: basliklar })
+    .then(function (r) { return r.json(); })
+    .catch(function () { return []; });
+  return Promise.all([gorunum, atamalar]).then(function (sonuc) {
+    var rows = sonuc[0] || [];
+    var atamaMap = {};
+    (sonuc[1] || []).forEach(function (a) { if (a && a.oyun_id) atamaMap[a.oyun_id] = a; });
+    /* Statik etkinliklere atama durumunu uygula ('ozel:' önekli anahtarlar özel etkinliklerin) */
+    ETKINLIKLER.forEach(function (e) {
+      var a = atamaMap[e.id];
+      if (!a) { e.acik = true; e.acilis = null; e.kapanis = null; return; }
+      e.acik = a.aktif !== false;
+      e.acilis = a.acilis || null;
+      e.kapanis = a.kapanis || null;
+    });
     OZEL_ETKINLIKLER = (rows || []).map(function (o) {
       var coz = seviyeleriCoz(o.seviyeler);
       return {
