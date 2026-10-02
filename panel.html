@@ -483,6 +483,15 @@
           <div id="oeSeviyeler"></div>
           <div class="hata" id="oeHata"></div>
 
+          <div style="margin-top:14px">
+            <label>📅 Yayın tarihi — etkinliğin öğrencilere açılış zamanı</label>
+            <div class="satir">
+              <div><label style="font-size:12px">Açılış (boş = onaylandığında hemen yayınlanır)</label><input type="datetime-local" id="oeAcilis"></div>
+              <div><label style="font-size:12px">Kapanış (isteğe bağlı)</label><input type="datetime-local" id="oeKapanis"></div>
+            </div>
+            <p class="kucuk-not">Tarih girersen öğrenciler o güne kadar portaldaki soluk kartta <b>canlı geri sayım</b> görür; etkinlik belirttiğin tarihte otomatik açılır. Kapanış girersen süre dolunca etkinlik kendiliğinden kapanır.</p>
+          </div>
+
           <label style="margin-top:16px">İçerik kaynağı</label>
           <div class="kaynak-sec">
             <button type="button" class="kaynak-btn secili" data-kaynak="dosya">📄 HTML dosyası yükle</button>
@@ -568,6 +577,15 @@
 
     <!-- Yönetici -->
     <div id="adminIcerik" style="display:none">
+      <div class="sekmeler" id="adminSekmeler">
+        <button class="sekme secili" id="admSekGenel">📊 Genel Bakış</button>
+        <button class="sekme" id="admSekOnay">⏳ Etkinlik Onayları <span id="admOnaySayi" style="display:none;background:#fee2e2;color:#b91c1c;border-radius:10px;padding:1px 8px;font-size:11px;margin-left:2px">0</span></button>
+        <button class="sekme" id="admSekKampus">🏫 Kampüs & Öğretmenler</button>
+        <button class="sekme" id="admSekKod">🔑 Haftalık Kodlar</button>
+        <button class="sekme" id="admSekSistem">⚙️ Sistem & Yedek</button>
+      </div>
+
+      <div id="admGenel">
       <div class="kart">
         <h2>🛡️ Sistem Yönetimi</h2>
         <p class="kucuk-not">Tüm kampüsleri ve öğrencileri buradan ekleyebilir, düzenleyebilir ve silebilirsin.</p>
@@ -576,12 +594,21 @@
           <div class="sayac"><b id="adOgretmenSayi">0</b><span>👩‍🏫 Öğretmen</span></div>
           <div class="sayac"><b id="adOgrenciSayi">0</b><span>👨‍🎓 Öğrenci</span></div>
           <div class="sayac"><b id="adPuanToplam">0</b><span>⭐ Toplam Puan</span></div>
+          <div class="sayac"><b id="adOnaySayi">0</b><span>⏳ Onay Bekleyen</span></div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn ikincil kucuk" id="admHizliOnay">⏳ Onay bekleyenler</button>
+          <button class="btn ikincil kucuk" id="admHizliKod">🔑 Haftalık kodlar</button>
+          <button class="btn ikincil kucuk" id="admHizliYonetim">🎮 Etkinlik yönetimi</button>
         </div>
       </div>
 
+      </div>
+
+      <div id="admOnay" style="display:none">
       <div class="kart">
         <h2>⏳ Etkinlik Onayları (öğretmen yüklemeleri)</h2>
-        <p class="kucuk-not">Öğretmenlerin oluşturduğu etkinliklerin dosyası ve bilgileri yalnız burada bekler; öğrencilere <b>onaylanmadan</b> gitmez. <b>✅ Onayla</b> → etkinlik tüm kampüslerin öğrenci listelerine düşer (kampüsler isterse 🎮 Etkinlik Yönetimi'nden kapatır). <b>👩‍🏫 Öğretmen Aracı</b> işaretli etkinlikler öğrencilere görünmez; öğretmenler 🎮 Etkinlik Yönetimi'nden tahtada kullanır.</p>
+        <p class="kucuk-not">Öğretmenlerin oluşturduğu etkinliklerin dosyası ve bilgileri yalnız burada bekler; öğrencilere <b>onaylanmadan</b> gitmez. <b>✅ Onayla</b> → etkinlik tüm kampüslerin öğrenci listelerine düşer; öğretmenin kaydettiği <b>📅 yayın tarihi</b> geçerli olur (istersen 🎮 Etkinlik Yönetimi'nden değiştirilir). <b>👩‍🏫 Öğretmen Aracı</b> işaretli etkinlikler öğrencilere görünmez; öğretmenler 🎮 Etkinlik Yönetimi'nden tahtada kullanır.</p>
         <div style="margin:10px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           <label style="margin:0">Durum filtresi</label>
           <select id="onayFiltre">
@@ -597,6 +624,9 @@
         <div id="onayListe" style="margin-top:6px"></div>
       </div>
 
+      </div>
+
+      <div id="admSistem" style="display:none">
       <div class="kart">
         <h2>🧪 Şema / Bağlantı Kontrolü</h2>
         <p class="kucuk-not" id="semaNot"></p>
@@ -647,6 +677,9 @@
         <div class="kucuk-not" style="margin-top:6px">Yeni şifre en az 4 karakter olmalı. Şifre düz metin değil, güvenli biçimde (PBKDF2) saklanır; bu cihazda ve Supabase kuruluysa bulutta da güncellenir.</div>
       </div>
 
+      </div>
+
+      <div id="admKampus" style="display:none">
       <div class="kart">
         <h2>🏫 Kampüsler</h2>
         <p class="kucuk-not">Kampüs listesi sistem genelinde standarttır; yeni kampüs eklenmez.</p>
@@ -676,6 +709,9 @@
         <div id="adOgretmenListe" style="margin-top:8px"></div>
       </div>
 
+      </div>
+
+      <div id="admKod" style="display:none">
       <div class="kart">
         <h2>🔑 Haftalık Erişim Kodları</h2>
         <p class="kucuk-not">Öğrenciler portala <b>sınıf + 4 haneli haftalık kod</b> ile girer (hesap oluşturmaz, ad vermez). Bu hafta geçerli kodlar kartta ve tüm öğretmenlerin <b>Tahta Etkinlikleri</b> sekmesinde otomatik görünür. <b>Kodları Yenile</b>'ye bastığında tüm kodlar değişir ve herkese yenisi gösterilir.</p>
@@ -687,6 +723,7 @@
         </div>
         <div class="csv-kutu" id="kodListe" style="margin-top:10px"></div>
         <div class="kucuk-not" style="margin-top:8px">⚠️ Eski kodlar yenilendikleri anda geçersiz olur. Doğrulama sunucuda hash ile yapılır; kodların düz metin kopyası yalnız panellerde görünür, öğrenciye asla açılmaz.</div>
+      </div>
       </div>
 
 
@@ -1257,7 +1294,9 @@
       ogretmenId: o.ogretmen_id || o.ogretmenId || null,
       ogretmenAd: o.ogretmen_ad || o.ogretmenAd || '',
       ogretmenKullanici: o.ogretmen_kullanici || o.ogretmenKullanici || '',
-      gorsel: o.gorsel || ''
+      gorsel: o.gorsel || '',
+      acilis: o.acilis || null,
+      kapanis: o.kapanis || null
     };
   }
   function ozelSiralama(a, b) { return (b.tarih || '').localeCompare(a.tarih || ''); }
@@ -1469,7 +1508,7 @@
       });
     },
     ozelEtkinlikEkle: async function (s, veri) {
-      var rs = await sb('ozel_etkinlik', { method: 'POST', body: {
+      var govde = {
         campus_id: s.campusId,
         ogretmen_id: s.id,
         ogretmen_ad: s.ad || '',
@@ -1480,8 +1519,19 @@
         tip: veri.tip,
         icerik: veri.icerik || '',
         durum: 'bekliyor',
-        gorsel: veri.gorsel || ''
-      } });
+        gorsel: veri.gorsel || '',
+        acilis: veri.acilis || null,
+        kapanis: veri.kapanis || null
+      };
+      var rs;
+      try { rs = await sb('ozel_etkinlik', { method: 'POST', body: govde }); }
+      catch (e) {
+        /* (v2.7) Yayın tarihi sütunları henüz eklenmemişse (SQL migration çalışmadan) tarihsiz kaydet */
+        if (String((e && e.message) || '').indexOf('acilis') >= 0) {
+          delete govde.acilis; delete govde.kapanis;
+          rs = await sb('ozel_etkinlik', { method: 'POST', body: govde });
+        } else { throw e; }
+      }
       return rs && rs[0];
     },
     ozelOnayla: async function (id) {
@@ -1494,13 +1544,22 @@
       /* (v2.2) Yönetici bütün özel etkinlikleri düzenleyebilir; öğretmen yalnız kendi satırını. */
       var filtre = 'ozel_etkinlik?id=eq.' + encodeURIComponent(id) +
         (s && s.rol === 'admin' ? '' : '&ogretmen_id=eq.' + encodeURIComponent(s.id));
-      await sb(filtre, { method: 'PATCH', body: {
+      var govde = {
         ad: veri.ad, konu: veri.konu || '',
         seviyeler: JSON.stringify(veri.secim || []),
         tip: veri.tip, icerik: veri.icerik || '',
         durum: 'bekliyor', gorsel: veri.gorsel || '',
-        red_nedeni: '', onay_tarihi: null
-      } });
+        red_nedeni: '', onay_tarihi: null,
+        acilis: veri.acilis || null, kapanis: veri.kapanis || null
+      };
+      try { await sb(filtre, { method: 'PATCH', body: govde }); }
+      catch (e) {
+        /* (v2.7) Yayın tarihi sütunları henüz eklenmemişse (SQL migration çalışmadan) tarihsiz güncelle */
+        if (String((e && e.message) || '').indexOf('acilis') >= 0) {
+          delete govde.acilis; delete govde.kapanis;
+          await sb(filtre, { method: 'PATCH', body: govde });
+        } else { throw e; }
+      }
     },
     ozelEtkinlikSil: async function (s, id) {
       await sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id) + '&ogretmen_id=eq.' + encodeURIComponent(s.id), { method: 'DELETE' });
@@ -2087,7 +2146,9 @@
       var h = '<table><tr><th>Etkinlik</th><th>Konu &amp; Tema</th><th>Kullanım yeri</th><th>Kaynak</th><th>İşlem</th></tr>';      ozeller.forEach(function (o) {
         var redBanner = (o.redNedeni && o.durum === 'reddedildi') ? '<div style="background:#fee2e2;border-left:4px solid #ef4444;padding:6px 10px;margin-top:6px;border-radius:4px;font-size:12px;color:#991b1b">❌ Red nedeni: ' + esc(o.redNedeni) + '</div>' : '';
         var duzenleBtn = ' <button class="btn ikincil kucuk" data-oe-duzenle="' + esc(o.id) + '">✏️ Düzenle</button>';
-        h += '<tr class="satir"><td><b>' + esc(o.ad) + '</b><br>' + durumRozeti(o) + redBanner + '</td>' +
+        h += '<tr class="satir"><td><b>' + esc(o.ad) + '</b><br>' + durumRozeti(o) +
+          (o.acilis ? ' <span class="rozet tarih">📅 ' + esc(tarihKisa(o.acilis)) + ' yayınlanacak</span>' : '') +
+          redBanner + '</td>' +
           '<td>' + esc(o.konu || '') + '</td>' +
           '<td>' + esc(secimEtiketList(o.secim) || '—') + '</td>' +
           '<td><span class="tip-rozet">' + kaynakEtiketi(o.tip) + '</span></td>' +
@@ -2162,6 +2223,9 @@
           else if (o.tip === 'drive') { $('oeDrive').value = o.icerik || ''; oeKaynakGoster('drive'); }
           else { oe.dosyaMetin = o.icerik || ''; oeKaynakGoster('dosya'); }
           seviyeCipsCiz();
+          /* (v2.7) Kayıtlı yayın tarihlerini forma geri getir */
+          $('oeAcilis').value = o.acilis ? dtYerel(o.acilis) : '';
+          $('oeKapanis').value = o.kapanis ? dtYerel(o.kapanis) : '';
           if (o.gorsel) { $('oeGorselOnizle').src = o.gorsel; $('oeGorselOnizle').style.display = ''; oe.gorsel = o.gorsel; $('oeGorselDurum').textContent = '✅ Mevcut gorsel yuklu'; }
           bilgiGoster($('oeBilgi'), '✏️ Duzenleme modu: \"' + o.ad + '\" — Degisiklikleri yapip tekrar kaydet.');
           $('oeKaydetBtn').textContent = '💾 Degisiklikleri Kaydet';
@@ -2197,6 +2261,7 @@
     oe.secim = []; oe.dosyaMetin = ''; oe.gorsel = ''; oe.duzenleId = null;
     $('oeKaydetBtn').textContent = '\ud83d\udcbe Etkinli\u011fi Kaydet';
     $('oeAd').value = ''; $('oeKonu').value = ''; $('oeTema').value = ''; kodEditorTemizle(); $('oeDrive').value = '';
+    $('oeAcilis').value = ''; $('oeKapanis').value = '';
     $('oeDosya').value = ''; $('oeDosyaAdi').textContent = '';
     $('oeGorsel').value = ''; $('oeGorselOnizle').style.display = 'none';
     $('oeGorselDurum').textContent = '';
@@ -2593,6 +2658,11 @@
   /* ---------- Yönetici: öğretmen etkinliği onayları ---------- */
   function etkinlikOnayCiz() {
     API.tumOzelEtkinlikler().then(function (ozeller) {
+      /* (v2.7) Bekleyen onay sayısını sekme rozetinde ve özet kartında göster */
+      var bekleyen = ozeller.filter(function (o) { return o.durum === 'bekliyor'; }).length;
+      var bEl = $('admOnaySayi');
+      if (bEl) { bEl.textContent = bekleyen; bEl.style.display = bekleyen ? '' : 'none'; }
+      var ozEl = $('adOnaySayi'); if (ozEl) ozEl.textContent = bekleyen;
       var kutu = $('onayListe');
       hataGoster($('onayHata'), '');
       bilgiGoster($('onayBilgi'), '');
@@ -2608,7 +2678,8 @@
       var h = '<table><tr><th>Etkinlik</th><th>Konu &amp; Tema</th><th>Kullanım yeri</th><th>Yükleyen</th><th>Kaynak</th><th>Yükleme</th><th>İşlem</th></tr>';
       g.forEach(function (o) {
         var arac = aracMi(o.secim);
-        h += '<tr class="satir"><td><b>' + esc(o.ad) + '</b>' + (arac ? ' <span class="rozet ogretmen">👩‍🏫 Araç</span>' : '') + '<br>' + durumRozeti(o) + '</td>' +
+        h += '<tr class="satir"><td><b>' + esc(o.ad) + '</b>' + (arac ? ' <span class="rozet ogretmen">👩‍🏫 Araç</span>' : '') + '<br>' + durumRozeti(o) +
+          (o.acilis ? ' <span class="rozet tarih">📅 ' + esc(tarihKisa(o.acilis)) + ' yayınlanacak</span>' : '') + '</td>' +
           '<td>' + esc(o.konu || '') + '</td>' +
           '<td>' + esc(secimEtiketList(o.secim) || '—') + '</td>' +
           '<td>👩‍🏫 ' + esc(o.ogretmenAd || '—') + (o.ogretmenKullanici ? ' <span class="kucuk-not">@' + esc(o.ogretmenKullanici) + '</span>' : '') +
@@ -2665,6 +2736,9 @@
           var gorsel = (o && o.gorsel) ? o.gorsel : (o && o.tip !== 'drive' ? gorselOlustur(o.ad, o.tip, o.konu) : '');
           var islemler = [API.ozelOnayla(id)];
           if (gorsel && o && !o.gorsel) islemler.push(sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id), { method: 'PATCH', body: { gorsel: gorsel } }));
+          /* (v2.7) Öğretmenin kaydettiği yayın (açılış/kapanış) tarihini atamaya da yaz;
+             🎮 Etkinlik Yönetimi ile öğrenci portalındaki geri sayım aynı tarihi gösterir. */
+          if (o && (o.acilis || o.kapanis)) islemler.push(API.atamaKaydet(oturum, 'ozel:' + id, true, o.acilis || null, o.kapanis || null));
           Promise.all(islemler).then(function () {
             bilgiGoster($('onayBilgi'), '✅ Onaylandı ve tüm kampüslerde yayınlandı.');
             etkinlikOnayCiz();
@@ -3697,6 +3771,30 @@
     setTimeout(function() { gsapSatirGiris('#olusturSekme'); }, 60);
   };
 
+  /* (v2.7) Yönetici sekmeleri: uzun kart yığını yerine 5 hızlı sekme.
+     Kartlar DOM'da kalır (mevcut yükleme kodları değişmez), yalnız görünürlük değişir. */
+  var ADM_SEKMELER = [
+    ['admSekGenel', 'admGenel'],
+    ['admSekOnay', 'admOnay'],
+    ['admSekKampus', 'admKampus'],
+    ['admSekKod', 'admKod'],
+    ['admSekSistem', 'admSistem']
+  ];
+  ADM_SEKMELER.forEach(function (cift) {
+    var btn = $(cift[0]); if (!btn) return;
+    btn.onclick = function () {
+      ADM_SEKMELER.forEach(function (c2) {
+        var b2 = $(c2[0]), p2 = $(c2[1]);
+        if (b2) b2.classList.toggle('secili', c2[0] === cift[0]);
+        if (p2) p2.style.display = (c2[0] === cift[0]) ? '' : 'none';
+      });
+    };
+  });
+  /* Özet kartındaki hızlı erişim düğmeleri */
+  if ($('admHizliOnay')) $('admHizliOnay').onclick = function () { var b = $('admSekOnay'); if (b) b.click(); };
+  if ($('admHizliKod')) $('admHizliKod').onclick = function () { var b = $('admSekKod'); if (b) b.click(); };
+  if ($('admHizliYonetim')) $('admHizliYonetim').onclick = function () { var b = $('sekmeEtkinlik'); if (b) b.click(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+
   function hepsineUygula(acik, seviyeFiltresi) {
     return katalogGetir('ogretmen').then(function (katalogTam) {
       /* (v2.2) Toplu işlem yalnız yöneticidir; öğretmen oturumunda hiçbir şeye dokunmaz. */
@@ -3894,6 +3992,10 @@
     var icerik = oeIcerik();
     if (!String(icerik || '').trim()) { hataGoster($('oeHata'), 'İçerik boş: dosya seçin, bağlantı girin ya da kod yapıştırın.'); return; }
     if (oe.tip === 'drive' && !/^https?:\/\//i.test(icerik)) { hataGoster($('oeHata'), 'Drive bağlantısı http(s) ile başlamalı.'); return; }
+    /* (v2.7) Yayın (açılış) ve kapanış tarihi — öğrenci portalındaki geri sayım bu tarihlerden beslenir */
+    var acilisV = dtIso($('oeAcilis').value);
+    var kapanisV = dtIso($('oeKapanis').value);
+    if (acilisV && kapanisV && new Date(kapanisV) <= new Date(acilisV)) { hataGoster($('oeHata'), 'Kapanış tarihi, açılış tarihinden sonra olmalı.'); return; }
     hataGoster($('oeHata'), '');
     $('oeKaydetBtn').disabled = true;
     /* Otomatik görsel: manuel seçilmediyse html2canvas dene,SVG fallback */
@@ -3902,8 +4004,8 @@
     var kaydetFn = function (finalGorsel) {
       var duzenleModu = oe.duzenleId;
       var kayitFn = duzenleModu
-        ? API.ozelEtkinlikGuncelle(oturum, duzenleModu, { ad: ad, konu: konu, secim: oe.secim.slice(), tip: oe.tip, icerik: icerik, gorsel: finalGorsel })
-        : API.ozelEtkinlikEkle(oturum, { ad: ad, konu: konu, secim: oe.secim.slice(), tip: oe.tip, icerik: icerik, gorsel: finalGorsel });
+        ? API.ozelEtkinlikGuncelle(oturum, duzenleModu, { ad: ad, konu: konu, secim: oe.secim.slice(), tip: oe.tip, icerik: icerik, gorsel: finalGorsel, acilis: acilisV || null, kapanis: kapanisV || null })
+        : API.ozelEtkinlikEkle(oturum, { ad: ad, konu: konu, secim: oe.secim.slice(), tip: oe.tip, icerik: icerik, gorsel: finalGorsel, acilis: acilisV || null, kapanis: kapanisV || null });
       kayitFn.then(function () {
         oeFormuTemizle();
         oe.duzenleId = null;
