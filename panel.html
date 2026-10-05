@@ -435,6 +435,20 @@
 
       <!-- Etkinlikler -->
       <div id="etkinlikSekme" style="display:none">
+
+        <!-- (v2.7.7) Yönetici için en üstte gömülü onay kartı -->
+        <div class="kart" id="admEtkOnayKart" style="display:none">
+          <h2>⏳ Onay Bekleyen Öğretmen Etkinlikleri</h2>
+          <p class="kucuk-not">Öğretmenlerin yüklediği ve <b>yonetici onayı bekleyen</b> etkinlikler en üstte listelenir. <b>✅ Onayla</b> → etkinlik tüm kampüslerin öğrenci listelerine düşer ve öğretmenin kaydettiği <b>📅 yayın tarihi</b> geçerli olur. Tam geçmiş ve filtreler <b>⏳ Etkinlik Onayları</b> sekmesindedir.</p>
+          <div style="margin:8px 0;display:flex;gap:8px;flex-wrap:wrap">
+            <span class="rozet ogretmen">⏳ <b id="etkOnaySayi">0</b> bekliyor</span>
+            <button type="button" class="btn ikincil kucuk" id="etkOnayTamGoster">⏳ Etkinlik Onayları sekmesini aç</button>
+          </div>
+          <div class="hata" id="etkOnayHata"></div>
+          <div class="bilgi" id="etkOnayBilgi"></div>
+          <div id="etkOnayListe" style="margin-top:6px"></div>
+        </div>
+
         <div class="kart">
           <h2>🎮 Etkinlikleri Yönet</h2>
           <p class="kucuk-not" id="etkYonetimNot">Hangi sınıfa, IPT'ye veya öğretmen aracına hangi etkinlik ne zaman açık olacak? Seviye sekmesine tıklayarak filtrele; toplu aç/kapat veya tarihli ayarla.</p>
@@ -2759,6 +2773,8 @@
       var bEl = $('admOnaySayi');
       if (bEl) { bEl.textContent = bekleyen; bEl.style.display = bekleyen ? '' : 'none'; }
       var ozEl = $('adOnaySayi'); if (ozEl) ozEl.textContent = bekleyen;
+      /* (v2.7.7) 🎮 Etkinlik Yönetimi'nin en üstündeki gömülü onay kartı da tazelenir */
+      etkinlikYonetimineOnayCiz(ozeller);
       var kutu = $('onayListe');
       hataGoster($('onayHata'), '');
       bilgiGoster($('onayBilgi'), '');
@@ -2827,33 +2843,20 @@
         b.onclick = function () {
           var id = b.getAttribute('data-onayla');
           var o = ozeller.filter(function (x) { return x.id === id; })[0];
-          if (!confirm('“' + (o ? o.ad : '') + '” adlı etkinliği onaylayıp tüm kampüslerde yayınlamak istiyor musun?')) return;
-          /* Görsel yoksa anlık SVG oluştur */
-          var gorsel = (o && o.gorsel) ? o.gorsel : (o && o.tip !== 'drive' ? gorselOlustur(o.ad, o.tip, o.konu) : '');
-          var islemler = [API.ozelOnayla(id)];
-          if (gorsel && o && !o.gorsel) islemler.push(sb('ozel_etkinlik?id=eq.' + encodeURIComponent(id), { method: 'PATCH', body: { gorsel: gorsel } }));
-          /* (v2.7) Öğretmenin kaydettiği yayın (açılış/kapanış) tarihini atamaya da yaz;
-             🎮 Etkinlik Yönetimi ile öğrenci portalındaki geri sayım aynı tarihi gösterir. */
-          if (o && (o.acilis || o.kapanis)) islemler.push(API.atamaKaydet(oturum, 'ozel:' + id, true, o.acilis || null, o.kapanis || null));
-          Promise.all(islemler).then(function () {
-            bilgiGoster($('onayBilgi'), '✅ Onaylandı ve tüm kampüslerde yayınlandı.');
-            etkinlikOnayCiz();
-            confettiTamamla();
-            setTimeout(function () { bilgiGoster($('onayBilgi'), ''); }, 3500);
-          }).catch(function (e) { hataGoster($('onayHata'), e.message); });
+          if (!o) return;
+          if (!confirm('“' + o.ad + '” adlı etkinliği onaylayıp tüm kampüslerde yayınlamak istiyor musun?')) return;
+          /* (v2.7.7) Ortak onaylayıcı — gömülü kart da aynı fonksiyonu kullanır */
+          onaylaEtkinlik(o, $('onayBilgi'), $('onayHata'));
         };
       });
       Array.prototype.forEach.call(kutu.querySelectorAll('[data-reddet]'), function (b) {
         b.onclick = function () {
           var id = b.getAttribute('data-reddet');
           var o = ozeller.filter(function (x) { return x.id === id; })[0];
-          var neden = prompt('“' + (o ? o.ad : '') + '” reddediliyor. Öğretmene gösterilecek nedeni yaz (boş bırakılabilir):', '');
+          if (!o) return;
+          var neden = prompt('“' + o.ad + '” reddediliyor. Öğretmene gösterilecek nedeni yaz (boş bırakılabilir):', '');
           if (neden === null) return;
-          API.ozelReddet(id, neden.trim()).then(function () {
-            bilgiGoster($('onayBilgi'), '❌ Etkinlik reddedildi — öğretmen nedeni görür.');
-            etkinlikOnayCiz();
-            setTimeout(function () { bilgiGoster($('onayBilgi'), ''); }, 3500);
-          }).catch(function (e) { hataGoster($('onayHata'), e.message); });
+          reddetEtkinlik(o, neden.trim(), $('onayBilgi'), $('onayHata'));
         };
       });
       Array.prototype.forEach.call(kutu.querySelectorAll('[data-onay-sil]'), function (b) {
@@ -2871,6 +2874,94 @@
     }).catch(function (e) { hataGoster($('onayHata'), e.message); });
   }
   $('onayFiltre').addEventListener('change', function () { etkinlikOnayCiz(); });
+
+  /* ---------- (v2.7.7) Onayla / Reddet — sekme ve gömülü kart aynı kaynaktan ---------- */
+  function onaylaEtkinlik(o, bilgiEl, hataEl, sonrasi) {
+    if (!o) return Promise.resolve();
+    bilgiGoster(bilgiEl, '');
+    /* Görsel yoksa anlık SVG oluştur */
+    var gorsel = o.gorsel ? o.gorsel : (o.tip !== 'drive' ? gorselOlustur(o.ad, o.tip, o.konu) : '');
+    var islemler = [API.ozelOnayla(o.id)];
+    if (gorsel && !o.gorsel) islemler.push(sb('ozel_etkinlik?id=eq.' + encodeURIComponent(o.id), { method: 'PATCH', body: { gorsel: gorsel } }));
+    /* (v2.7) Öğretmenin kaydettiği yayın (açılış/kapanış) tarihini atamaya da yaz;
+       🎮 Etkinlik Yönetimi ile öğrenci portalındaki geri sayım aynı tarihi gösterir. */
+    if (o.acilis || o.kapanis) islemler.push(API.atamaKaydet(oturum, 'ozel:' + o.id, true, o.acilis || null, o.kapanis || null));
+    return Promise.all(islemler).then(function () {
+      bilgiGoster(bilgiEl, '✅ Onaylandı ve tüm kampüslerde yayınlandı.');
+      etkinlikOnayCiz();
+      confettiTamamla();
+      if (sonrasi) sonrasi();
+      setTimeout(function () { bilgiGoster(bilgiEl, ''); }, 3500);
+    }).catch(function (e) { hataGoster(hataEl, e.message); });
+  }
+  function reddetEtkinlik(o, neden, bilgiEl, hataEl, sonrasi) {
+    if (!o) return Promise.resolve();
+    bilgiGoster(bilgiEl, '');
+    return API.ozelReddet(o.id, neden || '').then(function () {
+      bilgiGoster(bilgiEl, '❌ Etkinlik reddedildi — öğretmen nedeni görür.');
+      etkinlikOnayCiz();
+      if (sonrasi) sonrasi();
+      setTimeout(function () { bilgiGoster(bilgiEl, ''); }, 3500);
+    }).catch(function (e) { hataGoster(hataEl, e.message); });
+  }
+
+  /* ---------- (v2.7.7) 🎮 Etkinlik Yönetimi'nin en üstündeki gömülü onay kartı ---------- */
+  function etkinlikYonetimineOnayCiz(ozeller) {
+    var kart = $('admEtkOnayKart'), kutu = $('etkOnayListe');
+    if (!kart || !kutu) return;
+    if (!yonetimAdminMi() || !ozeller || !ozeller.length) { kart.style.display = 'none'; return; }
+    kart.style.display = '';
+    var bg = ozeller.filter(function (o) { return o.durum === 'bekliyor'; });
+    bg.sort(function (a, b) { return (b.tarih || '').localeCompare(a.tarih || ''); });
+    var sayEl = $('etkOnaySayi'); if (sayEl) sayEl.textContent = bg.length;
+    hataGoster($('etkOnayHata'), '');
+    /* Not: bilgi mesajı burada temizlenmez — onay/reddet başarı mesajı
+       etkinlikOnayCiz() tazelemesinden sonra da okunabilir kalsın. */
+    if (!bg.length) { kutu.innerHTML = '<div class="bos">✅ Onay bekleyen etkinlik yok — tüm istekler sonuçlandırıldı.</div>'; return; }
+    var h = '<table><tr><th>Etkinlik</th><th>Konu &amp; Tema</th><th>Yükleyen</th><th>Yükleme</th><th>İşlem</th></tr>';
+    bg.forEach(function (o) {
+      var arac = aracMi(o.secim);
+      h += '<tr class="satir"><td><b>' + esc(o.ad) + '</b>' + (arac ? ' <span class="rozet ogretmen">👩‍🏫 Araç</span>' : '') + '<br>' + durumRozeti(o) +
+        (o.acilis ? ' <span class="rozet tarih">📅 ' + esc(tarihKisa(o.acilis)) + ' yayınlanacak</span>' : '') + '</td>' +
+        '<td>' + esc(o.konu || '') + '</td>' +
+        '<td>👩‍🏫 ' + esc(o.ogretmenAd || '—') + '<div class="kucuk-not">🏫 ' + esc(o.kampusAdi || '—') + '</div></td>' +
+        '<td class="kucuk-not">' + esc(tarihKisa(o.tarih)) + '</td>' +
+        '<td style="white-space:nowrap">' +
+        '<button class="btn ikincil kucuk" data-ety-goster="' + esc(o.id) + '">👁 Görüntüle</button> ' +
+        '<button class="btn yesil kucuk" data-ety-onayla="' + esc(o.id) + '">✅ Onayla</button> ' +
+        '<button class="btn kirmizi kucuk" data-ety-reddet="' + esc(o.id) + '">❌ Reddet</button>' +
+        '</td></tr>';
+    });
+    h += '</table>';
+    kutu.innerHTML = h;
+    Array.prototype.forEach.call(kutu.querySelectorAll('[data-ety-goster]'), function (b) {
+      b.onclick = function () {
+        var o = ozeller.filter(function (x) { return x.id === b.getAttribute('data-ety-goster'); })[0];
+        if (o) ozelOynatAc(o.ad, o.icerik, o.tip);
+      };
+    });
+    Array.prototype.forEach.call(kutu.querySelectorAll('[data-ety-onayla]'), function (b) {
+      b.onclick = function () {
+        var o = ozeller.filter(function (x) { return x.id === b.getAttribute('data-ety-onayla'); })[0];
+        if (!o) return;
+        if (!confirm('“' + o.ad + '” adlı etkinliği onaylayıp tüm kampüslerde yayınlamak istiyor musun?')) return;
+        onaylaEtkinlik(o, $('etkOnayBilgi'), $('etkOnayHata'), function () { etkinlikYonetiminiCiz(); });
+      };
+    });
+    Array.prototype.forEach.call(kutu.querySelectorAll('[data-ety-reddet]'), function (b) {
+      b.onclick = function () {
+        var o = ozeller.filter(function (x) { return x.id === b.getAttribute('data-ety-reddet'); })[0];
+        if (!o) return;
+        var neden = prompt('“' + o.ad + '” reddediliyor. Öğretmene gösterilecek nedeni yaz (boş bırakılabilir):', '');
+        if (neden === null) return;
+        reddetEtkinlik(o, neden.trim(), $('etkOnayBilgi'), $('etkOnayHata'), function () { etkinlikYonetiminiCiz(); });
+      };
+    });
+  }
+  if ($('etkOnayTamGoster')) $('etkOnayTamGoster').onclick = function () {
+    var b = $('admSekOnay'); if (b) b.click();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   /* ---------- Yönetici: toplu görsel oluşturma ---------- */
   $('topluGorselBtn').onclick = async function () {
@@ -3857,6 +3948,8 @@
     $('sekmeEtkinlik').classList.add('secili'); $('sekmeOgrenci').classList.remove('secili'); $('sekmeOlustur').classList.remove('secili');
     $('etkinlikSekme').style.display = ''; $('ogrenciSekme').style.display = 'none'; $('olusturSekme').style.display = 'none';
     etkinlikYonetiminiCiz();
+    /* (v2.7.7) Yönetici bu sekmeyi açtığında en üstteki onay kartı da tazelensin */
+    if (yonetimAdminMi()) etkinlikOnayCiz();
   };
   $('sekmeOlustur').onclick = function () {
     $('sekmeOlustur').classList.add('secili'); $('sekmeOgrenci').classList.remove('secili'); $('sekmeEtkinlik').classList.remove('secili');
