@@ -345,6 +345,15 @@ html[data-tema='koyu'] .footer-marka .nav-marka-yazi b { color: #7fb0ff; }
 html[data-tema='koyu'] .footer-alt { color: #7f8fb4; }
 
 /* ---------- Responsive ---------- */
+/* 120px sade hero — arama üst nav'de (tema butonunun solu);
+   rozet, chip'ler ve Robi küçülerek bu ince banda sığar. */
+@media (min-width: 1200px) {
+  .hero { min-height: 120px; padding-block: 12px; }
+  .hero-badge { display: none; }
+  .hero-gorsel { min-height: 0; }
+  .robi-wrap { width: min(96px, 100%); }
+  .hero-kart { display: none; }
+}
 @media (max-width: 860px) {
   .hero { grid-template-columns: 1fr; }
   .robi-wrap { width: min(210px, 70%); margin-top: 6px; }

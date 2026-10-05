@@ -134,6 +134,18 @@ h1, h2, h3 { line-height: 1.15; }
 
 .nav-sag { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; margin-left: auto; }
 .nav-menu + .nav-sag { margin-left: 0; }
+/* Nav içi arama — geniş ekranda hero'dan taşınır, tema butonunun solunda durur */
+.nav-arama {
+  position: relative;
+  display: flex; align-items: center;
+  flex: 0 1 340px; min-width: 0;
+}
+.nav-arama[hidden] { display: none; }
+.nav-arama .hero-arama { width: 100%; box-shadow: var(--golge-kucuk); }
+.nav-arama .arama-sonuc {
+  position: absolute; top: calc(100% + 10px); right: 0;
+  width: min(400px, 92vw); z-index: 70;
+}
 .nav-giris {
   display: inline-flex; align-items: center; gap: 8px;
   text-decoration: none; flex-shrink: 0; cursor: pointer;
@@ -285,6 +297,7 @@ h1, h2, h3 { line-height: 1.15; }
 .arama-temizle:hover { background: var(--hover-kenar); color: var(--murekkep); transform: rotate(90deg); }
 
 /* Öneri dropdown */
+.arama-oneri[hidden] { display: none; }
 .arama-oneri {
   position: absolute; top: calc(100% + 8px); left: 0; right: 0;
   background: var(--yuzey); border: 1px solid var(--cizgi); border-radius: 18px;
@@ -359,7 +372,7 @@ h1, h2, h3 { line-height: 1.15; }
 /* ============================================================
    4c) NASIL ÇALIŞIR şeridi
    ============================================================ */
-.nasil-seridi { background: var(--yuzey); border-block: 1px solid var(--cizgi); }
+.nasil-seridi { background: var(--yuzey); border-block: 1px solid var(--cizgi); min-height: 120px; }
 .nasil-kutu {
   max-width: 1180px; margin: 0 auto; padding: 26px 24px;
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;

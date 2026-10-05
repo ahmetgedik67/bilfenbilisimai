@@ -45,6 +45,16 @@
   </div>
 
   <div class="nav-sag">
+    <!-- Arama: geniş ekranda hero'dan buraya taşınır (JS) — tema butonunun solu -->
+    <div class="nav-arama" id="navArama" hidden>
+      <div class="hero-arama" role="search">
+        <span class="arama-ikon" aria-hidden="true">🔍</span>
+        <input type="search" id="aramaKutu" class="arama-girdi" placeholder="Etkinlik ara…" aria-label="Etkinlik ara" autocomplete="off" spellcheck="false">
+        <button type="button" id="aramaTemizle" class="arama-temizle" aria-label="Aramayı temizle" title="Aramayı temizle" hidden>✕</button>
+        <div class="arama-oneri" id="aramaOneri" role="listbox" aria-label="Arama önerileri" hidden></div>
+      </div>
+      <div class="arama-sonuc" id="aramaSonuc" role="status" aria-live="polite" hidden></div>
+    </div>
     <button type="button" class="tema-dugme" id="temaBtn" title="Koyu/açık tema" aria-label="Koyu temayı aç/kapat">🌙</button>
     <a class="nav-giris" id="girisBtn" href="panel.html" title="Öğretmen girişi">👩‍🏫 Öğretmen</a>
     <button type="button" class="nav-burger" id="navBurger" aria-label="Menüyü aç/kapat" aria-expanded="false" aria-controls="navMenu">
@@ -71,13 +81,6 @@
       <span class="hero-badge"><span class="badge-nokta" aria-hidden="true"></span>BİLFEN BİLİŞİM TEKNOLOJİLERİ</span>
       <h1>Bilişim Teknolojilerini <span class="accent">Keşfet</span></h1>
       <p class="hero-slogan">Öğren, kodla, üret ve kendi projenle geliştir.</p>
-      <div class="hero-arama" role="search">
-        <span class="arama-ikon" aria-hidden="true">🔍</span>
-        <input type="search" id="aramaKutu" class="arama-girdi" placeholder="Etkinlik ara — “robotik”, “6. sınıf”, “yapay zeka”…" aria-label="Etkinlik ara" autocomplete="off" spellcheck="false">
-        <button type="button" id="aramaTemizle" class="arama-temizle" aria-label="Aramayı temizle" title="Aramayı temizle" hidden>✕</button>
-        <div class="arama-oneri" id="aramaOneri" role="listbox" aria-label="Arama önerileri" hidden></div>
-      </div>
-      <div class="arama-sonuc" id="aramaSonuc" role="status" aria-live="polite" hidden></div>
       <div class="hero-cta">
         <a class="btn btn-birincil" href="#icerik">🧩 Etkinliklere göz at</a>
         <a class="btn btn-ogretmen" href="panel.html">👩‍🏫 Öğretmen Girişi</a>
@@ -641,6 +644,34 @@
   }
   if (aramaTemizleBtn) aramaTemizleBtn.addEventListener('click', function () { aramaGirdi.value = ''; aramaUygula(); aramaGirdi.focus(); });
   if (aramaSonucKutu) aramaSonucKutu.addEventListener('click', function (e) { if (e.target.id === 'aramaIncele') { aramaSonucKutu.hidden = true; } });
+
+  /* (v2.7.10) Arama yerleşimi: geniş ekranda üst nav'de (tema butonunun solu),
+     dar ekranda hero'ya taşınır — hero 120px sade düzende arama nav'de durur. */
+  var navAramaYuva = $('navArama');
+  var aramaGenisMq = window.matchMedia ? window.matchMedia('(min-width: 1200px)') : null;
+  function aramaYerlesim() {
+    if (!navAramaYuva || !aramaGirdi || !aramaSonucKutu) return;
+    var kutu = aramaGirdi.closest('.hero-arama');
+    var cta = document.querySelector('.hero-cta');
+    var genis = aramaGenisMq ? aramaGenisMq.matches : false;
+    if (genis) {
+      if (kutu.parentNode !== navAramaYuva) { navAramaYuva.appendChild(kutu); navAramaYuva.appendChild(aramaSonucKutu); }
+      navAramaYuva.hidden = false;
+      aramaGirdi.placeholder = 'Etkinlik ara…';
+    } else {
+      if (cta && kutu.parentNode !== cta.parentNode) {
+        cta.parentNode.insertBefore(kutu, cta);
+        cta.parentNode.insertBefore(aramaSonucKutu, cta);
+      }
+      navAramaYuva.hidden = true;
+      aramaGirdi.placeholder = 'Etkinlik ara — “robotik”, “6. sınıf”, “yapay zeka”…';
+    }
+  }
+  aramaYerlesim();
+  if (aramaGenisMq) {
+    if (aramaGenisMq.addEventListener) aramaGenisMq.addEventListener('change', aramaYerlesim);
+    else if (aramaGenisMq.addListener) aramaGenisMq.addListener(aramaYerlesim);
+  }
 
   /* ===== GSAP Animations ===== */
   var gsapReady = typeof gsap !== 'undefined';
