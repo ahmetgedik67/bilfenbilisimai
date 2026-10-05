@@ -497,9 +497,9 @@
     var terimListesi = terimler.join(' ').split(' ').filter(Boolean);
     var sonuc = tum.filter(function (e) {
       var metin = ' ' + aramaMetni(e) + ' ';
-      /* Sınıf/IPT eşleşmesi (varsa şart) */
-      if (sinif && !((e.siniflar || []).includes(sinif) || (e.kategoriler || []).includes(sinif) || (e.kategoriler || []).length >= KATEGORILER.length)) return false;
-      if (ipt && !((e.kategoriler || []).includes(ipt) || (e.kategoriler || []).length >= KATEGORILER.length)) return false;
+      /* Sınıf/IPT eşleşmesi (varsa şart) — seviye seçilmemiş (herkese) olanlar aramaya da girer */
+      if (sinif && !(e.siniflar || []).includes(sinif) && !(e.kategoriler || []).includes(sinif) && !((e.kategoriler || []).length >= KATEGORILER.length) && e.herkese !== true) return false;
+      if (ipt && !((e.kategoriler || []).includes(ipt) || (e.kategoriler || []).length >= KATEGORILER.length) && e.herkese !== true) return false;
       /* En az bir terim geçmelidir */
       return terimListesi.some(function (t) { return t.length >= 2 && metin.indexOf(t) !== -1; });
     });
@@ -1000,6 +1000,9 @@
     bolumler.forEach((bl) => {
       const etkinlikler = tumEtkinlikler.filter(o =>
             (o.kategoriler || []).includes(bl.no) || (o.siniflar || []).includes(bl.no)
+            /* (v2.7.8) Seviye seçilmeyen özel etkinlikler tüm seviyelere açıktır;
+               bölüm filtresine takılırsa hiç görünmezlerdi. */
+            || o.herkese === true
           );
 
       const bolum = document.createElement('section');

@@ -2883,9 +2883,13 @@
     var gorsel = o.gorsel ? o.gorsel : (o.tip !== 'drive' ? gorselOlustur(o.ad, o.tip, o.konu) : '');
     var islemler = [API.ozelOnayla(o.id)];
     if (gorsel && !o.gorsel) islemler.push(sb('ozel_etkinlik?id=eq.' + encodeURIComponent(o.id), { method: 'PATCH', body: { gorsel: gorsel } }));
-    /* (v2.7) Öğretmenin kaydettiği yayın (açılış/kapanış) tarihini atamaya da yaz;
-       🎮 Etkinlik Yönetimi ile öğrenci portalındaki geri sayım aynı tarihi gösterir. */
-    if (o.acilis || o.kapanis) islemler.push(API.atamaKaydet(oturum, 'ozel:' + o.id, true, o.acilis || null, o.kapanis || null));
+    /* (v2.7.8) ONAY = YAYIN. Tarih girilmemişse bile atama satırı hemen yazılır:
+       öğrenci görünümü (ozel_etkinlik_ogrenci) icerik sütununu atama satırındaki
+       aktif=true koşulundan döndürür; satır yoksa içerik null gelir, kart pasif
+       kalır ve admin Etkinlik Yönetimi'nden Kaydet'ek zorlanırdı.
+       Tarih verilmişse (açılış/kapanış) yine o tarihler yazılır — yayın saate
+       göre kendiliğinden açılır/kapanır. */
+    islemler.push(API.atamaKaydet(oturum, 'ozel:' + o.id, true, o.acilis || null, o.kapanis || null));
     return Promise.all(islemler).then(function () {
       bilgiGoster(bilgiEl, '✅ Onaylandı ve tüm kampüslerde yayınlandı.');
       etkinlikOnayCiz();
