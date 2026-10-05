@@ -3313,7 +3313,7 @@
       $('adEkleOgretmenKampus').innerHTML = kampusSecenekleri(kampüsler, $('adEkleOgretmenKampus').value);
       // Kampüs filtreleri (öğretmen listesi + rapor) — seçim korunur
       var filtre = $('adOgretmenKampus');
-      secili = filtre.value;
+      var secili = filtre.value; /* (düzeltme) bildirimsiz atama strict modda ReferenceError fırlatıyordu → kampüs tablosu ve öğretmen listesi hiç çizilmiyordu */
       filtre.innerHTML = '<option value="">Tümü</option>' + kampusSecenekleri(kampüsler, '');
       if (secili) filtre.value = secili;
 
@@ -3337,7 +3337,7 @@
       h += '</table>';
       kutu.innerHTML = h;
       ogretmenleriCiz();
-    }).catch(function (e) { hataGoster($('adKampusHata'), e.message); });
+    }).catch(function (e) { console.error('kampuslariCiz hata:', e); hataGoster($('adOgretmenHata'), 'Kampüs/öğretmen listesi yüklenemedi: ' + e.message); });
   }
 
   function ogretmenleriCiz() {
