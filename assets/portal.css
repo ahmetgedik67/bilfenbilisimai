@@ -234,6 +234,22 @@ h1, h2, h3 { line-height: 1.15; }
 .btn-birincil:active { transform: translateY(1px); }
 .btn-ikincil { background: #fff; color: var(--murekkep); border: 1.5px solid var(--cizgi); box-shadow: var(--golge-kucuk); }
 .btn-ikincil:hover { transform: translateY(-2px); border-color: var(--mavi); color: var(--mavi); }
+/* Öğretmen Girişi — sayfada kolay fark edilsin diye sıcak gradyanlı, gölgeli buton */
+.btn-ogretmen {
+  background: linear-gradient(135deg, #f59e0b, #f97316); color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, .6);
+  box-shadow: 0 10px 26px rgba(249, 115, 22, .42), inset 0 1px 0 rgba(255, 255, 255, .4);
+  text-shadow: 0 1px 2px rgba(146, 64, 14, .35);
+}
+.btn-ogretmen:hover { transform: translateY(-2px); filter: brightness(1.06); color: #fff; box-shadow: 0 14px 32px rgba(249, 115, 22, .55), inset 0 1px 0 rgba(255, 255, 255, .45); }
+.btn-ogretmen:active { transform: translateY(1px); filter: brightness(.98); }
+@media (prefers-reduced-motion: no-preference) {
+  .hero-cta .btn-ogretmen { animation: ogretmenVurgu 3s ease-in-out infinite; }
+}
+@keyframes ogretmenVurgu {
+  0%, 100% { box-shadow: 0 10px 26px rgba(249, 115, 22, .42), inset 0 1px 0 rgba(255, 255, 255, .4); }
+  50% { box-shadow: 0 14px 34px rgba(249, 115, 22, .65), 0 0 0 6px rgba(249, 115, 22, .18), inset 0 1px 0 rgba(255, 255, 255, .45); }
+}
 .hero-ipucu { font-size: 12.5px; font-weight: 700; color: var(--yazi-ince); opacity: .9; }
 .hero-slogan { font-size: clamp(16px, 2vw, 19px); font-weight: 600; color: var(--lacivert-2); }
 
@@ -1242,6 +1258,8 @@ html[data-tema='koyu'] ::selection { background: rgba(91, 141, 255, .3); }
 .kapi-not { margin-top: 16px; font-size: .8rem; color: #64748b; line-height: 1.6; }
 .kapi-not a { color: var(--rp-blue, #2563eb); font-weight: 800; text-decoration: none; }
 .kapi-not a:hover { text-decoration: underline; }
+.kapi-ogretmen { display: flex; max-width: 400px; margin: 14px auto 0; justify-content: center; }
+.kapi-ogretmen:hover { text-decoration: none; }
 @media (prefers-reduced-motion: reduce) {
   .kapi-robi { animation: none; }
   .kapi-kart, .kapi-adim, .kapi-hata, .kapi-kutu.dolu { animation: none !important; }
