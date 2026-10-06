@@ -5,7 +5,7 @@ Bilişim Teknolojileri ve Yazılım dersi için hazırlanan HTML etkinliklerinin
 uyguladığı etkinlikler için **Öğretmen kategorisine** göre toplandığı portal ana sayfası.
 Robi maskotuyla birlikte tüm etkinlikler tek çatı altında: karta tıkla, hemen oyna.
 
-🔗 **Canlı:** https://ahmetgedik67.github.io/bilfenbilisimai/
+🔗 **Canlı:** https://bilfen.github.io/
 
 🎓 *Bilfen Bilişim Zümresi*
 

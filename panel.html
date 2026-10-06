@@ -3817,7 +3817,7 @@
       '<div class="hafta">📅 ' + esc(hafta) + '</div>' +
       '</div>' +
       '<div class="izgara">' + kartlar + '</div>' +
-      '<div class="alt-bilgi">Öğrenciler <b>ahmetgedik67.github.io/bilfenbilisimai</b> adresinde sınıflarını seçip bu kodu girerek etkinliklere ulaşır.<br>Kodlar her hafta yenilenir · Döküm: ' + esc(bugun) + ' · Bilfen Bilişim Teknolojileri</div>' +
+      '<div class="alt-bilgi">Öğrenciler <b>bilfen.github.io</b> adresinde sınıflarını seçip bu kodu girerek etkinliklere ulaşır.<br>Kodlar her hafta yenilenir · Döküm: ' + esc(bugun) + ' · Bilfen Bilişim Teknolojileri</div>' +
       '</div>' +
       '</body></html>';
     return html;
@@ -3908,7 +3908,7 @@
     c.strokeStyle = '#dbe3f0'; c.lineWidth = 2;
     c.beginPath(); c.moveTo(kenar, sonY + 18); c.lineTo(W - kenar, sonY + 18); c.stroke();
     c.fillStyle = '#64748b'; c.font = '500 24px \'Segoe UI\',system-ui,Arial,sans-serif';
-    c.fillText('Öğrenciler ahmetgedik67.github.io/bilfenbilisimai adresinde sınıflarını seçip bu kodu girer · Kodlar her hafta yenilenir', W / 2, sonY + 64);
+    c.fillText('Öğrenciler bilfen.github.io adresinde sınıflarını seçip bu kodu girer · Kodlar her hafta yenilenir', W / 2, sonY + 64);
     var bugun2 = '';
     try { bugun2 = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { bugun2 = new Date().toLocaleDateString(); }
     c.fillText('Döküm: ' + bugun2 + ' · Bilfen Bilişim Teknolojileri', W / 2, sonY + 102);
