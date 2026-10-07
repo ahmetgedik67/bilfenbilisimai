@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Etkinlik Gönder — Bilfen DigiQuest</title>
+<link rel="icon" type="image/png" href="robi.png">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/portal.css">
+<style>
+  .ge-page { max-width: 720px; margin: 0 auto; padding: 26px 16px 60px; }
+  .ge-kart {
+    background: rgba(255,255,255,.93); border: 1px solid rgba(255,255,255,.9);
+    border-radius: 26px; box-shadow: 0 24px 60px rgba(30,64,175,.16), 0 4px 14px rgba(30,64,175,.07);
+    padding: clamp(22px, 4vw, 34px); position: relative; overflow: hidden;
+  }
+  .ge-kart::before { content:''; position:absolute; inset:0 0 auto 0; height:6px;
+    background: linear-gradient(90deg,#2563eb,#7c3aed 35%,#ec4899 68%,#f59e0b); }
+  html[data-tema='koyu'] .ge-kart { background: rgba(13,21,38,.96); border-color: var(--kutu-kenar); }
+  .ge-bas { text-align:center; margin-bottom: 22px; }
+  .ge-robi { width: 72px; height: 72px; margin: 4px auto 12px; border-radius: 22px; display:block;
+    background:#fff; box-shadow: 0 10px 24px rgba(49,46,129,.18); object-fit: contain; }
+  .ge-robi-yazi { font-family: var(--font-baslik); font-size: clamp(1.3rem,4vw,1.6rem); font-weight: 800;
+    letter-spacing:-.03em; background: linear-gradient(90deg,#1e3a8a,#6d28d9);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:#1e3a8a; }
+  html[data-tema='koyu'] .ge-robi-yazi { background: linear-gradient(90deg,#93c5fd,#c4b5fd);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:#93c5fd; }
+  .ge-alt { color: var(--yazi-ince); font-size: .92rem; margin-top: 6px; line-height: 1.55; }
+  .ge-alan { margin-top: 16px; }
+  .ge-alan > label { display:block; font-weight: 800; font-size: .88rem; color: var(--lacivert-2); margin-bottom: 6px; }
+  html[data-tema='koyu'] .ge-alan > label { color: #c3d4ff; }
+  .ge-alan input[type=text], .ge-alan textarea {
+    width: 100%; padding: 11px 13px; border-radius: 12px; font-size: .95rem; font-family: inherit;
+    border: 1.5px solid #dbe6ff; background: #f8fbff; color: var(--murekkep, #1e293b);
+  }
+  .ge-alan textarea { min-height: 170px; font-family: Consolas, 'Courier New', monospace; font-size: .85rem; resize: vertical; }
+  .ge-alan input:focus, .ge-alan textarea:focus { outline: none; border-color: var(--mavi); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+  html[data-tema='koyu'] .ge-alan input[type=text], html[data-tema='koyu'] .ge-alan textarea { background: rgba(15,23,42,.55); border-color: var(--kutu-kenar); color: #e2e8f0; }
+  .ge-not { font-size: .78rem; color: var(--yazi-ince); margin-top: 6px; line-height: 1.5; }
+  .ge-secim { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ge-token { border: 1.5px solid #dbe6ff; background: #f8fbff; border-radius: 999px;
+    padding: 8px 14px; font-size: .84rem; font-weight: 700; color: var(--lacivert-2); cursor: pointer; }
+  .ge-token.secili { background: linear-gradient(135deg,#2563eb,#7c3aed); border-color: transparent; color: #fff; }
+  .ge-kaynak { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ge-kaynak-btn { border: 1.5px solid #dbe6ff; background: #f8fbff; border-radius: 12px;
+    padding: 10px 14px; font-size: .87rem; font-weight: 700; color: var(--lacivert-2); cursor: pointer; }
+  .ge-kaynak-btn.secili { background: #eef4ff; border-color: var(--mavi); color: var(--mavi); }
+  .ge-kutu { display: none; margin-top: 12px; }
+  .ge-kutu.acik { display: block; }
+  .ge-dugmeler { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+  .ge-gonder { flex: 1; min-width: 220px; background: linear-gradient(135deg,#2563eb,#7c3aed);
+    color: #fff; border: none; border-radius: 999px; padding: 14px 26px; font-size: 1rem; font-weight: 800;
+    cursor: pointer; box-shadow: 0 8px 20px rgba(37,99,235,.32); }
+  .ge-gonder:disabled { opacity: .6; cursor: wait; }
+  .ge-onizle { background: #fff; border: 1.5px solid #dbe6ff; color: var(--lacivert-2);
+    border-radius: 999px; padding: 14px 22px; font-size: .95rem; font-weight: 800; cursor: pointer; }
+  .ge-hata { display: none; margin-top: 14px; background: #fef2f2; border: 1.5px solid #fecaca;
+    color: #991b1b; border-radius: 12px; padding: 11px 14px; font-size: .88rem; font-weight: 600; }
+  .ge-hata.acik { display: block; }
+  .ge-basari { display: none; text-align: center; padding: 30px 10px; }
+  .ge-basari.acik { display: block; }
+  .ge-basari .ikon { font-size: 52px; }
+  .ge-basari h2 { margin: 12px 0 8px; font-size: 1.35rem; color: var(--gece, #1e293b); }
+  html[data-tema='koyu'] .ge-basari h2 { color: #f1f5ff; }
+  .ge-basari p { color: var(--yazi-ince); font-size: .93rem; line-height: 1.6; }
+  .ge-gizli { position: absolute; left: -9999px; top: -9999px; opacity: 0; height: 0; width: 0; overflow: hidden; }
+  #geOnizleme { position: fixed; inset: 0; z-index: 200; background: rgba(8,12,24,.86); display: none;
+    align-items: center; justify-content: center; padding: 18px; }
+  #geOnizleme.acik { display: flex; }
+  #geOnizleme .pencere { width: min(960px, 100%); height: min(78vh, 720px); background: #fff;
+    border-radius: 16px; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+  #geOnizleme iframe { width: 100%; height: 100%; border: 0; background: #fff; }
+  #geOnizleme .kapat { position: absolute; top: -14px; right: -14px; width: 42px; height: 42px;
+    border-radius: 50%; border: none; background: #1e293b; color: #fff; font-size: 17px; cursor: pointer; z-index: 2; }
+  @media (max-width: 430px) { .ge-token, .ge-kaynak-btn { font-size: .8rem; padding: 7px 11px; } }
+</style>
+</head>
+<body>
+
+<nav class="ust-nav" aria-label="Ana gezinme">
+  <a class="nav-marka" href="index.html" title="Portala dön">
+    <span class="nav-logo" aria-hidden="true"><img src="robi.png" alt=""></span>
+    <span class="nav-marka-yazi">Bilfen <b>DigiQuest</b></span>
+  </a>
+  <div class="nav-menu">
+    <a class="nav-link" href="index.html">🏠 Portal</a>
+    <a class="nav-link nav-aktif" href="etkinlik-ekle.html" aria-current="page">✉️ Etkinlik Gönder</a>
+    <a class="nav-link" href="panel.html">👩‍🏫 Panel</a>
+  </div>
+</nav>
+
+<main class="ge-page">
+  <div class="ge-kart">
+
+    <div id="geFormBolum">
+      <div class="ge-bas">
+        <img class="ge-robi" src="robi.png" alt="Robi maskotu">
+        <div class="ge-robi-yazi">Etkinlik Gönder</div>
+        <p class="ge-alt">Öğretmen ya da öğrenci, <b>herkes</b> bu sayfadan etkinlik önerebilir.<br>
+        Gönderiler <b>yönetici onayından</b> sonra portala düşer — onaylanmadan görünmez.</p>
+      </div>
+
+      <form id="geForm" novalidate>
+        <div class="ge-alan">
+          <label for="geAd">Adın soyadın *</label>
+          <input type="text" id="geAd" maxlength="80" placeholder="Örn. Ayşe Demir" autocomplete="name">
+        </div>
+
+        <div class="ge-alan">
+          <label for="geEtkinlikAd">Etkinlik adı *</label>
+          <input type="text" id="geEtkinlikAd" maxlength="120" placeholder="Örn. Yıldız Avcısı">
+        </div>
+
+        <div class="ge-alan">
+          <label for="geKonu">Konu &amp; tema *</label>
+          <input type="text" id="geKonu" maxlength="160" placeholder="Örn. Mouse kullanma ve dikkat">
+        </div>
+
+        <div class="ge-alan">
+          <label>Kullanılacağı yerler * <span style="font-weight:600;color:#64748b">(bir veya birden fazla seç)</span></label>
+          <div class="ge-secim" id="geSecim"></div>
+        </div>
+
+        <div class="ge-alan">
+          <label>İçerik kaynağı *</label>
+          <div class="ge-kaynak">
+            <button type="button" class="ge-kaynak-btn secili" data-kaynak="dosya">📄 HTML dosyası yükle</button>
+            <button type="button" class="ge-kaynak-btn" data-kaynak="drive">🔗 Bağlantı ver</button>
+            <button type="button" class="ge-kaynak-btn" data-kaynak="kod">✂️ Kodu yapıştır</button>
+          </div>
+
+          <div class="ge-kutu acik" id="geKutuDosya">
+            <label class="ge-onizle" style="display:inline-block;cursor:pointer;font-size:.87rem;padding:10px 18px">
+              📂 HTML dosyası seç <input type="file" id="geDosya" accept=".html,.htm,text/html" style="display:none">
+            </label>
+            <span class="ge-not" id="geDosyaAdi">Dosya seçilmedi</span>
+            <p class="ge-not">Tek dosyalık (HTML+CSS+JS bir arada) bir etkinlik seç. Dosya aynen saklanır; onaylanınca öğrenciler içinde çalıştırır.</p>
+          </div>
+
+          <div class="ge-kutu" id="geKutuDrive">
+            <input type="text" id="geDrive" placeholder="https://drive.google.com/...">
+            <p class="ge-not">Drive paylaşımını <b>"Bağlantısı olan herkes"</b> yap. Onaylanınca öğrenciler bağlantıyı yeni sekmede açar.</p>
+          </div>
+
+          <div class="ge-kutu" id="geKutuKod">
+            <textarea id="geKod" spellcheck="false" placeholder="&lt;!DOCTYPE html&gt; … etkinliğin tamamını buraya yapıştır"></textarea>
+          </div>
+        </div>
+
+        <div class="ge-alan">
+          <label for="geGorsel">Önizleme görseli <span style="font-weight:600;color:#64748b">(isteğe bağlı)</span></label>
+          <label class="ge-onizle" style="display:inline-block;cursor:pointer;font-size:.87rem;padding:10px 18px">
+            🖼️ Görsel yükle <input type="file" id="geGorsel" accept="image/*" style="display:none">
+          </label>
+          <span class="ge-not" id="geGorselDurum">Görsel eklenmezse portal otomatik görsel oluşturur.</span>
+          <img id="geGorselOnizle" alt="" style="display:none;max-width:140px;max-height:90px;border-radius:10px;margin-top:8px;border:2px solid #dbe6ff">
+        </div>
+
+        <!-- Spam kapanı: gerçek kullanıcı bunu doldurmaz -->
+        <div class="ge-gizli" aria-hidden="true"><label>Boş bırakın<input type="text" id="geHoneypot" tabindex="-1" autocomplete="off"></label></div>
+
+        <div class="ge-hata" id="geHata" role="alert"></div>
+
+        <div class="ge-dugmeler">
+          <button type="button" class="ge-onizle" id="geOnizleBtn">👁 Önizle</button>
+          <button type="submit" class="ge-gonder" id="geGonderBtn">📨 Etkinliği Gönder</button>
+        </div>
+        <p class="ge-not" style="margin-top:14px;text-align:center">
+          Gönderin yönetici onayına gider. Onaylanınca portala eklenir; reddedilirse nedeniyle birlikte kaydedilir.
+        </p>
+      </form>
+    </div>
+
+    <div class="ge-basari" id="geBasari" role="status">
+      <div class="ikon">✅</div>
+      <h2>Etkinliğin yönetici onayına gönderildi</h2>
+      <p id="geBasariMetin"></p>
+      <div class="ge-dugmeler" style="justify-content:center">
+        <button type="button" class="ge-onizle" id="geYenidenBtn">✉️ Yeni etkinlik gönder</button>
+        <a class="ge-onizle" href="index.html" style="text-decoration:none">🏠 Portala dön</a>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div id="geOnizleme" aria-hidden="true">
+  <div class="pencere">
+    <button class="kapat" id="geOnizlemeKapat" title="Kapat" aria-label="Kapat">✕</button>
+    <iframe id="geOnizlemeFrame" title="Etkinlik önizlemesi" sandbox="allow-scripts"></iframe>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* Supabase yapılandırması (portal ile aynı) */
+  var LS_URL = localStorage.getItem('bt_supabase_url');
+  var CFG = {
+    url: LS_URL === null ? 'https://zvqwhesibqntcnpqoytm.supabase.co' : LS_URL,
+    anon: localStorage.getItem('bt_supabase_anon') || 'sb_publishable_hU6il_Kq9_E_57WqaOT8BA_iLtDPpuM'
+  };
+
+  /* Kullanım yerleri — panel ile aynı token biçimi (s1..s7, i2..i7, arac) */
+  var SECIMLER = [];
+  var secimKutu = $('geSecim');
+  function tokenEtiketi(t) {
+    if (t === 'arac') return '👩‍🏫 Öğretmen Aracı';
+    var n = parseInt(t.slice(1), 10);
+    return t[0] === 's' ? n + '. Sınıf' : n + ' IPT';
+  }
+  var tokenlar = ['s1','s2','s3','s4','s5','s6','s7','i2','i3','i4','i5','i6','i7','arac'];
+  tokenlar.forEach(function (t) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'ge-token'; b.dataset.token = t;
+    b.textContent = tokenEtiketi(t);
+    b.addEventListener('click', function () {
+      var i = SECIMLER.indexOf(t);
+      if (i >= 0) { SECIMLER.splice(i, 1); b.classList.remove('secili'); }
+      else { SECIMLER.push(t); b.classList.add('secili'); }
+    });
+    secimKutu.appendChild(b);
+  });
+
+  /* Kaynak seçimi */
+  var tip = 'dosya', dosyaMetin = '', gorsel = '';
+  var kaynakBtnlar = [].slice.call(document.querySelectorAll('.ge-kaynak-btn'));
+  kaynakBtnlar.forEach(function (b) {
+    b.addEventListener('click', function () {
+      tip = b.dataset.kaynak;
+      kaynakBtnlar.forEach(function (x) { x.classList.toggle('secili', x === b); });
+      $('geKutuDosya').classList.toggle('acik', tip === 'dosya');
+      $('geKutuDrive').classList.toggle('acik', tip === 'drive');
+      $('geKutuKod').classList.toggle('acik', tip === 'kod');
+    });
+  });
+
+  $('geDosya').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (!f) { dosyaMetin = ''; $('geDosyaAdi').textContent = 'Dosya seçilmedi'; return; }
+    if (f.size > 700 * 1024) { hata('HTML dosyası en fazla 700 KB olabilir (' + Math.round(f.size/1024) + ' KB).'); this.value = ''; return; }
+    var okur = new FileReader();
+    okur.onload = function () { dosyaMetin = String(okur.result || ''); $('geDosyaAdi').textContent = '✅ ' + f.name + ' (' + Math.round(f.size/1024) + ' KB)'; };
+    okur.readAsText(f);
+    $('geDosyaAdi').textContent = 'Okunuyor…';
+  });
+
+  $('geGorsel').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    if (f.size > 400 * 1024) { hata('Önizleme görseli en fazla 400 KB olabilir.'); this.value = ''; return; }
+    var okur = new FileReader();
+    okur.onload = function () {
+      gorsel = String(okur.result || '');
+      $('geGorselOnizle').src = gorsel;
+      $('geGorselOnizle').style.display = '';
+      $('geGorselDurum').textContent = '✅ ' + f.name + ' yüklendi';
+    };
+    okur.readAsDataURL(f);
+  });
+
+  function hata(m) {
+    var kutu = $('geHata');
+    kutu.textContent = m || '';
+    kutu.classList.toggle('acik', !!m);
+  }
+
+  function icerikBul() {
+    if (tip === 'dosya') return dosyaMetin;
+    if (tip === 'drive') return $('geDrive').value.trim();
+    return $('geKod').value.trim();
+  }
+
+  var acilisZamani = Date.now();
+
+  $('geForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var adKisi = $('geAd').value.trim();
+    var ad = $('geEtkinlikAd').value.trim();
+    var konu = $('geKonu').value.trim();
+    var icerik = icerikBul();
+
+    if ($('geHoneypot').value) { hata('Gönderim reddedildi.'); return; }        /* bot kapanı */
+    if (Date.now() - acilisZamani < 2500) { hata('Lütfen formu doldurup yeniden deneyin.'); return; }
+    if (!adKisi) { hata('Adını soyadını yaz.'); return; }
+    if (!ad) { hata('Etkinlik adı girin.'); return; }
+    if (!konu) { hata('Konu & Tema yazın.'); return; }
+    if (!SECIMLER.length) { hata('En az bir kullanım yeri seçin: Sınıf, IPT ve/veya Öğretmen Aracı.'); return; }
+    if (!icerik) { hata('İçerik boş: dosya seçin, bağlantı girin ya da kod yapıştırın.'); return; }
+    if (tip === 'drive' && !/^https?:\/\//i.test(icerik)) { hata('Bağlantı http(s) ile başlamalı.'); return; }
+    if (gorsel && gorsel.length + icerik.length > 900 * 1024) { hata('Toplam içerik çok büyük (en fazla ~900 KB). Görseli kaldırıp tekrar deneyin.'); return; }
+    hata('');
+
+    var govde = {
+      campus_id: null,
+      ogretmen_id: null,
+      ogretmen_ad: adKisi,
+      ogretmen_kullanici: '',
+      ad: ad,
+      konu: konu,
+      seviyeler: JSON.stringify(SECIMLER.slice()),
+      tip: tip,
+      icerik: icerik,
+      durum: 'bekliyor',
+      gorsel: gorsel || ''
+    };
+
+    var btn = $('geGonderBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Gönderiliyor…';
+
+    fetch(CFG.url + '/rest/v1/ozel_etkinlik', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': CFG.anon,
+        'Authorization': 'Bearer ' + CFG.anon
+      },
+      body: JSON.stringify(govde)
+    }).then(function (r) {
+      if (!r.ok) return r.json().catch(function () { return {}; }).then(function (j) { throw new Error(j.message || ('Sunucu hatası (' + r.status + ')')); });
+      return null;
+    }).then(function () {
+      $('geFormBolum').style.display = 'none';
+      $('geBasari').classList.add('acik');
+      $('geBasariMetin').innerHTML = '<b>' + esc(ad) + '</b> adlı etkinlik <b>"Onay bekliyor"</b> durumuna eklendi.<br>' +
+        'Yönetici onaylayınca portala düşecek; reddederse nedeni kaydedilecek.';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }).catch(function (e2) {
+      hata('Gönderilemedi: ' + e2.message);
+    }).finally(function () {
+      btn.disabled = false;
+      btn.textContent = '📨 Etkinliği Gönder';
+    });
+  });
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  $('geOnizleBtn').addEventListener('click', function () {
+    var icerik = icerikBul();
+    if (tip === 'drive') { hata('Bağlantı önizlenemez; onaylanınca öğrenciler yeni sekmede açar.'); return; }
+    if (!icerik) { hata('Önce HTML içeriğini girin (dosya seçin, bağlantı verin ya da kod yapıştırın).'); return; }
+    hata('');
+    $('geOnizlemeFrame').srcdoc = icerik;
+    $('geOnizleme').classList.add('acik');
+    $('geOnizleme').setAttribute('aria-hidden', 'false');
+  });
+  function onizlemeKapat() {
+    $('geOnizleme').classList.remove('acik');
+    $('geOnizleme').setAttribute('aria-hidden', 'true');
+    $('geOnizlemeFrame').srcdoc = '';
+  }
+  $('geOnizlemeKapat').addEventListener('click', onizlemeKapat);
+  $('geOnizleme').addEventListener('click', function (e) { if (e.target.id === 'geOnizleme') onizlemeKapat(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') onizlemeKapat(); });
+
+  $('geYenidenBtn').addEventListener('click', function () {
+    $('geForm').reset();
+    SECIMLER.length = 0;
+    [].slice.call(document.querySelectorAll('.ge-token.secili')).forEach(function (b) { b.classList.remove('secili'); });
+    dosyaMetin = ''; gorsel = ''; tip = 'dosya';
+    $('geDosyaAdi').textContent = 'Dosya seçilmedi';
+    $('geGorselDurum').textContent = 'Görsel eklenmezse portal otomatik görsel oluşturur.';
+    $('geGorselOnizle').style.display = 'none';
+    kaynakBtnlar.forEach(function (x, i) { x.classList.toggle('secili', i === 0); });
+    $('geKutuDosya').classList.add('acik');
+    $('geKutuDrive').classList.remove('acik');
+    $('geKutuKod').classList.remove('acik');
+    hata('');
+    $('geBasari').classList.remove('acik');
+    $('geFormBolum').style.display = '';
+    acilisZamani = Date.now();
+  });
+})();
+</script>
+</body>
+</html>
