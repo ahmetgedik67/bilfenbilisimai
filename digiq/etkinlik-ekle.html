@@ -102,11 +102,6 @@
 
       <form id="geForm" novalidate>
         <div class="ge-alan">
-          <label for="geAd">Adın soyadın *</label>
-          <input type="text" id="geAd" maxlength="80" placeholder="Örn. Ayşe Demir" autocomplete="name">
-        </div>
-
-        <div class="ge-alan">
           <label for="geEtkinlikAd">Etkinlik adı *</label>
           <input type="text" id="geEtkinlikAd" maxlength="120" placeholder="Örn. Yıldız Avcısı">
         </div>
@@ -277,14 +272,12 @@
 
   $('geForm').addEventListener('submit', function (e) {
     e.preventDefault();
-    var adKisi = $('geAd').value.trim();
     var ad = $('geEtkinlikAd').value.trim();
     var konu = $('geKonu').value.trim();
     var icerik = icerikBul();
 
     if ($('geHoneypot').value) { hata('Gönderim reddedildi.'); return; }        /* bot kapanı */
     if (Date.now() - acilisZamani < 2500) { hata('Lütfen formu doldurup yeniden deneyin.'); return; }
-    if (!adKisi) { hata('Adını soyadını yaz.'); return; }
     if (!ad) { hata('Etkinlik adı girin.'); return; }
     if (!konu) { hata('Konu & Tema yazın.'); return; }
     if (!SECIMLER.length) { hata('En az bir kullanım yeri seçin: Sınıf, IPT ve/veya Öğretmen Aracı.'); return; }
@@ -296,7 +289,7 @@
     var govde = {
       campus_id: null,
       ogretmen_id: null,
-      ogretmen_ad: adKisi,
+      ogretmen_ad: '',
       ogretmen_kullanici: '',
       ad: ad,
       konu: konu,
