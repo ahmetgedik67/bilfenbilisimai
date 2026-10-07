@@ -6,3 +6,6 @@ Desktop.ini
 # Editör / işletim sistemi artıkları
 *.swp
 *~
+
+# Bilinçli olarak commit dışı tutulan dosya
+Promtlar.txt
