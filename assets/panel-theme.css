@@ -83,6 +83,8 @@ h1, h2, h3, .marka, .kart h2, .kart h3, .kullanici, .sekme {
   transition: transform var(--gecis-yay);
 }
 .marka:hover .nav-logo-panel { transform: rotate(-6deg) scale(1.06); }
+/* Ortak Robi logo bileşeni: panel üst barı ve footer'da maskot görseli */
+.nav-logo-panel .nav-logo-gorsel { width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 10px; }
 .ust-bar .panel-nav a {
   color: var(--yazi-ince) !important;
   background: transparent !important;
