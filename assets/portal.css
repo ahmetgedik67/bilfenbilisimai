@@ -1168,6 +1168,18 @@ html[data-tema='koyu'] ::selection { background: rgba(91, 141, 255, .3); }
   -webkit-text-fill-color: transparent; color: #1e3a8a;
 }
 .kapi-alt { margin-top: 8px; color: var(--rp-muted, #52627f); font-size: .93rem; line-height: 1.55; }
+/* Kapı kartındaki motto rozeti: hero-badge'ten bağımsız sınıf — robi temasının geniş ekran
+   sadeleşme kuralı (.hero-badge { display:none }) kapıyı etkilemesin; beyaz kartta belirgin olsun diye açık mavi zemin */
+.kapi-badge {
+  display: inline-flex; align-items: center; gap: 9px;
+  margin: 2px auto 4px;
+  background: #eef4ff; border: 1px solid #dbe6ff;
+  color: var(--lacivert-2); font-size: 11px; font-weight: 800;
+  letter-spacing: 2.2px; padding: 7px 16px; border-radius: 999px;
+}
+@media (max-width: 430px) {
+  .kapi-badge { font-size: 9.5px; letter-spacing: 1px; padding: 6px 12px; gap: 7px; }
+}
 .kapi-form { margin-top: 18px; display: flex; flex-direction: column; gap: 12px; text-align: left; }
 .kapi-adim {
   background: rgba(248, 250, 255, .82);
@@ -1306,6 +1318,9 @@ html[data-tema='koyu'] .kapi-kart h1 {
   -webkit-text-fill-color: transparent; color: #93c5fd;
 }
 html[data-tema='koyu'] .kapi-alt { color: #94a3c4; }
+html[data-tema='koyu'] .kapi-badge {
+  background: rgba(19, 28, 48, .8); border-color: var(--kutu-kenar); color: #c3d4ff;
+}
 html[data-tema='koyu'] .kapi-robi { background: var(--kutu-zemin); box-shadow: 0 10px 24px rgba(0, 0, 0, .4), inset 0 0 0 1px var(--kutu-kenar); }
 html[data-tema='koyu'] .kapi-adim { background: rgba(15, 23, 42, .55); border-color: var(--kutu-kenar); }
 html[data-tema='koyu'] .kapi-adim-baslik { color: #e2e8f0; }
