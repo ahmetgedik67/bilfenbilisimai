@@ -1,4 +1,4 @@
-# Bilfen Bilişim AI — KVKK Uyum Notu (v2 Mimari)
+# Bilfen DigiQuest — KVKK Uyum Notu (v2 Mimari)
 
 > Bu belge teknik mimarinin veri koruma yaklaşımını özetler. Hukuki bağlayıcılığı
 > yoktur; kurumun veri sorumlusu olarak KVKK süreçlerini (VERBİS, aydınlatma

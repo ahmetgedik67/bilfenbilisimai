@@ -1,4 +1,6 @@
-# 🧩 Bilfen Bilişim AI – HTML Etkinlikleri
+# 🧩 Bilfen DigiQuest – HTML Etkinlikleri
+
+**Bilişim Teknolojileri Etkileşimli Öğrenme Platformu** · Keşfet • Düşün • Deneyimle • Öğren
 
 Bilişim Teknolojileri ve Yazılım dersi için hazırlanan HTML etkinliklerinin
 **sınıflara (1-7)**, **IPT kategorilerine** (2 IPT – 7 IPT) ve tahtada yalnız öğretmenin

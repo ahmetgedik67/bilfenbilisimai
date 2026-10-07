@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bilfen Bilişim AI – Panel</title>
+<title>Bilfen DigiQuest – Panel</title>
 
 <link rel="stylesheet" href="assets/fonts/fonts.css">
 <link rel="stylesheet" href="assets/panel-theme.css">
@@ -342,7 +342,7 @@
 <body>
 
 <div class="ust-bar">
-  <a class="marka" href="index.html" title="Portala dön" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px"><span class="nav-logo-panel" aria-hidden="true">🤖</span>Bilfen Bilişim <span>AI</span></a>
+  <a class="marka" href="index.html" title="Portala dön" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px"><span class="nav-logo-panel" aria-hidden="true">🤖</span>Bilfen <span>DigiQuest</span></a>
   <nav class="panel-nav" aria-label="Panel gezinme" style="display:flex;gap:4px;align-items:center">
     <a href="index.html" title="Etkinlik portalı">🏠 Etkinlikler</a>
     <a href="kullanim-kilavuzu.html" id="navKilavuz" title="Öğretmen kılavuzu (yalnız öğretmen/yönetici)" style="display:none">📘 Kılavuz</a>
@@ -774,7 +774,7 @@
 <footer class="site-footer" aria-label="Site bilgileri">
   <div class="footer-izgara">
     <div class="footer-marka">
-      <span class="footer-marka-yazi"><span class="nav-logo-panel" aria-hidden="true">🤖</span>Bilfen <b>Bilişim AI</b></span>
+      <span class="footer-marka-yazi"><span class="nav-logo-panel" aria-hidden="true">🤖</span>Bilfen <b>DigiQuest</b></span>
       <p>Öğretmen ve yönetici paneli: öğrencileri ekle, etkinlikleri yönet, içerik oluştur ve kampüsünü takip et.</p>
     </div>
     <nav class="footer-baglantilar" aria-label="Alt bilgi bağlantıları">
@@ -791,7 +791,7 @@
   </div>
   <div class="footer-alt">
     <span class="kurs">Bilişim Teknolojileri ve Yazılım Dersi</span>
-    <span>© <span id="panelYil">2026</span> Bilfen Bilişim AI · Tüm hakları saklıdır.</span>
+    <span>© <span id="panelYil">2026</span> Bilfen DigiQuest · Tüm hakları saklıdır.</span>
   </div>
 </footer>
 
@@ -3792,7 +3792,7 @@
     }).join('');
     var bugun = '';
     try { bugun = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { bugun = new Date().toLocaleDateString(); }
-    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Bilfen Bilişim AI — Haftalık Kodlar</title><style>' +
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Bilfen DigiQuest — Haftalık Kodlar</title><style>' +
       '@page { size: A4 portrait; margin: 0; }' +
       '* { margin:0; padding:0; box-sizing:border-box; }' +
       'body { -webkit-print-color-adjust:exact; print-color-adjust:exact; background:#eef2f7; }' +
@@ -3813,11 +3813,11 @@
       '<div class="sayfa">' +
       '<div class="baslik-alani">' +
       '<div class="robi">🤖</div>' +
-      '<div><h1>Bilfen Bilişim AI</h1><div class="alt">Haftalık Erişim Kodları · Öğrenci Kapısı</div></div>' +
+      '<div><h1>Bilfen DigiQuest</h1><div class="alt">Haftalık Erişim Kodları · Öğrenci Kapısı</div></div>' +
       '<div class="hafta">📅 ' + esc(hafta) + '</div>' +
       '</div>' +
       '<div class="izgara">' + kartlar + '</div>' +
-      '<div class="alt-bilgi">Öğrenciler <b>bilfen.github.io</b> adresinde sınıflarını seçip bu kodu girerek etkinliklere ulaşır.<br>Kodlar her hafta yenilenir · Döküm: ' + esc(bugun) + ' · Bilfen Bilişim Teknolojileri</div>' +
+      '<div class="alt-bilgi">Öğrenciler <b>bilfen.github.io</b> adresinde sınıflarını seçip bu kodu girerek etkinliklere ulaşır.<br>Kodlar her hafta yenilenir · Döküm: ' + esc(bugun) + ' · Bilfen DigiQuest</div>' +
       '</div>' +
       '</body></html>';
     return html;
@@ -3868,7 +3868,7 @@
     c.fillText('🤖', kenar + 70, 140);
     c.textAlign = 'left';
     c.fillStyle = '#1e3a8a'; c.font = '800 56px \'Segoe UI\',system-ui,Arial,sans-serif';
-    c.fillText('Bilfen Bilişim AI', kenar + 172, 118);
+    c.fillText('Bilfen DigiQuest', kenar + 172, 118);
     c.fillStyle = '#475569'; c.font = '600 30px \'Segoe UI\',system-ui,Arial,sans-serif';
     c.fillText('Haftalık Erişim Kodları · Öğrenci Kapısı', kenar + 172, 172);
     var hafta = kodHaftaMetni(kodGecerlilikTarihi(satirlar));
@@ -3911,7 +3911,7 @@
     c.fillText('Öğrenciler bilfen.github.io adresinde sınıflarını seçip bu kodu girer · Kodlar her hafta yenilenir', W / 2, sonY + 64);
     var bugun2 = '';
     try { bugun2 = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { bugun2 = new Date().toLocaleDateString(); }
-    c.fillText('Döküm: ' + bugun2 + ' · Bilfen Bilişim Teknolojileri', W / 2, sonY + 102);
+    c.fillText('Döküm: ' + bugun2 + ' · Bilfen DigiQuest', W / 2, sonY + 102);
     if (cv.toBlob) {
       cv.toBlob(function (blob) {
         if (!blob) { alert('JPG oluşturulamadı.'); return; }

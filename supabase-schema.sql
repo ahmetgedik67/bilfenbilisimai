@@ -1,5 +1,5 @@
 -- ============================================================
--- Bilfen Bilişim AI – Portal & Panel veritabanı şeması
+-- Bilfen DigiQuest – Portal & Panel veritabanı şeması
 -- Bu dosyayı Supabase Dashboard → SQL Editor'a yapıştırıp RUN de.
 -- ============================================================
 

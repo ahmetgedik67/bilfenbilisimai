@@ -1,4 +1,4 @@
-# CWI Kullanım Notları — Bilfen Bilişim AI
+# CWI Kullanım Notları — Bilfen DigiQuest
 
 `cwi/` = Creative Web Intelligence v6 kütüphanesi (r0ine/creative-web-intelligence).
 Tasarım **karar kütüphanesidir**, çalıştırılan kod değildir. Projenin kendi kuralları

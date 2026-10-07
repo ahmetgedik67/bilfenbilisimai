@@ -1,4 +1,4 @@
-# AGENTS.md — Bilfen Bilişim AI
+# AGENTS.md — Bilfen DigiQuest
 
 Bu dosya, bu depoda çalışan tüm AI agent'ları için proje bağlamı ve çalışma kurallarıdır.
 

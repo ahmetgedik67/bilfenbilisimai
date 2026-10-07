@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Etkinlik Detayı — Bilfen Bilişim AI</title>
+<title>Etkinlik Detayı — Bilfen DigiQuest</title>
 <!--
   ETKİNLİK DETAY SAYFASI
   ?id=<etkinlik-id> ile açılır: index.html#etkinlik=<id> yerine tam sayfa,
@@ -26,7 +26,7 @@
 <nav class="ust-nav" id="ustNav" aria-label="Ana gezinme">
   <a class="nav-marka" href="index.html" title="Ana sayfa">
     <span class="nav-logo" aria-hidden="true"><img id="robiLogo" alt=""></span>
-    <span class="nav-marka-yazi">Bilfen <b>Bilişim AI</b></span>
+    <span class="nav-marka-yazi">Bilfen <b>DigiQuest</b></span>
   </a>
   <div class="nav-menu" id="navMenu" role="menubar" aria-label="Ana menü">
     <a class="nav-link" href="index.html" role="menuitem">🏠 Ana Sayfa</a>
@@ -122,9 +122,9 @@
     <div class="footer-marka">
       <a class="nav-marka" href="index.html">
         <span class="nav-logo" aria-hidden="true"><img src="" alt="" id="footerRobi"></span>
-        <span class="nav-marka-yazi">Bilfen <b>Bilişim AI</b></span>
+        <span class="nav-marka-yazi">Bilfen <b>DigiQuest</b></span>
       </a>
-      <p>Bilfen Bilişim Teknolojileri ve Yazılım dersi için hazırlanan etkinlik platformu. Öğrenciler keşfeder, kodlar ve üretir; öğretmenler tek yerden yönetir.</p>
+      <p>Bilfen DigiQuest · Bilişim Teknolojileri Etkileşimli Öğrenme Platformu. Öğrenciler keşfeder, kodlar ve üretir; öğretmenler tek yerden yönetir.</p>
     </div>
     <nav class="footer-baglantilar" aria-label="Alt bilgi bağlantıları">
       <h4>Keşfet</h4>
@@ -140,7 +140,7 @@
   </div>
   <div class="footer-alt">
     <span class="kurs">Bilişim Teknolojileri ve Yazılım Dersi</span>
-    <span>© <span id="yil">2026</span> Bilfen Bilişim AI · Tüm hakları saklıdır.</span>
+    <span>© <span id="yil">2026</span> Bilfen DigiQuest · Tüm hakları saklıdır.</span>
   </div>
 </footer>
 
@@ -244,7 +244,7 @@
   var KATEGORI_RENK = window.KATEGORI_RENK || [];
 
   if (!etkinlik) {
-    document.title = 'Etkinlik bulunamadı — Bilfen Bilişim AI';
+    document.title = 'Etkinlik bulunamadı — Bilfen DigiQuest';
     $('detayBaslik').textContent = 'Etkinlik bulunamadı 🤔';
     $('detayAciklama').textContent = 'Bağlantı eksik veya etkinlik kaldırılmış olabilir. Etkinlikler sayfasından dilediğinizi seçebilirsiniz.';
     $('sayfaKapak').classList.add('bulunamadi');
@@ -302,7 +302,7 @@
   $('linkKopyalaBtn').addEventListener('click', function () { kopyala(kalici, this, '🔗 Bağlantıyı Kopyala'); });
 
   /* Başlık + meta */
-  document.title = etkinlik.ad + ' — Bilfen Bilişim AI';
+  document.title = etkinlik.ad + ' — Bilfen DigiQuest';
   $('detayBaslik').textContent = etkinlik.ad;
   $('krumbaslik').textContent = etkinlik.ad;
   $('detayAciklama').textContent = etkinlik.aciklama || '';
