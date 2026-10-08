@@ -901,6 +901,10 @@
     const oynaEtiketi = document.createElement('span');
     oynaEtiketi.textContent = '▶ Başlat';
     overlay.appendChild(oynaEtiketi);
+    /* (v2.8.9) Kapağa tıklayınca doğrudan oyun açılır — öğrenci önce detay
+       modalını görmek zorunda kalmasın. Detay için kart gövdesi tıklanmaya devam eder. */
+    overlay.style.cursor = 'pointer';
+    overlay.onclick = e => { e.stopPropagation(); oynat(etkinlik); };
     thumb.append(img, overlay);
 
     const govde = document.createElement('div');
