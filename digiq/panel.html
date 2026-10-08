@@ -2218,10 +2218,11 @@
     $('oeOynat').classList.add('acik');
     document.body.style.overflow = 'hidden';
   }
-  /* 🔗 Onaylı özel etkinliğin kalıcı portal adresi (ders planına eklenebilir).
-     Portal, özel etkinlikleri id'siyle yükler: index.html#etkinlik=ozel_<id> */
+  /* 🔗 Onaylı özel etkinliğin KALICI adresi (v2.8.8)
+     Artık gerçek dosya linki: oynat.html?id=<uuid> — Classroom, LanSchool,
+     ders planı, e-posta içine yapıştırılınca da açılır (blob/deep-link değil). */
   function ozelKaliciAdres(id) {
-    return new URL('index.html#etkinlik=ozel_' + encodeURIComponent(id), location.href).href;
+    return new URL('oynat.html?id=' + encodeURIComponent(id), location.href).href;
   }
   function adresKopyala(metin, btn, tamamMetni) {
     var eski = btn ? btn.textContent : '';

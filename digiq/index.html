@@ -1193,11 +1193,9 @@
       const cerceve = $('etkinlikCerceve');
       if (etkinlik.ozel && (etkinlik.ozelTip === 'kod' || etkinlik.ozelTip === 'dosya') && etkinlik.ozelIcerik) {
         /* Kod/dosya etkinlikleri: srcdoc ile tam HTML olarak ac (url null) */
-        var _blob = new Blob([htmlSarmala(etkinlik.ozelIcerik)], { type: 'text/html' });
-        var _blobUrl = URL.createObjectURL(_blob);
-        /* Yeni sekme: tam ekran overlou ile blob URL */
-        var _blobFS = new Blob([htmlSarmalaFS(etkinlik.ozelIcerik, etkinlik.ad)], { type: 'text/html' });
-        $('yeniSekme').href = URL.createObjectURL(_blobFS);
+        /* (v2.8.8) Yeni sekme: blob yerine KALICI oynat sayfası — Classroom/LanSchool/
+           ders planı gibi yerlere yapıştırılan link her cihazda açılır. */
+        $('yeniSekme').href = 'oynat.html?id=' + encodeURIComponent(etkinlik._ozelId || etkinlik.id.replace(/^ozel_/, ''));
         $('yeniSekme').target = '_blank';
         cerceve.removeAttribute('src');
         cerceve.srcdoc = htmlSarmala(etkinlik.ozelIcerik);
@@ -1234,8 +1232,10 @@
   }
   $('pencereKapat').onclick = kapat;
 
-  /* 🔗 Kopyala: etkinliğin KALICI adresini verir (blob değil) — ders planına, e-postaya
-     veya Word belgesine yapıştırılabilir; açılışta etkinlik doğrudan oynatma penceresinde başlar. */
+  /* 🔗 Kopyala: etkinliğin KALICI adresini verir (blob değil) — ders planına, Classroom,
+     LanSchool, e-posta veya Word belgesine yapıştırılabilir.
+     (v2.8.8) Özel kod/dosya etkinlikleri artık oynat.html?uuid verir: gerçek dosya linki,
+     her yerde açılır. Statik ve drive etkinlikleri portal derin bağlantısını korur. */
   var aktifEtkinlikId = '';
   function eskiKopyala(metin) {
     var ta = document.createElement('textarea');
@@ -1247,7 +1247,10 @@
   $('pencereKopyala').onclick = function () {
     var btn = this;
     if (!aktifEtkinlikId) return;
-    var adres = new URL('index.html#etkinlik=' + encodeURIComponent(aktifEtkinlikId), location.href).href;
+    var aktifOzel = (OZEL_ETKINLIKLER || []).filter(function (o) { return o.id === aktifEtkinlikId; })[0];
+    var adres = aktifOzel && (aktifOzel.ozelTip === 'kod' || aktifOzel.ozelTip === 'dosya')
+      ? new URL('oynat.html?id=' + encodeURIComponent(aktifOzel._ozelId || aktifEtkinlikId.replace(/^ozel_/, '')), location.href).href
+      : new URL('index.html#etkinlik=' + encodeURIComponent(aktifEtkinlikId), location.href).href;
     var yaz = function () {
       btn.textContent = '✓ Kopyalandı';
       btn.classList.add('basarili');

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Etkinlik — Bilfen DigiQuest</title>
+<link rel="icon" type="image/png" href="robi.png">
+<!--
+  v2.8.8 - OYNATIC SAYFASI (paylaşılabilir kalıcı etkinlik linki)
+  Sorun: index.html özel kod/dosya etkinliklerini "Yeni sekmede aç" ile blob: URL
+  olarak veriyordu; blob linkleri oturum sonunda ölür, Classroom/LanSchool/plan
+  içine yapıştırılınca açılmaz.
+  Çözüm: OYNAT.HTML gerçek bir dosyadır — açılışı her zaman çalışır:
+    oynat.html?id=<etkinlik-id>            (özel: id uuid; istersen ozel_<uuid> da geçer)
+    oynat.html#etkinlik=<id>
+  Davranış:
+    • Statik etkinlik  → oyunun kendi index.html'ine ?fs=1 ile yönlendirilir.
+    • Özel kod/dosya   → içeriği anon (onaylı görünümden) çeker, tam sayfa oynatır.
+    • Özel drive       → bağlantıya yönlendirilir.
+    • Kapalı/tarihli   → bilgilendirme ekranı (portal kapı kontrolüyle aynı kural).
+  Link her yerde kalıcıdır: e-posta, Google Classroom, LanSchool, Word ders planı…
+-->
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #0f172a; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+  .ekran { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: #fff; text-align: center; padding: 28px; background: linear-gradient(135deg,#1e293b 0%,#334155 50%,#475569 100%); }
+  .ekran h1 { font-size: clamp(22px, 5vw, 34px); font-weight: 800; margin: 0; }
+  .ekran p { font-size: clamp(14px, 2.5vw, 17px); opacity: .85; max-width: 520px; margin: 0; line-height: 1.5; }
+  .donen { width: 44px; height: 44px; border-radius: 50%; border: 5px solid rgba(255,255,255,.25); border-top-color: #fff; animation: donme .9s linear infinite; }
+  @keyframes donme { to { transform: rotate(360deg); } }
+  .ekran .btn { padding: 14px 40px; border: none; border-radius: 14px; background: #fff; color: #1e293b; font-size: clamp(16px, 3vw, 22px); font-weight: 800; cursor: pointer; box-shadow: 0 8px 32px rgba(0,0,0,.35); text-decoration: none; display: inline-block; }
+  .ekran .mini { font-size: 12px; opacity: .6; margin-top: 6px; }
+  #oyunCerceve { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; display: none; }
+  .uye-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 10000; display: none; align-items: center; gap: 10px; padding: 8px 14px; background: rgba(15,23,42,.92); color: #fff; font-size: 14px; font-weight: 700; }
+  .uye-bar a { color: #93c5fd; font-size: 13px; text-decoration: none; margin-left: auto; }
+</style>
+<script src="assets/portal-data.js"></script>
+</head>
+<body>
+
+<div class="ekran" id="beklemeEkrani">
+  <div class="donen"></div>
+  <h1>Etkinlik hazırlanıyor…</h1>
+  <p>Bilfen DigiQuest etkinliği yükleniyor, lütfen bekle.</p>
+</div>
+
+<div class="uye-bar" id="uyeBar">
+  <span id="uyeAd"></span>
+  <a href="index.html" target="_blank" rel="noopener">🧩 Bütün Etkinlikler</a>
+</div>
+
+<iframe id="oyunCerceve" title="Etkinlik" allow="fullscreen; autoplay; clipboard-read; clipboard-write"></iframe>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- 1) Bağlantıdan etkinlik id'sini al ---------- */
+  var id = '';
+  try { id = decodeURIComponent((location.search || '').match(/[?&]id=([^&]+)/) ? RegExp.$1 : ''); } catch (e) {}
+  if (!id) {
+    var mh = (location.hash || '').match(/^#etkinlik=(.+)$/);
+    if (mh) { try { id = decodeURIComponent(mh[1]); } catch (e) { id = mh[1]; } }
+  }
+  if (id) { id = id.trim().replace(/^ozel_/, ''); }
+
+  function hataEkrani(baslik, mesaj) {
+    var ek = $('beklemeEkrani');
+    ek.querySelector('.donen').style.display = 'none';
+    ek.querySelector('h1').textContent = baslik;
+    ek.querySelector('p').textContent = mesaj;
+    document.title = baslik + ' — Bilfen DigiQuest';
+  }
+
+  function yukleniyorEkrani(baslik, mesaj) {
+    $('beklemeEkrani').querySelector('h1').textContent = baslik;
+    $('beklemeEkrani').querySelector('p').textContent = mesaj;
+    document.title = baslik + ' — Bilfen DigiQuest';
+  }
+
+  function uyeBarAc(ad) {
+    $('uyeAd').textContent = ad;
+    $('uyeBar').style.display = 'flex';
+  }
+
+  /* ---------- 2a) Statik etkinlik: doğrudan oyunun adresine git ---------- */
+  function statikOyunAc(etkinlik) {
+    yukleniyorEkrani(etkinlik.ad, 'Etkinlik açılıyor…');
+    var hedef = etkinlik.url + (etkinlik.url.indexOf('?') >= 0 ? '&' : '?') + 'fs=1';
+    location.replace(hedef);
+  }
+
+  /* ---------- 2b) Özel etkinlik: içeriği çektikten sonra tam sayfa oynat ---------- */
+  function ozelEtkinlikAc(o) {
+    /* Kapı kuralları portalla aynı: kapalı etkinlik açılmaz. */
+    var simdi = Date.now();
+    var acik = o.acik !== false;
+    var erken = o.acilis && new Date(o.acilis).getTime() > simdi;
+    var gecti = o.kapanis && new Date(o.kapanis).getTime() < simdi;
+    if (!acik || erken || gecti) {
+      var sebep = !acik ? 'Bu etkinlik öğretmenin tarafından şu an kapatıldı.'
+        : erken ? 'Bu etkinlik için yayın tarihi henüz gelmedi.'
+        : 'Bu etkinliğin yayın dönemi sona erdi.';
+      return hataEkrani('🔒 Etkinlik şu an kapalı', sebep + ' Öğretmenine sorabilirsin.');
+    }
+    var icerik = o.icerik || '';
+    if (!icerik && o.tip === 'drive') { location.replace(o.icerik || ''); return; }
+    if (!icerik) return hataEkrani('İçerik alınamadı',    'Etkinlik dosyası boş görünüyor. Öğretmeninle etkinliği yeniden oluşturmayı deneyebilirsin.');
+
+    document.title = (o.ad || 'Etkinlik') + ' — Bilfen DigiQuest';
+    uyeBarAc(o.ad || 'Özel Etkinlik');
+    var cerceve = $('oyunCerceve');
+    cerceve.srcdoc = htmlSarmala(icerik);
+    cerceve.addEventListener('load', function () {
+      $('beklemeEkrani').style.display = 'none';
+      cerceve.style.display = 'block';
+    });
+  }
+
+  /* ---------- 3) Uygun kaynağı bul ve oynat ---------- */
+  function htmlSarmala(kod) {
+    var k = String(kod || '').trim();
+    if (!k) return '';
+    if (/<html[\s>]/i.test(k) || /<!doctype\s+html>/i.test(k)) return k;
+    return '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+      '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+      '</head><body>' + k + '</body></html>';
+  }
+
+  var statikler = (window.ETKINLIKLER || []).concat(window.OZEL_ETKINLIKLER || []);
+  var statik = null;
+  for (var i = 0; i < statikler.length; i++) { if (statikler[i].id === id) { statik = statikler[i]; break; } }
+
+  if (statik) { statikOyunAc(statik); return; }
+
+  /* Özel etkinlik: onaylı (anon) görünümde id ile arama — kapalı olanların İçerik alanı burada null gelir */
+  if (!window.SUPABASE_CONFIG || !window.SUPABASE_CONFIG.url) {
+    hataEkrani('Yerel önizleme modu', 'Bu modda özel etkinlik veritabanı kapalı. Özel etkinlik bağlantıları canlı sitede çalışır.');
+    return;
+  }
+  /* Geçersiz biçimli id (uuid değil) → doğrudan bulunamadı (PostgREST 400 verir) */
+  if (!/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id)) {
+    return hataEkrani('Etkinlik bulunamadı 🤔', "Bağlantı eksik veya bozuk olabilir. 🔗 Bağlantı'yı etkinlik panelinden yeniden kopyalaman önerilir.");
+  }
+  var basliklar = { apikey: SUPABASE_CONFIG.anon, Authorization: 'Bearer ' + SUPABASE_CONFIG.anon };
+  fetch(SUPABASE_CONFIG.url + '/rest/v1/ozel_etkinlik_ogrenci?select=*&id=eq.' + encodeURIComponent(id), { headers: basliklar })
+    .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+    .then(function (satirlar) {
+      var o = (satirlar || [])[0];
+      if (!o) return hataEkrani('Etkinlik bulunamadı 🤔', 'Bağlantı eksik olabilir veya etkinliğin kaldırılmış/silinmiş olabilir. Aşağıdaki düğmeyle Bütün Etkinlikler sayfasına dönebilirsin.');
+      ozelEtkinlikAc(o);
+    })
+    .catch(function () {
+      hataEkrani('Bağlantı kurulamadı', 'İnternet bağlantınızı kontrol edin ve sayfayı yeniden deneyin (F5). Sorun sürerse Bilişim Zümresi\'ne haber verin.');
+      var tekrar = document.createElement('button');
+      tekrar.className = 'btn';
+      tekrar.textContent = '🔄 Tekrar Dene';
+      tekrar.onclick = function () { location.reload(); };
+      $('beklemeEkrani').appendChild(tekrar);
+      var mini = document.createElement('div');
+      mini.className = 'mini';
+      mini.innerHTML = '<a href="index.html" style="color:#93c5fd">🧩 Bütün Etkinlikler</a>';
+      $('beklemeEkrani').appendChild(mini);
+    });
+})();
+</script>
+</body>
+</html>
