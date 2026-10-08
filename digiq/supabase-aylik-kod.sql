@@ -6,10 +6,24 @@
 -- Kurulum: Supabase → SQL Editor → bu dosyanın tamamını çalıştır.
 -- Tekrar çalıştırmak güvenlidir (idempotent). Öğrenci verisi SİLMEZ.
 --
+-- ⚠️ DOĞRU PROJEYİ SEÇ: Bu tablo sadece bilfen portalının projesinde vardır
+--    (zvqwhesibqntcnpqoytm.supabase.co). Yanlış projede çalıştırırsan
+--    "relation public.erisim_kod does not exist" hatası alırsın.
+--
 -- Not: supabase-guvenlik-v2.sql'in TAMAMINI çalıştırmayın — o dosyanın
 -- 8. bölümü eski öğrenci verisini kalıcı olarak siler. Bu geçiş dosyası
 -- yalnız kod fonksiyonlarını günceller.
 -- ============================================================
+
+-- GÜVENLİK KİLİDİ: erisim_kod tablosu bu projede yoksa net hata ver ve dur.
+do $$
+begin
+  if not exists (select 1 from information_schema.tables
+                 where table_schema = 'public' and table_name = 'erisim_kod') then
+    raise exception 'erisim_kod tablosu bu projede YOK — yanlış Supabase projesi secili. Portalın projesini (zvqwhesibqntcnpqoytm) secip tekrar çalıştır.';
+  end if;
+end
+$$;
 
 -- ------------------------------------------------------------
 -- 1) KOD YENİLEME — tek seviye. Geçerlilik artık AYLIK:
