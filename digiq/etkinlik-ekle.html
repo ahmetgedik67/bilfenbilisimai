@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Etkinlik Gönder — Bilfen DigiQuest</title>
+<title>Etkinlik Ekle — Bilfen DigiQuest</title>
 <link rel="icon" type="image/png" href="robi.png">
 <link rel="stylesheet" href="assets/fonts/fonts.css">
 <link rel="stylesheet" href="assets/portal.css">
@@ -29,13 +29,13 @@
   .ge-alan { margin-top: 16px; }
   .ge-alan > label { display:block; font-weight: 800; font-size: .88rem; color: var(--lacivert-2); margin-bottom: 6px; }
   html[data-tema='koyu'] .ge-alan > label { color: #c3d4ff; }
-  .ge-alan input[type=text], .ge-alan textarea {
+  .ge-alan input[type=text], .ge-alan select, .ge-alan textarea {
     width: 100%; padding: 11px 13px; border-radius: 12px; font-size: .95rem; font-family: inherit;
     border: 1.5px solid #dbe6ff; background: #f8fbff; color: var(--murekkep, #1e293b);
   }
   .ge-alan textarea { min-height: 170px; font-family: Consolas, 'Courier New', monospace; font-size: .85rem; resize: vertical; }
-  .ge-alan input:focus, .ge-alan textarea:focus { outline: none; border-color: var(--mavi); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
-  html[data-tema='koyu'] .ge-alan input[type=text], html[data-tema='koyu'] .ge-alan textarea { background: rgba(15,23,42,.55); border-color: var(--kutu-kenar); color: #e2e8f0; }
+  .ge-alan input:focus, .ge-alan select:focus, .ge-alan textarea:focus { outline: none; border-color: var(--mavi); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+  html[data-tema='koyu'] .ge-alan input[type=text], html[data-tema='koyu'] .ge-alan select, html[data-tema='koyu'] .ge-alan textarea { background: rgba(15,23,42,.55); border-color: var(--kutu-kenar); color: #e2e8f0; }
   .ge-not { font-size: .78rem; color: var(--yazi-ince); margin-top: 6px; line-height: 1.5; }
   .ge-secim { display: flex; flex-wrap: wrap; gap: 8px; }
   .ge-token { border: 1.5px solid #dbe6ff; background: #f8fbff; border-radius: 999px;
@@ -95,7 +95,7 @@
     <div id="geFormBolum">
       <div class="ge-bas">
         <img class="ge-robi" src="robi.png" alt="Robi maskotu">
-        <div class="ge-robi-yazi">Etkinlik Gönder</div>
+        <div class="ge-robi-yazi">🎉 Yeni Etkinlik Oluştur</div>
         <p class="ge-alt">Öğretmen ya da öğrenci, <b>herkes</b> bu sayfadan etkinlik önerebilir.<br>
         Gönderiler <b>yönetici onayından</b> sonra portala düşer — onaylanmadan görünmez.</p>
       </div>
@@ -109,6 +109,31 @@
         <div class="ge-alan">
           <label for="geKonu">Konu &amp; tema *</label>
           <input type="text" id="geKonu" maxlength="160" placeholder="Örn. Mouse kullanma ve dikkat">
+        </div>
+
+        <div class="ge-alan">
+          <label for="geTema">📚 Müfredat teması * <span style="font-weight:600;color:#64748b">(seçince Konu &amp; Tema dolar, sınıflar otomatik işaretlenir)</span></label>
+          <select id="geTema">
+            <option value="">— Tema seç —</option>
+            <optgroup label="İlkokul Temaları">
+              <option value="ilk|Teknoloji Yolculuğum Başlıyor!">Teknoloji Yolculuğum Başlıyor!</option>
+              <option value="ilk|Dijital Vatandaşlık">Dijital Vatandaşlık</option>
+              <option value="ilk|Bilgi İşlemsel Düşünme ve Kodlama">Bilgi İşlemsel Düşünme ve Kodlama</option>
+              <option value="ilk|Yapay Zekâ Okuryazarlığı">Yapay Zekâ Okuryazarlığı</option>
+              <option value="ilk|Yaratıcı Tasarım">Yaratıcı Tasarım</option>
+              <option value="ilk|Üretkenlik">Üretkenlik</option>
+              <option value="ilk|Keşfet, Öğren, Eğlen!">Keşfet, Öğren, Eğlen!</option>
+            </optgroup>
+            <optgroup label="Ortaokul Temaları">
+              <option value="orta|Bilgi İşlemsel Düşünme ve Kodlama">Bilgi İşlemsel Düşünme ve Kodlama</option>
+              <option value="orta|Günlük Yaşam ve Teknoloji">Günlük Yaşam ve Teknoloji</option>
+              <option value="orta|Ad's Up">Ad's Up</option>
+              <option value="orta|Dijital Vatandaşlık">Dijital Vatandaşlık</option>
+              <option value="orta|Yaratıcı Tasarım">Yaratıcı Tasarım</option>
+              <option value="orta|Yapay Zeka Okuryazarlığı">Yapay Zeka Okuryazarlığı</option>
+            </optgroup>
+          </select>
+          <p class="ge-not">Tema seçimi zorunludur; sınıf seçenekleri (İlkokul 1-4, Ortaokul 5-7) otomatik işaretlenir.</p>
         </div>
 
         <div class="ge-alan">
@@ -143,11 +168,14 @@
         </div>
 
         <div class="ge-alan">
-          <label for="geGorsel">Önizleme görseli <span style="font-weight:600;color:#64748b">(isteğe bağlı)</span></label>
-          <label class="ge-onizle" style="display:inline-block;cursor:pointer;font-size:.87rem;padding:10px 18px">
-            🖼️ Görsel yükle <input type="file" id="geGorsel" accept="image/*" style="display:none">
-          </label>
-          <span class="ge-not" id="geGorselDurum">Görsel eklenmezse portal otomatik görsel oluşturur.</span>
+          <label>Önizleme görseli *</label>
+          <div class="ge-kaynak">
+            <label class="ge-kaynak-btn" style="cursor:pointer">
+              🖼️ Görsel yükle <input type="file" id="geGorsel" accept="image/*" style="display:none">
+            </label>
+            <button type="button" class="ge-kaynak-btn" id="geGorselOlustur">📷 Oluştur</button>
+          </div>
+          <span class="ge-not" id="geGorselDurum">Zorunlu: görsel yükleyin ya da 📷 Oluştur ile otomatik görsel oluşturun.</span>
           <img id="geGorselOnizle" alt="" style="display:none;max-width:140px;max-height:90px;border-radius:10px;margin-top:8px;border:2px solid #dbe6ff">
         </div>
 
@@ -158,7 +186,7 @@
 
         <div class="ge-dugmeler">
           <button type="button" class="ge-onizle" id="geOnizleBtn">👁 Önizle</button>
-          <button type="submit" class="ge-gonder" id="geGonderBtn">📨 Etkinliği Gönder</button>
+          <button type="submit" class="ge-gonder" id="geGonderBtn">💾 Etkinliği Kaydet</button>
         </div>
         <p class="ge-not" style="margin-top:14px;text-align:center">
           Gönderin yönetici onayına gider. Onaylanınca portala eklenir; reddedilirse nedeniyle birlikte kaydedilir.
@@ -171,7 +199,7 @@
       <h2>Etkinliğin yönetici onayına gönderildi</h2>
       <p id="geBasariMetin"></p>
       <div class="ge-dugmeler" style="justify-content:center">
-        <button type="button" class="ge-onizle" id="geYenidenBtn">✉️ Yeni etkinlik gönder</button>
+        <button type="button" class="ge-onizle" id="geYenidenBtn">✉️ Yeni etkinlik ekle</button>
         <a class="ge-onizle" href="index.html" style="text-decoration:none">🏠 Portala dön</a>
       </div>
     </div>
@@ -221,7 +249,23 @@
 
   /* Kaynak seçimi */
   var tip = 'dosya', dosyaMetin = '', gorsel = '';
-  var kaynakBtnlar = [].slice.call(document.querySelectorAll('.ge-kaynak-btn'));
+  var kaynakBtnlar = [].slice.call(document.querySelectorAll('.ge-kaynak-btn[data-kaynak]'));
+
+  /* Müfredat teması: Konu & Tema alanını doldur + sınıf tokenlarını otomatik işaretle.
+     İlkokul → 1-4. sınıf, Ortaokul → 5-7. sınıf. IPT ve Öğretmen Aracı tokenlarına dokunulmaz. */
+  $('geTema').addEventListener('change', function () {
+    var v = this.value;
+    if (!v) return;
+    var p = v.split('|');
+    $('geKonu').value = p[1];
+    SECIMLER = SECIMLER.filter(function (t) { return t.charAt(0) !== 's'; });
+    var siniflar = p[0] === 'ilk' ? [1, 2, 3, 4] : [5, 6, 7];
+    siniflar.forEach(function (n) { SECIMLER.push('s' + n); });
+    SECIMLER = SECIMLER.filter(function (t, i) { return SECIMLER.indexOf(t) === i; });
+    [].slice.call(document.querySelectorAll('.ge-token')).forEach(function (b) {
+      b.classList.toggle('secili', SECIMLER.indexOf(b.dataset.token) >= 0);
+    });
+  });
   kaynakBtnlar.forEach(function (b) {
     b.addEventListener('click', function () {
       tip = b.dataset.kaynak;
@@ -256,6 +300,58 @@
     okur.readAsDataURL(f);
   });
 
+  /* Görsel yoksa anlık SVG oluştur (panel ile aynı üretici) */
+  function ozelHash(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+    return Math.abs(h);
+  }
+  function gorselOlustur(ad, kaynakTipi, konu) {
+    var h = ozelHash((ad || '') + (kaynakTipi || '') + (konu || ''));
+    var palettes = [
+      ['#6366f1','#a78bfa'],['#ec4899','#f9a8d4'],['#f59e0b','#fcd34d'],
+      ['#10b981','#6ee7b7'],['#ef4444','#fca5a5'],['#8b5cf6','#d8b4fe'],
+      ['#0ea5e9','#7dd3fc'],['#f97316','#fdba74'],['#14b8a6','#5eead4'],
+      ['#e11d48','#fda4af'],['#7c3aed','#c4b5fd'],['#059669','#a7f3d0'],
+      ['#0284c7','#38bdf8'],['#d946ef','#f0abfc'],['#ea580c','#fb923c'],
+      ['#4f46e5','#818cf8'],['#0d9488','#2dd4bf'],['#be123c','#fb7185']
+    ];
+    var ikonlar = ['✂️','🔬','🚀','🔮','⭐','🎮','💻','🌟','📖','🎵','🔵','🛠','📚','⚡','🌌','💬','💻','🎲','💻','🏆'];
+    var r = palettes[h % palettes.length];
+    var ikon = ikonlar[(h >> 3) % ikonlar.length];
+    var kisaAd = (ad || 'Etkinlik').substring(0, 30);
+    var aciklama = (konu || (kaynakTipi === 'kod' ? 'Kod Etkinliği' : kaynakTipi === 'dosya' ? 'HTML Dosyası' : 'Drive')).substring(0, 40);
+    var tipRozeti = kaynakTipi === 'kod' ? 'Kod' : kaynakTipi === 'dosya' ? 'HTML' : 'Drive';
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="280">' +
+      '<defs><linearGradient id="g' + h + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '<stop offset="0%" stop-color="' + r[0] + '"/><stop offset="100%" stop-color="' + r[1] + '"/>' +
+      '</linearGradient></defs>' +
+      '<rect width="400" height="280" rx="18" fill="url(#g' + h + ')"/>' +
+      '<text x="200" y="100" text-anchor="middle" font-size="56">' + ikon + '</text>' +
+      '<rect x="120" y="120" width="160" height="26" rx="13" fill="rgba(255,255,255,0.3)"/>' +
+      '<text x="200" y="138" text-anchor="middle" font-size="12" fill="white" font-weight="bold" font-family="system-ui,sans-serif">' + tipRozeti + '</text>' +
+      '<text x="200" y="180" text-anchor="middle" font-size="20" font-weight="bold" fill="white" font-family="system-ui,sans-serif">' +
+      kisaAd.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</text>' +
+      '<text x="200" y="208" text-anchor="middle" font-size="13" fill="rgba(255,255,255,0.85)" font-family="system-ui,sans-serif">' +
+      aciklama.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</text>' +
+      '<rect x="145" y="225" width="110" height="32" rx="16" fill="rgba(255,255,255,0.3)" stroke="rgba(255,255,255,0.5)"/>' +
+      '<text x="200" y="246" text-anchor="middle" font-size="13" fill="white" font-weight="bold" font-family="system-ui,sans-serif">▶ Başlat</text>' +
+      '</svg>';
+    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+  }
+  function gorselUygula(dataUrl, metin) {
+    gorsel = dataUrl;
+    $('geGorselOnizle').src = gorsel;
+    $('geGorselOnizle').style.display = '';
+    $('geGorselDurum').textContent = metin;
+  }
+  $('geGorselOlustur').addEventListener('click', function () {
+    var ad = $('geEtkinlikAd').value.trim() || 'Etkinlik';
+    var konu = $('geKonu').value.trim();
+    gorselUygula(gorselOlustur(ad, tip, konu), '✅ Görsel oluşturuldu');
+    hata('');
+  });
+
   function hata(m) {
     var kutu = $('geHata');
     kutu.textContent = m || '';
@@ -279,9 +375,11 @@
     if ($('geHoneypot').value) { hata('Gönderim reddedildi.'); return; }        /* bot kapanı */
     if (Date.now() - acilisZamani < 2500) { hata('Lütfen formu doldurup yeniden deneyin.'); return; }
     if (!ad) { hata('Etkinlik adı girin.'); return; }
+    if (!$('geTema').value) { hata('Müfredat teması seçin (zorunlu).'); return; }
     if (!konu) { hata('Konu & Tema yazın.'); return; }
     if (!SECIMLER.length) { hata('En az bir kullanım yeri seçin: Sınıf, IPT ve/veya Öğretmen Aracı.'); return; }
     if (!icerik) { hata('İçerik boş: dosya seçin, bağlantı girin ya da kod yapıştırın.'); return; }
+    if (!gorsel) { hata('Önizleme görseli zorunlu: 🖼️ Görsel yükle ya da 📷 Oluştur ile görsel oluşturun.'); return; }
     if (tip === 'drive' && !/^https?:\/\//i.test(icerik)) { hata('Bağlantı http(s) ile başlamalı.'); return; }
     if (gorsel && gorsel.length + icerik.length > 900 * 1024) { hata('Toplam içerik çok büyük (en fazla ~900 KB). Görseli kaldırıp tekrar deneyin.'); return; }
     hata('');
@@ -325,7 +423,7 @@
       hata('Gönderilemedi: ' + e2.message);
     }).finally(function () {
       btn.disabled = false;
-      btn.textContent = '📨 Etkinliği Gönder';
+      btn.textContent = '💾 Etkinliği Kaydet';
     });
   });
 
@@ -359,7 +457,7 @@
     [].slice.call(document.querySelectorAll('.ge-token.secili')).forEach(function (b) { b.classList.remove('secili'); });
     dosyaMetin = ''; gorsel = ''; tip = 'dosya';
     $('geDosyaAdi').textContent = 'Dosya seçilmedi';
-    $('geGorselDurum').textContent = 'Görsel eklenmezse portal otomatik görsel oluşturur.';
+    $('geGorselDurum').textContent = 'Zorunlu: görsel yükleyin ya da 📷 Oluştur ile otomatik görsel oluşturun.';
     $('geGorselOnizle').style.display = 'none';
     kaynakBtnlar.forEach(function (x, i) { x.classList.toggle('secili', i === 0); });
     $('geKutuDosya').classList.add('acik');

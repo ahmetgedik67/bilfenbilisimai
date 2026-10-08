@@ -171,6 +171,8 @@ input:focus, select:focus {
 .btn.ikincil:hover { background: #e5eeff !important; }
 .btn.yeşil, .btn.yesil { background: linear-gradient(135deg, var(--basari), #22c55e) !important; box-shadow: 0 6px 16px rgba(22, 163, 74, .25), inset 0 1px 0 rgba(255, 255, 255, .25); }
 .btn.kirmizi { background: linear-gradient(135deg, var(--hata), #f87171) !important; box-shadow: 0 6px 16px rgba(220, 38, 38, .25); }
+.btn.turuncu { background: linear-gradient(135deg, #f59e0b, #f97316) !important; color: #fff !important; box-shadow: 0 6px 16px rgba(245, 158, 11, .35); }
+.btn.turuncu:hover { background: linear-gradient(135deg, #f97316, #fb923c) !important; color: #fff !important; }
 
 /* Sekmeler — segment kontrol */
 .sekmeler { gap: 8px; }
