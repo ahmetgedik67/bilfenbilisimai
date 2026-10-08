@@ -156,7 +156,7 @@
     <div class="filtre-ayrac" aria-hidden="true"></div>
     <div class="filtre-grup">
       <span class="grup-etiket">Kod</span>
-      <button type="button" class="ogretmen-dugme" id="kapiYenile" title="Farklı sınıf veya yeni haftalık koduyla gir">🔑 Kod Değiştir</button>
+      <button type="button" class="ogretmen-dugme" id="kapiYenile" title="Farklı sınıf veya yeni aylık koduyla gir">🔑 Kod Değiştir</button>
     </div>
   </div>
 </section>
@@ -394,7 +394,7 @@
     }
   }
   seviyeDugme.addEventListener('click', menuAcKapat);
-  /* 🔑 Kod Değiştir — kapıyı tekrar aç (farklı sınıf / yeni haftalık kod) */
+  /* 🔑 Kod Değiştir — kapıyı tekrar aç (farklı sınıf / yeni aylık kod) */
   var kapiYenileBtn = document.getElementById('kapiYenile');
   if (kapiYenileBtn) kapiYenileBtn.addEventListener('click', function () {
     if (window.kapiSilGlobal) window.kapiSilGlobal();
@@ -1332,7 +1332,7 @@
 </script>
 <script>
 /* ===== KVKK DOSTU ERİŞİM MİMARİSİ v2 =====
-   Öğrenci hesabı YOK · Sınıf + haftalık kod kapısı ·
+   Öğrenci hesabı YOK · Sınıf + aylık kod kapısı ·
    Yayın zamanı sunucuda zorlanır · Hiçbir öğrenci verisi saklanmaz. */
 (function () {
   'use strict';
@@ -1397,34 +1397,34 @@
   }
 
   /* (v2.4) İki aşamalı kapı: 1) Seviye kartını seç (1-7. Sınıf + 2-7 IPT),
-     2) 4 haneli haftalık kodu gir. Panel haftalık kodları bu 13 seviyenin
+     2) 4 haneli aylık kodu gir. Panel aylık kodları bu 13 seviyenin
      hepsi için üretilir; kapı da BT_SEVIYELER listesinden aynı seviyeleri sunar. */
   var KAPI_HTML =
     '<div class="kapi-kart">' +
     '  <div class="kapi-robi" aria-hidden="true">🤖</div>' +
     '  <span class="kapi-badge"><span class="badge-nokta" aria-hidden="true"></span>KEŞFET • DÜŞÜN • DENEYİMLE • ÖĞREN</span>' +
     '  <h1>Bilfen DigiQuest</h1>' +
-    '  <p class="kapi-alt">Bilişim Teknolojileri Etkileşimli Öğrenme Platformu · Etkinliklere girmek için önce <b>sınıfını</b> seç, sonra öğretmeninin verdiği <b>haftalık kodu</b> gir.</p>' +
+    '  <p class="kapi-alt">Bilişim Teknolojileri Etkileşimli Öğrenme Platformu · Etkinliklere girmek için önce <b>sınıfını</b> seç, sonra öğretmeninin verdiği <b>aylık kodu</b> gir.</p>' +
     '  <div class="kapi-form">' +
     '    <div class="kapi-adim" id="kapiAdim1">' +
     '      <div class="kapi-adim-baslik"><span class="kapi-adim-no">1</span> Sınıfını seç</div>' +
     '      <div class="kapi-sev-izgara" id="kapiSeviyeIzgara" role="listbox" aria-label="Sınıf veya IPT kategorisi seç"></div>' +
     '    </div>' +
     '    <div class="kapi-adim" id="kapiAdim2" hidden>' +
-    '      <div class="kapi-adim-baslik"><span class="kapi-adim-no">2</span> Haftalık kodu gir</div>' +
+    '      <div class="kapi-adim-baslik"><span class="kapi-adim-no">2</span> Aylık kodu gir</div>' +
     '      <div class="kapi-secili-satir">' +
     '        <button type="button" class="kapi-geri" id="kapiGeri" title="Sınıf seçimine dön">←</button>' +
     '        <span class="kapi-secili-ikon" aria-hidden="true">🎓</span>' +
     '        <span class="kapi-secili-ad" id="kapiSeciliAd">—</span>' +
     '        <span class="kapi-secili-rozet" id="kapiSeciliRozet">Sınıf</span>' +
     '      </div>' +
-    '      <input id="kapiGizliKod" type="text" inputmode="numeric" maxlength="4" tabindex="-1" aria-label="Haftalık kod" class="kapi-gizli">' +
+    '      <input id="kapiGizliKod" type="text" inputmode="numeric" maxlength="4" tabindex="-1" aria-label="Aylık kod" class="kapi-gizli">' +
     '      <div class="kapi-kod-kutu" id="kapiKodKutu"></div>' +
     '      <button class="btn btn-birincil kapi-btn" id="kapiGir">🚪 Etkinliklere Gir</button>' +
     '    </div>' +
     '    <div class="kapi-hata" id="kapiHata" role="alert" hidden></div>' +
     '  </div>' +
-    '  <p class="kapi-not">🔒 Ad, e-posta veya şifre istemiyoruz. Kod her hafta değişir.</p>' +
+    '  <p class="kapi-not">🔒 Ad, e-posta veya şifre istemiyoruz. Kod her ay değişir.</p>' +
     '  <a class="btn btn-ogretmen kapi-ogretmen" href="panel.html">👩‍🏫 Öğretmen misin? Buradan giriş yap →</a>' +
     '</div>';
 
@@ -1615,7 +1615,7 @@
       }).catch(function (e) {
         var hazirDegil = e && (e.durum === 404 || e.durum === 403);
         hataGoster(hazirDegil
-          ? '🔧 Sistem hazırlanıyor — haftalık kod servisi henüz açık değil. Öğretmeninize haber verin.'
+          ? '🔧 Sistem hazırlanıyor — aylık kod servisi henüz açık değil. Öğretmeninize haber verin.'
           : 'Bağlantı hatası — tekrar dene.');
         btn.disabled = false; btn.textContent = '🚪 Etkinliklere Gir';
       });
@@ -1643,7 +1643,7 @@
 
   window.etkinlikAcikMi = function (etkinlikId, herkeseAcik) {  // herkeseAcik: öğretmen araçları kapıya takılmaz
     return Promise.resolve().then(function () {
-      if (!kapiOku()) return { ok: false, msg: '🔒 Önce haftalık kodu girmelisin.' };
+      if (!kapiOku()) return { ok: false, msg: '🔒 Önce aylık kodu girmelisin.' };
       if (!CONFIG.url) return { ok: true };
       return fetch(CONFIG.url + '/rest/v1/etkinlik_atama?oyun_id=eq.' + encodeURIComponent(etkinlikId) + '&select=*', {
         headers: { apikey: CONFIG.anon, Authorization: 'Bearer ' + CONFIG.anon }

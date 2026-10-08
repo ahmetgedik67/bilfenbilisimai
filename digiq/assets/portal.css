@@ -1110,7 +1110,7 @@ html[data-tema='koyu'] ::selection { background: rgba(91, 141, 255, .3); }
 
 /* ============================================================
    KVKK DOSTU KAPI (v2.4) — Seviye kartı + 4 haneli kod ekranı
-   İki aşamalı: 1) Sınıf / IPT kategorisi kartını seç  2) Haftalık kodu gir.
+   İki aşamalı: 1) Sınıf / IPT kategorisi kartını seç  2) Aylık kodu gir.
    Profesyonel cam (glassmorphism) kart, gradyan vurgular, canlı kod kutuları.
    ============================================================ */
 .kapi {

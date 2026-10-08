@@ -430,8 +430,9 @@
             <a class="btn ikincil" href="kullanim-kilavuzu.html" target="_blank" rel="noopener">📘 Öğretmen Kılavuzu</a>
           </div>
           <div class="kart" id="haftalikKodKarti" style="margin-bottom:14px">
-            <h2>🔑 Bu Haftanın Giriş Kodları</h2>
-            <p class="kucuk-not">Öğrenciler portala <b>sınıf + 4 haneli haftalık kod</b> ile girer. Aşağıdaki kodlar bu hafta geçerli; tahtaya yansıtıp sınıflarına duyurabilirsin.</p>
+            <!-- (v2.8.11) Kodlar haftalık yerine AYLIK geçerli: gelecek ayın 1'i 08:00 TSİ'ye kadar -->
+            <h2>🔑 Bu Ayın Giriş Kodları</h2>
+            <p class="kucuk-not">Öğrenciler portala <b>sınıf + 4 haneli aylık kod</b> ile girer. Aşağıdaki kodlar bu ay geçerli; tahtaya yansıtıp sınıflarına duyurabilirsin.</p>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px">
               <button type="button" class="btn kucuk ikincil" id="ogretmenKodYazdir">🖨️ PDF / Yazdır</button>
               <button type="button" class="btn kucuk ikincil" id="ogretmenKodJpg">🖼️ JPG İndir</button>
@@ -439,7 +440,7 @@
             <div id="ogretmenKodListe"></div>
           </div>
           <div id="tahtaListe"></div>
-          <div class="kucuk-not" style="margin-top:10px">💡 Kodlar her hafta değişir; yenileme yetkisi yöneticinedir (🔑 Haftalık Erişim Kodları kartı).</div>
+          <div class="kucuk-not" style="margin-top:10px">💡 Kodlar her ay değişir; yenileme yetkisi yöneticinedir (🔑 Aylık Erişim Kodları kartı).</div>
         </div>
       </div>
 
@@ -615,7 +616,7 @@
         <button class="sekme secili" id="admSekGenel">📊 Genel Bakış</button>
         <button class="sekme" id="admSekOnay">⏳ Etkinlik Onayları <span id="admOnaySayi" style="display:none;background:#fee2e2;color:#b91c1c;border-radius:10px;padding:1px 8px;font-size:11px;margin-left:2px">0</span></button>
         <button class="sekme" id="admSekKampus">🏫 Kampüs & Öğretmenler</button>
-        <button class="sekme" id="admSekKod">🔑 Haftalık Kodlar</button>
+        <button class="sekme" id="admSekKod">🔑 Aylık Kodlar</button>
         <button class="sekme" id="admSekSistem">⚙️ Sistem & Yedek</button>
       </div>
 
@@ -632,7 +633,7 @@
         </div>
         <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn ikincil kucuk" id="admHizliOnay">⏳ Onay bekleyenler</button>
-          <button class="btn ikincil kucuk" id="admHizliKod">🔑 Haftalık kodlar</button>
+          <button class="btn ikincil kucuk" id="admHizliKod">🔑 Aylık kodlar</button>
           <button class="btn ikincil kucuk" id="admHizliYonetim">🎮 Etkinlik yönetimi</button>
         </div>
       </div>
@@ -748,10 +749,10 @@
 
       <div id="admKod" style="display:none">
       <div class="kart">
-        <h2>🔑 Haftalık Erişim Kodları</h2>
-        <p class="kucuk-not">Öğrenciler portala <b>sınıf + 4 haneli haftalık kod</b> ile girer (hesap oluşturmaz, ad vermez). Bu hafta geçerli kodlar kartta ve tüm öğretmenlerin <b>Tahta Etkinlikleri</b> sekmesinde otomatik görünür. <b>Kodları Yenile</b>'ye bastığında tüm kodlar değişir ve herkese yenisi gösterilir.</p>
+        <h2>🔑 Aylık Erişim Kodları</h2>
+        <p class="kucuk-not">Öğrenciler portala <b>sınıf + 4 haneli aylık kod</b> ile girer (hesap oluşturmaz, ad vermez). Bu ay geçerli kodlar kartta ve tüm öğretmenlerin <b>Tahta Etkinlikleri</b> sekmesinde otomatik görünür. <b>Kodları Yenile</b>'ye bastığında tüm kodlar değişir ve herkese yenisi gösterilir. Kodlar <b>gelecek ayın 1'ine kadar</b> geçerlidir.</p>
         <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-          <button class="btn yesil" id="kodYenileBtn">🔄 Kodları Yenile (yeni hafta)</button>
+          <button class="btn yesil" id="kodYenileBtn">🔄 Kodları Yenile (yeni ay)</button>
           <button type="button" class="btn ikincil" id="kodYazdirBtn">🖨️ PDF / Yazdır</button>
           <button type="button" class="btn ikincil" id="kodJpgBtn">🖼️ JPG İndir</button>
           <span class="kucuk-not" id="kodDurum" style="margin:0"></span>
@@ -3721,7 +3722,7 @@
   $('girisGec').onclick = function (e) { e.preventDefault(); gosterEkran('giris'); };
   $('cikisBtn').onclick = cikis;
 
-  /* ---------- 🔑 Haftalık Erişim Kodları (admin) ---------- */
+  /* ---------- 🔑 Aylık Erişim Kodları (admin) ---------- */
   function rastgeleKod() {
     var k = '';
     for (var i = 0; i < 4; i++) k += Math.floor(Math.random() * 10);
@@ -3730,7 +3731,7 @@
   function kodTabloYaz(kutu, satirlar) {
     /* (v2.5) Son gösterilen satırları yakala: PDF/JPG düğmeleri bu veriyi kullanır */
     if (satirlar && satirlar.length) _sonKodSatirlari = satirlar;
-    var h = '<table><tr><th>Sınıf / Seviye</th><th>Haftalık Kod</th></tr>';
+    var h = '<table><tr><th>Sınıf / Seviye</th><th>Aylık Kod</th></tr>';
     satirlar.forEach(function (r) {
       var sv = SEVIYELER.filter(function (x) { return x.kod === r.seviye; })[0];
       h += '<tr class="satir"><td><b>' + esc(sv ? sv.ad : r.seviye) + '</b></td>' +
@@ -3738,7 +3739,7 @@
     });
     kutu.innerHTML = h + '</table>';
   }
-  /* Sunucudan haftanın geçerli kodlarını oku (kodlari_oku RPC). Demo modda null döner. */
+  /* Sunucudan ayın geçerli kodlarını oku (kodlari_oku RPC). Demo modda null döner. */
   function kodlarOku() {
     if (typeof SUPABASE_URL === 'string' && SUPABASE_URL) {
       return fetch(SUPABASE_URL + '/rest/v1/rpc/kodlari_oku', {
@@ -3756,9 +3757,9 @@
     return Promise.resolve(null);
   }
   function kodBosMesajYaz(el) {
-    if (el) el.innerHTML = '<div class="bos">Bu hafta için kod henüz üretilmemiş. Yönetici 🔑 Haftalık Erişim Kodları kartındaki "🔄 Kodları Yenile" düğmesiyle üretebilir.</div>';
+    if (el) el.innerHTML = '<div class="bos">Bu ay için kod henüz üretilmemiş. Yönetici 🔑 Aylık Erişim Kodları kartındaki "🔄 Kodları Yenile" düğmesiyle üretebilir.</div>';
   }
-  /* Panel açılışında haftanın kodlarını otomatik çiz (admin + öğretmen). */
+  /* Panel açılışında ayın kodlarını otomatik çiz (admin + öğretmen). */
   function kodlarOtomatikCiz() {
     kodlarOku().then(function (satirlar) {
       if (!satirlar || !satirlar.length) {
@@ -3783,7 +3784,7 @@
         var eskiNot = $('ogretmenKodNotu'); if (eskiNot) eskiNot.remove();
         if (gTarihi) $('ogretmenKodListe').insertAdjacentHTML('beforebegin', '<div class="kucuk-not" id="ogretmenKodNotu">📅 ' + satirlar.length + ' seviye geçerli · ' + gTarihi + "'ye kadar</div>");
       }
-      if ($('kodListe')) kodlariGoster(satirlar, '📅 Bu hafta geçerli kodlar otomatik yüklendi.');
+      if ($('kodListe')) kodlariGoster(satirlar, '📅 Bu ay geçerli kodlar otomatik yüklendi.');
     }).catch(function () { /* kod servisi hazır değil: sessiz geç */ });
   }
   function kodlariGoster(satirlar, durum) {
@@ -3794,7 +3795,7 @@
   }
   if ($('kodYenileBtn')) $('kodYenileBtn').onclick = function () {
     var btn = $('kodYenileBtn');
-    if (!confirm('Yeni haftalık kodlar üretilecek. ESKİ KODLAR GEÇERSİZ OLUR ve yenileri yalnız bir kez gösterilir. Devam edilsin mi?')) return;
+    if (!confirm('Yeni aylık kodlar üretilecek. ESKİ KODLAR GEÇERSİZ OLUR, yenileri gelecek ayın 1\'ine kadar geçerli olur ve yalnız bir kez gösterilir. Devam edilsin mi?')) return;
     btn.disabled = true; btn.textContent = '⏳ Üretiliyor…';
     $('kodDurum').textContent = '';
     if (typeof SUPABASE_URL === 'string' && SUPABASE_URL) {
@@ -3810,7 +3811,7 @@
         kodlariGoster(x.j, '✅ ' + x.j.length + ' seviye için kod üretildi — eski kodlar geçersiz.');
       }).catch(function (e) {
         $('kodDurum').textContent = '❌ Kodlar üretilemedi: ' + e.message + ' (Supabase SQL kurulmuş mu?)';
-      }).finally(function () { btn.disabled = false; btn.textContent = '🔄 Kodları Yenile (yeni hafta)'; });
+      }).finally(function () { btn.disabled = false; btn.textContent = '🔄 Kodları Yenile (yeni ay)'; });
     } else {
       /* Demo mod: yerelde üret (yalnız test için) */
       /* Demo mod: kapı ekranının sabit demo kodlarıyla aynı (BT_DEMO_KODLARI) — testte girilen kod gerçekten çalışır */
@@ -3819,7 +3820,7 @@
       try { localStorage.setItem('bt_demo_kodlar', JSON.stringify(demo)); } catch (e) {}
       kodlariGoster(demo);
       $('kodDurum').textContent = 'ℹ️ Demo mod: kodlar yalnız bu tarayıcıda üretildi, sunucuya kaydedilmedi.';
-      btn.disabled = false; btn.textContent = '🔄 Kodları Yenile (yeni hafta)';
+      btn.disabled = false; btn.textContent = '🔄 Kodları Yenile (yeni ay)';
     }
   };
 
@@ -3854,16 +3855,18 @@
     }
     return null;
   }
-  function kodHaftaMetni(g) {
-    if (!g) return 'Bu hafta';
-    var bas = new Date(g.getTime() - 7 * 86400000);
-    function kisa(d) { try { return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }); } catch (e) { return d.getDate() + '.' + (d.getMonth() + 1) + '.'; } }
-    return kisa(bas) + ' – ' + kisa(g) + ' ' + g.getFullYear();
+  function kodAyMetni(g) {
+    if (!g) return 'Bu ay';
+    /* Geçerlilik = gelecek ayın 1'i → dönem = önceki ay (ör. bitiş 1 Kasım → “Ekim 2026”) */
+    var bas = new Date(g.getTime());
+    bas.setDate(1);
+    bas.setMonth(bas.getMonth() - 1);
+    try { return bas.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }); } catch (e) { return (bas.getMonth() + 1) + '/' + bas.getFullYear(); }
   }
   /* Markalı A4 çıktı sayfası (HTML): hem yazdırmada hem testte kullanılır. */
   function kodCiktiHtml(satirlar) {
     var g = kodGecerlilikTarihi(satirlar);
-    var hafta = kodHaftaMetni(g);
+    var ay = kodAyMetni(g);
     var kartlar = kodSatirlariSirala(satirlar).map(function (r) {
       var b = kodSeviyeBilgi(r.seviye);
       return '<div class="kod-karti" style="--r:' + b.renk + '">' +
@@ -3874,7 +3877,7 @@
     }).join('');
     var bugun = '';
     try { bugun = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { bugun = new Date().toLocaleDateString(); }
-    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Bilfen DigiQuest — Haftalık Kodlar</title><style>' +
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Bilfen DigiQuest — Aylık Kodlar</title><style>' +
       '@page { size: A4 portrait; margin: 0; }' +
       '* { margin:0; padding:0; box-sizing:border-box; }' +
       'body { -webkit-print-color-adjust:exact; print-color-adjust:exact; background:#eef2f7; }' +
@@ -3895,11 +3898,11 @@
       '<div class="sayfa">' +
       '<div class="baslik-alani">' +
       '<div class="robi">🤖</div>' +
-      '<div><h1>Bilfen DigiQuest</h1><div class="alt">Haftalık Erişim Kodları · Öğrenci Kapısı</div></div>' +
-      '<div class="hafta">📅 ' + esc(hafta) + '</div>' +
+      '<div><h1>Bilfen DigiQuest</h1><div class="alt">Aylık Erişim Kodları · Öğrenci Kapısı</div></div>' +
+      '<div class="hafta">📅 ' + esc(ay) + '</div>' +
       '</div>' +
       '<div class="izgara">' + kartlar + '</div>' +
-      '<div class="alt-bilgi">Öğrenciler <b>bilfen.github.io/digiq</b> adresinde sınıflarını seçip bu kodu girerek etkinliklere ulaşır.<br>Kodlar her hafta yenilenir · Döküm: ' + esc(bugun) + ' · Bilfen DigiQuest</div>' +
+      '<div class="alt-bilgi">Öğrenciler <b>bilfen.github.io/digiq</b> adresinde sınıflarını seçip bu kodu girerek etkinliklere ulaşır.<br>Kodlar her ay yenilenir · Döküm: ' + esc(bugun) + ' · Bilfen DigiQuest</div>' +
       '</div>' +
       '</body></html>';
     return html;
@@ -3952,14 +3955,14 @@
     c.fillStyle = '#1e3a8a'; c.font = '800 56px \'Segoe UI\',system-ui,Arial,sans-serif';
     c.fillText('Bilfen DigiQuest', kenar + 172, 118);
     c.fillStyle = '#475569'; c.font = '600 30px \'Segoe UI\',system-ui,Arial,sans-serif';
-    c.fillText('Haftalık Erişim Kodları · Öğrenci Kapısı', kenar + 172, 172);
-    var hafta = kodHaftaMetni(kodGecerlilikTarihi(satirlar));
+    c.fillText('Aylık Erişim Kodları · Öğrenci Kapısı', kenar + 172, 172);
+    var ay = kodAyMetni(kodGecerlilikTarihi(satirlar));
     c.font = '700 26px \'Segoe UI\',system-ui,Arial,sans-serif';
-    var hw = c.measureText(hafta).width + 64;
+    var hw = c.measureText(ay).width + 64;
     c.fillStyle = '#fff'; _rrect(c, W - kenar - hw, 92, hw, 64, 32); c.fill();
     c.strokeStyle = '#dbe3f0'; c.lineWidth = 3; _rrect(c, W - kenar - hw, 92, hw, 64, 32); c.stroke();
     c.fillStyle = '#334155'; c.textAlign = 'center';
-    c.fillText('📅 ' + hafta, W - kenar - hw / 2, 126);
+    c.fillText('📅 ' + ay, W - kenar - hw / 2, 126);
     /* Kod kartları: 3 sütun */
     var satirlarSirali = kodSatirlariSirala(satirlar);
     var gw = 3, bosluk = 36;
@@ -3990,7 +3993,7 @@
     c.strokeStyle = '#dbe3f0'; c.lineWidth = 2;
     c.beginPath(); c.moveTo(kenar, sonY + 18); c.lineTo(W - kenar, sonY + 18); c.stroke();
     c.fillStyle = '#64748b'; c.font = '500 24px \'Segoe UI\',system-ui,Arial,sans-serif';
-    c.fillText('Öğrenciler bilfen.github.io/digiq adresinde sınıflarını seçip bu kodu girer · Kodlar her hafta yenilenir', W / 2, sonY + 64);
+    c.fillText('Öğrenciler bilfen.github.io/digiq adresinde sınıflarını seçip bu kodu girer · Kodlar her ay yenilenir', W / 2, sonY + 64);
     var bugun2 = '';
     try { bugun2 = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { bugun2 = new Date().toLocaleDateString(); }
     c.fillText('Döküm: ' + bugun2 + ' · Bilfen DigiQuest', W / 2, sonY + 102);
@@ -4012,7 +4015,7 @@
   ['kodYazdirBtn', 'ogretmenKodYazdir'].forEach(function (id) {
     var b = $(id);
     if (b) b.onclick = function () {
-      if (!_sonKodSatirlari.length) { alert('Bu hafta için kod yok — önce "🔄 Kodları Yenile" ile üret.'); return; }
+      if (!_sonKodSatirlari.length) { alert('Bu ay için kod yok — önce "🔄 Kodları Yenile" ile üret.'); return; }
       kodYazdir(_sonKodSatirlari);
       if ($('kodDurum')) $('kodDurum').textContent = '🖨️ Yazdır penceresinde "Hedef: PDF olarak kaydet" seçerek PDF alabilirsin.';
     };
@@ -4020,7 +4023,7 @@
   ['kodJpgBtn', 'ogretmenKodJpg'].forEach(function (id) {
     var b = $(id);
     if (b) b.onclick = function () {
-      if (!_sonKodSatirlari.length) { alert('Bu hafta için kod yok — önce "🔄 Kodları Yenile" ile üret.'); return; }
+      if (!_sonKodSatirlari.length) { alert('Bu ay için kod yok — önce "🔄 Kodları Yenile" ile üret.'); return; }
       kodJpgIndir(_sonKodSatirlari);
     };
   });

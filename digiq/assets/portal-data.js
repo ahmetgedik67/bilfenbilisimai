@@ -23,7 +23,7 @@ var KATEGORILER = [
 var KATEGORI_RENK = ['#f59e0b', '#22c55e', '#38bdf8', '#a78bfa', '#f472b6', '#facc15'];
 
 /* (v2.4) Kapı ekranı seviyeleri: 1-7. sınıf ÇİPLERİ + 2-7 IPT kategorileri.
-   Panel haftalık kodları bu 13 seviye için üretir (s1..s7, i2..i7); kapı da
+   Panel aylık kodları bu 13 seviye için üretir (s1..s7, i2..i7); kapı da
    aynı listeyi sunar — IPT grubu öğrencisi kendi koduyla girebilir.
    renk alanı kart rozetlerinde/sekmelerde kullanılır (KATEGORI_RENK hizalı). */
 var BT_SEVIYELER = (function () {

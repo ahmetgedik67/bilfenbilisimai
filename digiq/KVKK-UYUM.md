@@ -10,13 +10,13 @@
 |---|---|---|---|
 | Öğrenci kimliği | Öğrenci | **Toplanmaz** (ad, e-posta, şifre, puan, rozet yok) | — |
 | Öğrenci sonuç verisi | Öğrenci | **Hiçbir yerde saklanmaz** (tamamlanan tablosuna yazı kapalı, eski kayıtlar silinir) | — |
-| Haftalık kod | Yönetici üretir | Supabase `erisim_kod` tablosu | Doğrulama yalnız SHA-256(kod+tuz) hash'i ile; `kod_acik` sütunu yalnız öğretmen/yönetici paneli görüntülemesidir, öğrenci tabloya erişemez |
+| Aylık kod | Yönetici üretir | Supabase `erisim_kod` tablosu | Doğrulama yalnız SHA-256(kod+tuz) hash'i ile; `kod_acik` sütunu yalnız öğretmen/yönetici paneli görüntülemesidir, öğrenci tabloya erişemez |
 | Öğretmen adı + kullanıcı adı + şifre hash'i (PBKDF2-SHA256, 60k tur) | Öğretmen | Supabase `profil` tablosu | Hesap silinene kadar |
 | Öğretmenin hazırladığı etkinlik içerikleri | Öğretmen | Supabase `ozel_etkinlik` | Öğretmen sildikçe |
 
 ## 2. Kimlik doğrulama akışı
 
-- **Öğrenci:** Sınıf seçer + 4 haneli haftalık kodu girer. Kod `kod_dogrula(p_seviye, p_kod)`
+- **Öğrenci:** Sınıf seçer + 4 haneli aylık kodu girer. Kod `kod_dogrula(p_seviye, p_kod)`
   SECURITY DEFINER fonksiyonunda sunucuda hash'lenip karşılaştırılır ve geçerlilik
   tarihi kontrol edilir. Tarayıcıya yalnız "doğru/yanlış" döner; hash okunamaz
   (`erisim_kod` üzerinde RLS `false` politikası). Başarılı girişte tarayıcıda yalnız
@@ -43,17 +43,17 @@ isteğe bağlıdır); panel upsert aynı satırı günceller.
 
 | Rol | Yetki |
 |---|---|
-| Yönetici | Haftalık kod yenileme, öğretmen ekleme/silme/şifre sıfırlama |
+| Yönetici | Aylık kod yenileme, öğretmen ekleme/silme/şifre sıfırlama |
 | Öğretmen | Etkinlik oluşturma, seviye bazlı yayınlama (açık/kapalı/tarihli), tahta etkinlikleri |
-| Öğrenci | Hesapsız erişim: sınıf + haftalık kod |
+| Öğrenci | Hesapsız erişim: sınıf + aylık kod |
 
 ## 5. Kod yenileme akışı
 
-1. Yönetici panelde **🔑 Haftalık Erişim Kodları → 🔄 Kodları Yenile** butonuna basar.
+1. Yönetici panelde **🔑 Aylık Erişim Kodları → 🔄 Kodları Yenile** butonuna basar.
 2. Sunucu 13 seviye için 4 haneli kod üretir; hash'i doğrulama için, düz metin kopyası (`kod_acik`) panel görüntülemesi için yazılır.
-3. Kodlar hafta boyunca yönetici kartında ve **tüm öğretmenlerin Tahta Etkinlikleri sekmesinde** otomatik görünür (`kodlari_oku` RPC — yalnız geçerli kodları döner).
+3. Kodlar ay boyunca yönetici kartında ve **tüm öğretmenlerin Tahta Etkinlikleri sekmesinde** otomatik görünür (`kodlari_oku` RPC — yalnız geçerli kodları döner).
 4. Öğrenciye kod yalnız kapı ekranındaki giriş denemesiyle iletilir; tabloya erişimi yoktur.
-5. Geçerlilik: bir sonraki haftanın pazartesi 08:00'i (Türkiye saati); süresi dolan kod panelde de gösterilmez.
+5. Geçerlilik: bir sonraki ayın 1'i, 08:00 (Türkiye saati); süresi dolan kod panelde de gösterilmez.
 
 ## 6. Bilinen sınırlar (şeffaflık notu)
 

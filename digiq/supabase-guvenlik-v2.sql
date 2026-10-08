@@ -1,6 +1,6 @@
 -- ============================================================
 -- BILFEN BİLİŞİM AI — GÜVENLİK MİMARİSİ v2
--- Öğrenci hesabı yok · Haftalık erişim kodu (hash'li) ·
+-- Öğrenci hesabı yok · AYLIK erişim kodu (hash'li) ·
 -- Yayın zamanı sunucuda zorlanır · Sonuç verisi saklanmaz
 -- ------------------------------------------------------------
 -- Kurulum: Supabase → SQL Editor → bu dosyanın tamamını
@@ -23,7 +23,7 @@ create extension if not exists pgcrypto;  -- sha256 + gen_random_bytes için
 create table if not exists public.erisim_kod (
   seviye        text primary key,            -- 's1'..'s7', 'i2'..'i7'
   kod_hash      text not null,               -- sha256 hex (kod + ':' + hafta_tuz)
-  hafta_tuz     text not null,               -- her hafta yenilenen rastgele tuz
+  hafta_tuz     text not null,               -- her ay yenilenen rastgele tuz (sütun adı geçmişten gelir)
   kod_acik      text,                        -- öğretmen paneli için düz metin kopya (null = gösterilmez)
   olusturma     timestamptz not null default now(),
   gecerlilik    timestamptz not null default now()  -- kodun son geçerlilik anı
@@ -75,18 +75,18 @@ as $$
 declare
   yeni_kod text;
   tuz text;
-  hafta_sonu timestamptz;
+  ay_sonu timestamptz;
 begin
   yeni_kod := lpad((floor(random() * 9000) + 1000)::text, 4, '0');
   /* pgcrypto gerektirmez: 24 haneli hex tuz, yerleşik md5(random()) ile */
   tuz := substr(replace(md5(random()::text || clock_timestamp()::text), ' ', ''), 1, 24);
   tuz := tuz || substr(md5(clock_timestamp()::text || random()::text), 1, 24);
-  -- gelecek pazartesi 08:00 Türkiye saati = 05:00 UTC
-  hafta_sonu := date_trunc('week', now() + interval '7 days') + interval '5 hours';
+  -- gelecek ayın 1'i 08:00 Türkiye saati = 05:00 UTC (AYLIK kod)
+  ay_sonu := date_trunc('month', now() + interval '1 month') + interval '5 hours';
   insert into public.erisim_kod (seviye, kod_hash, hafta_tuz, kod_acik, gecerlilik)
   values (lower(p_seviye),
           encode(sha256(convert_to(yeni_kod || ':' || tuz, 'utf8')), 'hex'),
-          tuz, yeni_kod, hafta_sonu)
+          tuz, yeni_kod, ay_sonu)
   on conflict (seviye) do update
     set kod_hash   = excluded.kod_hash,
         hafta_tuz  = excluded.hafta_tuz,
@@ -267,5 +267,5 @@ grant select on public.etkinlik_atama_aktif to anon;
 delete from public.tamamlanan;
 delete from public.profil where rol = 'ogrenci';
 
--- Bitti. Panel "🔑 Haftalık Erişim Kodları" kartı → "Kodları Yenile"
+-- Bitti. Panel "🔑 Aylık Erişim Kodları" kartı → "Kodları Yenile"
 -- bu şemadaki kodlari_yenile_tumu() fonksiyonunu çağırır.
